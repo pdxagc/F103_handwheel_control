@@ -1,0 +1,57 @@
+<Resource>
+    <pages>
+        <page name="0加工页面" id="0" />
+        <page name="1设置页面" id="1" />
+        <page name="2控制面板" id="2" />
+        <page name="3全轴清零" id="3" />
+        <page name="4全轴清零点击态" id="4" />
+        <page name="5跳行加工" id="5" />
+        <page name="6文件管理" id="6" />
+        <page name="7传输中" id="7" />
+        <page name="8传输失败" id="8" />
+        <page name="9删除文档" id="9" />
+        <page name="10内存预览" id="10" />
+        <page name="11连接网络与立即登录" id="11" />
+        <page name="12选择WiFi" id="12" />
+        <page name="13断开连接与立即登陆" id="13" />
+        <page name="14断开连接与退出登陆" id="14" />
+        <page name="15退出提醒" id="15" />
+        <page name="16断开提醒" id="16" />
+        <page name="17断开提醒未登录账户" id="17" />
+    </pages>
+    <images>
+        <image id="0" url="c:\users\px\desktop\new_project\Images\加工页面.png" effect_width="800" effect_height="480" />
+        <image id="1" url="c:\users\px\desktop\new_project\Images\进度条.jpg" effect_width="245" effect_height="30" />
+        <image id="2" url="c:\users\px\desktop\new_project\Images\加工页面点击状态.png" effect_width="800" effect_height="480" />
+        <image id="3" url="c:\users\px\desktop\new_project\Images\设置页面.png" effect_width="800" effect_height="480" />
+        <image id="4" url="c:\users\px\desktop\new_project\Images\设置页面点击态.png" effect_width="800" effect_height="480" />
+        <image id="5" url="c:\users\px\desktop\new_project\Images\控制面板.png" effect_width="800" effect_height="480" />
+        <image id="6" url="c:\users\px\desktop\new_project\Images\控制面板点击态.png" effect_width="800" effect_height="480" />
+        <image id="7" url="c:\users\px\desktop\new_project\Images\全轴清零.png" effect_width="800" effect_height="480" />
+        <image id="8" url="c:\users\px\desktop\new_project\Images\全轴清零点击态.png" effect_width="800" effect_height="480" />
+        <image id="9" url="c:\users\px\desktop\new_project\Images\跳行加工.png" effect_width="800" effect_height="480" />
+        <image id="10" url="c:\users\px\desktop\new_project\Images\跳行加工点击态.png" effect_width="800" effect_height="480" />
+        <image id="11" url="c:\users\px\desktop\new_project\Images\文件管理.png" effect_width="800" effect_height="480" />
+        <image id="12" url="c:\users\px\desktop\new_project\Images\文件管理点击态.png" effect_width="800" effect_height="480" />
+        <image id="13" url="c:\users\px\desktop\new_project\Images\传输中.png" effect_width="800" effect_height="480" />
+        <image id="14" url="c:\users\px\desktop\new_project\Images\文档传输中.png" effect_width="380" effect_height="44" />
+        <image id="15" url="c:\users\px\desktop\new_project\Images\传输失败.png" effect_width="800" effect_height="480" />
+        <image id="16" url="c:\users\px\desktop\new_project\Images\内存不足.png" effect_width="380" effect_height="44" />
+        <image id="17" url="c:\users\px\desktop\new_project\Images\删除文档.png" effect_width="800" effect_height="480" />
+        <image id="18" url="c:\users\px\desktop\new_project\Images\删除文档点击态.png" effect_width="800" effect_height="480" />
+        <image id="19" url="c:\users\px\desktop\new_project\Images\内存预览.png" effect_width="800" effect_height="480" />
+        <image id="20" url="c:\users\px\desktop\new_project\Images\画板 1.png" effect_width="278" effect_height="45" />
+        <image id="21" url="c:\users\px\desktop\new_project\Images\连接网络与立即登录.png" effect_width="800" effect_height="480" />
+        <image id="22" url="c:\users\px\desktop\new_project\Images\连接网络与立即登录点击态.png" effect_width="800" effect_height="480" />
+        <image id="23" url="c:\users\px\desktop\new_project\Images\选择WiFi.png" effect_width="800" effect_height="480" />
+        <image id="24" url="c:\users\px\desktop\new_project\Images\选择WiFi点击态.png" effect_width="800" effect_height="480" />
+        <image id="25" url="c:\users\px\desktop\new_project\Images\断开连接与立即登陆.png" effect_width="800" effect_height="480" />
+        <image id="26" url="c:\users\px\desktop\new_project\Images\断开连接与退出登陆点击态.png" effect_width="800" effect_height="480" />
+        <image id="27" url="c:\users\px\desktop\new_project\Images\断开连接与退出登陆.png" effect_width="800" effect_height="480" />
+        <image id="28" url="c:\users\px\desktop\new_project\Images\退出提醒.png" effect_width="800" effect_height="480" />
+        <image id="29" url="c:\users\px\desktop\new_project\Images\退出提醒点击态.png" effect_width="800" effect_height="480" />
+        <image id="30" url="c:\users\px\desktop\new_project\Images\断开提醒.png" effect_width="800" effect_height="480" />
+        <image id="31" url="c:\users\px\desktop\new_project\Images\断开提醒未登录账户.png" effect_width="800" effect_height="480" />
+    </images>
+    <waves />
+</Resource>
