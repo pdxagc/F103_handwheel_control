@@ -52,6 +52,9 @@
 //创建画面17断开提醒未登录账户的命令索引ID
 #define  _SCREEN_17断开提醒未登录账户                                                  17
 
+//创建画面18加工页面点击状态的命令索引ID
+#define  _SCREEN_18加工页面点击状态                                                   18
+
 #define  _PROGRESS_0加工页面_PROGRESS1                                             1
 
 //画面0加工页面中进度条Progress2的背景图片
@@ -118,11 +121,19 @@
 
 #define  _TXT_DIS__0加工页面_TEXT_DISPLAY15                                       30
 
-#define  _BTN_0加工页面_BUTTON14                                                  32
-
 #define  _TXT_DIS__0加工页面_TEXT_DISPLAY17                                       33
 
 #define  _RTC_0加工页面_RTC1                                                      34
+
+#define  _TXT_DIS__0加工页面_TEXT_DISPLAY16                                       31
+
+#define  _TXT_DIS__0加工页面_TEXT_DISPLAY18                                       35
+
+#define  _TXT_DIS__0加工页面_TEXT_DISPLAY19                                       36
+
+#define  _TXT_DIS__0加工页面_TEXT_DISPLAY20                                       37
+
+#define  _TXT_DIS__0加工页面_TEXT_DISPLAY21                                       38
 
 #define  _BTN_1设置页面_BUTTON1                                                    1
 
@@ -255,6 +266,16 @@
 #define  _TXT_DIS__2控制面板_TEXT_DISPLAY14                                       37
 
 #define  _RTC_2控制面板_RTC1                                                      35
+
+#define  _TXT_DIS__2控制面板_TEXT_DISPLAY12                                       38
+
+#define  _TXT_DIS__2控制面板_TEXT_DISPLAY15                                       39
+
+#define  _TXT_DIS__2控制面板_TEXT_DISPLAY16                                       40
+
+#define  _TXT_DIS__2控制面板_TEXT_DISPLAY17                                       41
+
+#define  _TXT_DIS__2控制面板_TEXT_DISPLAY18                                       42
 
 #define  _BTN_3全轴清零_BUTTON1                                                    1
 
@@ -521,4 +542,12 @@
 #define  _BTN_17断开提醒未登录账户_BUTTON1                                              1
 
 #define  _BTN_17断开提醒未登录账户_BUTTON2                                              2
+
+//画面18加工页面点击状态的背景图片
+#define  _IMG_18加工页面点击状态                                                       2
+
+#define  _TXT_DIS__18加工页面点击状态_TEXT_DISPLAY1                                    1
+
+//全局图片加工页面.png
+#define  _IMG_加工页面_PNG                                                         0
 
