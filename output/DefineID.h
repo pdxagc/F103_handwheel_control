@@ -163,8 +163,6 @@
 
 #define  _BTN_1设置页面_BUTTON7                                                   18
 
-#define  _TXT_DIS__1设置页面_TEXT_DISPLAY12                                       19
-
 #define  _TXT_DIS__1设置页面_TEXT_DISPLAY13                                       20
 
 #define  _TXT_DIS__1设置页面_TEXT_DISPLAY14                                       21
@@ -178,6 +176,8 @@
 #define  _TXT_DIS__1设置页面_TEXT_DISPLAY18                                       25
 
 #define  _TXT_DIS__1设置页面_TEXT_DISPLAY19                                       26
+
+#define  _RTC_1设置页面_RTC1                                                      19
 
 #define  _BTN_2控制面板_BUTTON1                                                    1
 
@@ -250,11 +250,11 @@
 
 #define  _BTN_2控制面板_BUTTON23                                                  34
 
-#define  _TXT_DIS__2控制面板_TEXT_DISPLAY12                                       35
-
 #define  _TXT_DIS__2控制面板_TEXT_DISPLAY13                                       36
 
 #define  _TXT_DIS__2控制面板_TEXT_DISPLAY14                                       37
+
+#define  _RTC_2控制面板_RTC1                                                      35
 
 #define  _BTN_3全轴清零_BUTTON1                                                    1
 
@@ -358,11 +358,11 @@
 
 #define  _TXT_DIS__6文件管理_TEXT_DISPLAY8                                        29
 
-#define  _TXT_DIS__6文件管理_TEXT_DISPLAY11                                       30
-
 #define  _TXT_DIS__6文件管理_TEXT_DISPLAY12                                       31
 
 #define  _TXT_DIS__6文件管理_TEXT_DISPLAY13                                       32
+
+#define  _RTC_6文件管理_RTC1                                                      30
 
 #define  _BTN_7传输中_BUTTON1                                                     2
 
@@ -402,11 +402,11 @@
 
 #define  _BTN_10内存预览_BUTTON3                                                   1
 
-#define  _TXT_DIS__10内存预览_TEXT_DISPLAY1                                        2
-
 #define  _TXT_DIS__10内存预览_TEXT_DISPLAY2                                        3
 
 #define  _TXT_DIS__10内存预览_TEXT_DISPLAY3                                        4
+
+#define  _RTC_10内存预览_RTC1                                                      5
 
 #define  _BTN_11连接网络与立即登录_BUTTON1                                              1
 
@@ -429,11 +429,11 @@
 
 #define  _TXT_DIS__11连接网络与立即登录_TEXT_DISPLAY4                                   9
 
-#define  _TXT_DIS__11连接网络与立即登录_TEXT_DISPLAY5                                  10
-
 #define  _TXT_DIS__11连接网络与立即登录_TEXT_DISPLAY6                                  11
 
 #define  _TXT_DIS__11连接网络与立即登录_TEXT_DISPLAY7                                  12
+
+#define  _RTC_11连接网络与立即登录_RTC1                                                10
 
 #define  _BTN_12选择WIFI_BUTTON1                                                 1
 
@@ -476,11 +476,11 @@
 
 #define  _BTN_13断开连接与立即登陆_BUTTON4                                              8
 
-#define  _TXT_DIS__13断开连接与立即登陆_TEXT_DISPLAY5                                   9
-
 #define  _TXT_DIS__13断开连接与立即登陆_TEXT_DISPLAY6                                  10
 
 #define  _TXT_DIS__13断开连接与立即登陆_TEXT_DISPLAY7                                  11
+
+#define  _RTC_13断开连接与立即登陆_RTC1                                                12
 
 #define  _TXT_DIS__14断开连接与退出登陆_TEXT_DISPLAY1                                   1
 
@@ -501,11 +501,11 @@
 
 #define  _BTN_14断开连接与退出登陆_BUTTON4                                              8
 
-#define  _TXT_DIS__14断开连接与退出登陆_TEXT_DISPLAY5                                   9
-
 #define  _TXT_DIS__14断开连接与退出登陆_TEXT_DISPLAY6                                  10
 
 #define  _TXT_DIS__14断开连接与退出登陆_TEXT_DISPLAY7                                  11
+
+#define  _RTC_14断开连接与退出登陆_RTC1                                                 9
 
 #define  _BTN_15退出提醒_BUTTON1                                                   1
 
