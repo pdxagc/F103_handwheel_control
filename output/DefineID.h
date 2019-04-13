@@ -118,11 +118,11 @@
 
 #define  _TXT_DIS__0加工页面_TEXT_DISPLAY15                                       30
 
-#define  _TXT_DIS__0加工页面_TEXT_DISPLAY16                                       31
-
 #define  _BTN_0加工页面_BUTTON14                                                  32
 
 #define  _TXT_DIS__0加工页面_TEXT_DISPLAY17                                       33
+
+#define  _RTC_0加工页面_RTC1                                                      34
 
 #define  _BTN_1设置页面_BUTTON1                                                    1
 
@@ -168,6 +168,16 @@
 #define  _TXT_DIS__1设置页面_TEXT_DISPLAY13                                       20
 
 #define  _TXT_DIS__1设置页面_TEXT_DISPLAY14                                       21
+
+#define  _TXT_DIS__1设置页面_TEXT_DISPLAY15                                       22
+
+#define  _TXT_DIS__1设置页面_TEXT_DISPLAY16                                       23
+
+#define  _TXT_DIS__1设置页面_TEXT_DISPLAY17                                       24
+
+#define  _TXT_DIS__1设置页面_TEXT_DISPLAY18                                       25
+
+#define  _TXT_DIS__1设置页面_TEXT_DISPLAY19                                       26
 
 #define  _BTN_2控制面板_BUTTON1                                                    1
 
