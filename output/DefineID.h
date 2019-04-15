@@ -52,9 +52,6 @@
 //创建画面17断开提醒未登录账户的命令索引ID
 #define  _SCREEN_17断开提醒未登录账户                                                  17
 
-//创建画面18加工页面点击状态的命令索引ID
-#define  _SCREEN_18加工页面点击状态                                                   18
-
 #define  _PROGRESS_0加工页面_PROGRESS1                                             1
 
 //画面0加工页面中进度条Progress2的背景图片
@@ -435,11 +432,11 @@
 
 #define  _BTN_10内存预览_BUTTON3                                                   1
 
+#define  _TXT_DIS__10内存预览_TEXT_DISPLAY1                                        2
+
 #define  _TXT_DIS__10内存预览_TEXT_DISPLAY2                                        3
 
 #define  _TXT_DIS__10内存预览_TEXT_DISPLAY3                                        4
-
-#define  _RTC_10内存预览_RTC1                                                      5
 
 #define  _BTN_11连接网络与立即登录_BUTTON1                                              1
 
@@ -554,11 +551,6 @@
 #define  _BTN_17断开提醒未登录账户_BUTTON1                                              1
 
 #define  _BTN_17断开提醒未登录账户_BUTTON2                                              2
-
-//画面18加工页面点击状态的背景图片
-#define  _IMG_18加工页面点击状态                                                       2
-
-#define  _TXT_DIS__18加工页面点击状态_TEXT_DISPLAY1                                    1
 
 //全局图片加工页面.png
 #define  _IMG_加工页面_PNG                                                         0
