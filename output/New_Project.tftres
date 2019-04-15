@@ -3,8 +3,8 @@
         <page name="0加工页面" id="0" />
         <page name="1设置页面" id="1" />
         <page name="2控制面板" id="2" />
-        <page name="3全轴清零" id="3" />
-        <page name="4全轴清零点击态" id="4" />
+        <page name="3回工件零" id="3" />
+        <page name="4回工件零点击态" id="4" />
         <page name="5跳行加工" id="5" />
         <page name="6文件管理" id="6" />
         <page name="7传输中" id="7" />
@@ -28,8 +28,8 @@
         <image id="4" url="f:\cnc_tft_control\new_project\Images\设置页面点击态.png" effect_width="800" effect_height="480" />
         <image id="5" url="f:\cnc_tft_control\new_project\Images\控制面板.png" effect_width="800" effect_height="480" />
         <image id="6" url="f:\cnc_tft_control\new_project\Images\控制面板点击态.png" effect_width="800" effect_height="480" />
-        <image id="7" url="f:\cnc_tft_control\new_project\Images\全轴清零.png" effect_width="800" effect_height="480" />
-        <image id="8" url="f:\cnc_tft_control\new_project\Images\全轴清零点击态.png" effect_width="800" effect_height="480" />
+        <image id="7" url="f:\cnc_tft_control\new_project\Images\回工件零.png" effect_width="800" effect_height="480" />
+        <image id="8" url="f:\cnc_tft_control\new_project\Images\回工件零点击态.png" effect_width="800" effect_height="480" />
         <image id="9" url="f:\cnc_tft_control\new_project\Images\跳行加工.png" effect_width="800" effect_height="480" />
         <image id="10" url="f:\cnc_tft_control\new_project\Images\跳行加工点击态.png" effect_width="800" effect_height="480" />
         <image id="11" url="f:\cnc_tft_control\new_project\Images\文件管理.png" effect_width="800" effect_height="480" />

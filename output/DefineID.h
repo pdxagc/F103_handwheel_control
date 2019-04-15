@@ -7,11 +7,11 @@
 //创建画面2控制面板的命令索引ID
 #define  _SCREEN_2控制面板                                                         2
 
-//创建画面3全轴清零的命令索引ID
-#define  _SCREEN_3全轴清零                                                         3
+//创建画面3回工件零的命令索引ID
+#define  _SCREEN_3回工件零                                                         3
 
-//创建画面4全轴清零点击态的命令索引ID
-#define  _SCREEN_4全轴清零点击态                                                      4
+//创建画面4回工件零点击态的命令索引ID
+#define  _SCREEN_4回工件零点击态                                                      4
 
 //创建画面5跳行加工的命令索引ID
 #define  _SCREEN_5跳行加工                                                         5
@@ -190,6 +190,8 @@
 
 #define  _RTC_1设置页面_RTC1                                                      19
 
+#define  _BTN_1设置页面_BUTTON8                                                   27
+
 #define  _BTN_2控制面板_BUTTON1                                                    1
 
 //全局图片控制面板点击态.png
@@ -277,37 +279,47 @@
 
 #define  _TXT_DIS__2控制面板_TEXT_DISPLAY18                                       42
 
-#define  _BTN_3全轴清零_BUTTON1                                                    1
+#define  _BTN_3回工件零_BUTTON1                                                    1
 
-//全局图片全轴清零点击态.png
-#define  _IMG_全轴清零点击态_PNG                                                      8
+//全局图片回工件零点击态.png
+#define  _IMG_回工件零点击态_PNG                                                      8
 
-#define  _BTN_3全轴清零_BUTTON2                                                    2
+#define  _BTN_3回工件零_BUTTON2                                                    2
 
-#define  _BTN_3全轴清零_BUTTON3                                                    3
+#define  _BTN_3回工件零_BUTTON3                                                    3
 
-#define  _BTN_3全轴清零_BUTTON4                                                    4
+#define  _BTN_3回工件零_BUTTON4                                                    4
 
-#define  _BTN_3全轴清零_BUTTON5                                                    5
+#define  _BTN_3回工件零_BUTTON5                                                    5
 
-#define  _BTN_3全轴清零_BUTTON6                                                    6
+#define  _BTN_3回工件零_BUTTON6                                                    6
 
-#define  _BTN_3全轴清零_BUTTON7                                                    7
+#define  _BTN_3回工件零_BUTTON7                                                    7
 
-#define  _BTN_3全轴清零_BUTTON8                                                    8
+#define  _BTN_3回工件零_BUTTON8                                                    8
 
-#define  _TXT_DIS__3全轴清零_TEXT_DISPLAY1                                         9
+#define  _TXT_DIS__3回工件零_TEXT_DISPLAY1                                         9
 
-#define  _TXT_DIS__3全轴清零_TEXT_DISPLAY3                                        11
+#define  _TXT_DIS__3回工件零_TEXT_DISPLAY3                                        11
 
-#define  _TXT_DIS__3全轴清零_TEXT_DISPLAY4                                        12
+#define  _TXT_DIS__3回工件零_TEXT_DISPLAY4                                        12
 
-#define  _TXT_DIS__3全轴清零_TEXT_DISPLAY5                                        13
+#define  _TXT_DIS__3回工件零_TEXT_DISPLAY5                                        13
 
-#define  _TXT_DIS__3全轴清零_TEXT_DISPLAY2                                        10
+#define  _TXT_DIS__3回工件零_TEXT_DISPLAY2                                        10
 
-//画面4全轴清零点击态的背景图片
-#define  _IMG_4全轴清零点击态                                                         8
+//画面4回工件零点击态的背景图片
+#define  _IMG_4回工件零点击态                                                         8
+
+#define  _BTN_4回工件零点击态_BUTTON1                                                 1
+
+#define  _BTN_4回工件零点击态_BUTTON2                                                 2
+
+#define  _BTN_4回工件零点击态_BUTTON3                                                 3
+
+#define  _BTN_4回工件零点击态_BUTTON4                                                 4
+
+#define  _BTN_4回工件零点击态_BUTTON5                                                 5
 
 #define  _BTN_5跳行加工_BUTTON1                                                    1
 
