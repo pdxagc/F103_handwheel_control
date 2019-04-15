@@ -327,6 +327,8 @@
 
 #define  _TXT_DIS__5跳行加工_TEXT_DISPLAY1                                         3
 
+#define  _TXT_DIS__5跳行加工_TEXT_DISPLAY2                                         4
+
 #define  _BTN_6文件管理_BUTTON1                                                    1
 
 //全局图片文件管理点击态.png
