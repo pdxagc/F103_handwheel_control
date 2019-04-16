@@ -135,6 +135,10 @@
 
 #define  _TXT_DIS__0加工页面_TEXT_DISPLAY21                                       38
 
+#define  _TXT_DIS__0加工页面_TEXT_DISPLAY22                                       32
+
+#define  _TXT_DIS__0加工页面_TEXT_DISPLAY23                                       39
+
 #define  _BTN_1设置页面_BUTTON1                                                    1
 
 //全局图片设置页面点击态.png
