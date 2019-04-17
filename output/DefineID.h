@@ -55,6 +55,12 @@
 //创建画面18开机画面的命令索引ID
 #define  _SCREEN_18开机画面                                                       18
 
+//创建画面19加工页面点击态的命令索引ID
+#define  _SCREEN_19加工页面点击态                                                    19
+
+//创建画面20软限位触发的命令索引ID
+#define  _SCREEN_20软限位触发                                                      20
+
 #define  _PROGRESS_0加工页面_PROGRESS1                                             1
 
 //画面0加工页面中进度条Progress2的背景图片
@@ -72,16 +78,6 @@
 #define  _BTN_0加工页面_BUTTON3                                                    5
 
 #define  _BTN_0加工页面_BUTTON4                                                    6
-
-#define  _BTN_0加工页面_BUTTON5                                                    7
-
-#define  _BTN_0加工页面_BUTTON6                                                    8
-
-#define  _BTN_0加工页面_BUTTON7                                                    9
-
-#define  _BTN_0加工页面_BUTTON8                                                   10
-
-#define  _BTN_0加工页面_BUTTON9                                                   11
 
 #define  _BTN_0加工页面_BUTTON10                                                  12
 
@@ -562,6 +558,11 @@
 #define  _BTN_17断开提醒未登录账户_BUTTON2                                              2
 
 #define  _BTN_18开机画面_BUTTON1                                                   1
+
+#define  _TXT_DIS__18开机画面_TEXT_DISPLAY1                                        2
+
+//画面19加工页面点击态的背景图片
+#define  _IMG_19加工页面点击态                                                        2
 
 //全局图片加工页面.png
 #define  _IMG_加工页面_PNG                                                         0
