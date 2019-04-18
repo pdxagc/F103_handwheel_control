@@ -202,6 +202,31 @@
 
 #define  _BTN_1设置页面_BUTTON8                                                   27
 
+//画面1设置页面中动画控件Icon1使用的图片
+#define  _IMG_1设置页面_ICON1                                                      7
+
+#define  _ANIMATION_1设置页面_ICON1                                               28
+
+//画面1设置页面中动画控件Icon2使用的图片
+#define  _IMG_1设置页面_ICON2                                                      6
+
+#define  _ANIMATION_1设置页面_ICON2                                               29
+
+//画面1设置页面中动画控件Icon3使用的图片
+#define  _IMG_1设置页面_ICON3                                                      4
+
+#define  _ANIMATION_1设置页面_ICON3                                               30
+
+//画面1设置页面中动画控件Icon4使用的图片
+#define  _IMG_1设置页面_ICON4                                                      5
+
+#define  _ANIMATION_1设置页面_ICON4                                               31
+
+//画面1设置页面中动画控件Icon5使用的图片
+#define  _IMG_1设置页面_ICON5                                                      3
+
+#define  _ANIMATION_1设置页面_ICON5                                               32
+
 #define  _BTN_2控制面板_BUTTON1                                                    1
 
 //全局图片控制面板点击态.png
@@ -288,6 +313,31 @@
 #define  _TXT_DIS__2控制面板_TEXT_DISPLAY17                                       41
 
 #define  _TXT_DIS__2控制面板_TEXT_DISPLAY18                                       42
+
+//画面2控制面板中动画控件Icon1使用的图片
+#define  _IMG_2控制面板_ICON1                                                      7
+
+#define  _ANIMATION_2控制面板_ICON1                                               43
+
+//画面2控制面板中动画控件Icon2使用的图片
+#define  _IMG_2控制面板_ICON2                                                      6
+
+#define  _ANIMATION_2控制面板_ICON2                                               44
+
+//画面2控制面板中动画控件Icon3使用的图片
+#define  _IMG_2控制面板_ICON3                                                      4
+
+#define  _ANIMATION_2控制面板_ICON3                                               45
+
+//画面2控制面板中动画控件Icon4使用的图片
+#define  _IMG_2控制面板_ICON4                                                      5
+
+#define  _ANIMATION_2控制面板_ICON4                                               46
+
+//画面2控制面板中动画控件Icon5使用的图片
+#define  _IMG_2控制面板_ICON5                                                      3
+
+#define  _ANIMATION_2控制面板_ICON5                                               47
 
 #define  _BTN_3回工件零_BUTTON1                                                    1
 
@@ -409,6 +459,28 @@
 
 #define  _RTC_6文件管理_RTC1                                                      30
 
+//画面6文件管理中动画控件Icon1使用的图片
+#define  _IMG_6文件管理_ICON1                                                      7
+
+#define  _ANIMATION_6文件管理_ICON1                                               33
+
+//画面6文件管理中动画控件Icon2使用的图片
+#define  _IMG_6文件管理_ICON2                                                      6
+
+#define  _ANIMATION_6文件管理_ICON2                                               34
+
+#define  _ANIMATION_6文件管理_ICON3                                               35
+
+//画面6文件管理中动画控件Icon4使用的图片
+#define  _IMG_6文件管理_ICON4                                                      5
+
+#define  _ANIMATION_6文件管理_ICON4                                               36
+
+//画面6文件管理中动画控件Icon5使用的图片
+#define  _IMG_6文件管理_ICON5                                                      3
+
+#define  _ANIMATION_6文件管理_ICON5                                               37
+
 #define  _BTN_7传输中_BUTTON1                                                     2
 
 #define  _PROGRESS_7传输中_PROGRESS1                                              1
@@ -420,7 +492,7 @@
 #define  _BTN_9删除文档_BUTTON1                                                    1
 
 //全局图片删除文档点击态.png
-#define  _IMG_删除文档点击态_PNG                                                     23
+#define  _IMG_删除文档点击态_PNG                                                     24
 
 #define  _BTN_9删除文档_BUTTON2                                                    2
 
@@ -433,7 +505,7 @@
 #define  _PROGRESS_10内存预览_PROGRESS3                                            9
 
 //画面10内存预览中进度条Progress4的背景图片
-#define  _IMG_10内存预览_PROGRESS4                                                25
+#define  _IMG_10内存预览_PROGRESS4                                                26
 
 #define  _PROGRESS_10内存预览_PROGRESS4                                           10
 
@@ -453,6 +525,31 @@
 
 #define  _RTC_10内存预览_RTC1                                                      2
 
+//画面10内存预览中动画控件Icon1使用的图片
+#define  _IMG_10内存预览_ICON1                                                     7
+
+#define  _ANIMATION_10内存预览_ICON1                                               5
+
+//画面10内存预览中动画控件Icon2使用的图片
+#define  _IMG_10内存预览_ICON2                                                     6
+
+#define  _ANIMATION_10内存预览_ICON2                                               6
+
+//画面10内存预览中动画控件Icon3使用的图片
+#define  _IMG_10内存预览_ICON3                                                    18
+
+#define  _ANIMATION_10内存预览_ICON3                                              15
+
+//画面10内存预览中动画控件Icon4使用的图片
+#define  _IMG_10内存预览_ICON4                                                     5
+
+#define  _ANIMATION_10内存预览_ICON4                                              16
+
+//画面10内存预览中动画控件Icon5使用的图片
+#define  _IMG_10内存预览_ICON5                                                     3
+
+#define  _ANIMATION_10内存预览_ICON5                                              17
+
 #define  _BTN_11连接网络与立即登录_BUTTON1                                              1
 
 #define  _BTN_11连接网络与立即登录_BUTTON2                                              2
@@ -462,7 +559,7 @@
 #define  _BTN_11连接网络与立即登录_BUTTON4                                              4
 
 //全局图片连接网络与立即登录点击态.png
-#define  _IMG_连接网络与立即登录点击态_PNG                                                27
+#define  _IMG_连接网络与立即登录点击态_PNG                                                28
 
 #define  _BTN_11连接网络与立即登录_BUTTON5                                              5
 
@@ -480,10 +577,35 @@
 
 #define  _RTC_11连接网络与立即登录_RTC1                                                10
 
+//画面11连接网络与立即登录中动画控件Icon1使用的图片
+#define  _IMG_11连接网络与立即登录_ICON1                                                7
+
+#define  _ANIMATION_11连接网络与立即登录_ICON1                                         13
+
+//画面11连接网络与立即登录中动画控件Icon2使用的图片
+#define  _IMG_11连接网络与立即登录_ICON2                                                6
+
+#define  _ANIMATION_11连接网络与立即登录_ICON2                                         14
+
+//画面11连接网络与立即登录中动画控件Icon3使用的图片
+#define  _IMG_11连接网络与立即登录_ICON3                                               18
+
+#define  _ANIMATION_11连接网络与立即登录_ICON3                                         15
+
+//画面11连接网络与立即登录中动画控件Icon4使用的图片
+#define  _IMG_11连接网络与立即登录_ICON4                                                5
+
+#define  _ANIMATION_11连接网络与立即登录_ICON4                                         16
+
+//画面11连接网络与立即登录中动画控件Icon5使用的图片
+#define  _IMG_11连接网络与立即登录_ICON5                                                3
+
+#define  _ANIMATION_11连接网络与立即登录_ICON5                                         17
+
 #define  _BTN_12选择WIFI_BUTTON1                                                 1
 
 //全局图片选择wifi点击态.png
-#define  _IMG_选择WIFI点击态_PNG                                                   29
+#define  _IMG_选择WIFI点击态_PNG                                                   30
 
 #define  _BTN_12选择WIFI_BUTTON2                                                 2
 
@@ -529,6 +651,31 @@
 
 #define  _RTC_13断开连接与立即登陆_RTC1                                                12
 
+//画面13断开连接与立即登陆中动画控件Icon1使用的图片
+#define  _IMG_13断开连接与立即登陆_ICON1                                                7
+
+#define  _ANIMATION_13断开连接与立即登陆_ICON1                                          9
+
+//画面13断开连接与立即登陆中动画控件Icon2使用的图片
+#define  _IMG_13断开连接与立即登陆_ICON2                                                6
+
+#define  _ANIMATION_13断开连接与立即登陆_ICON2                                         13
+
+//画面13断开连接与立即登陆中动画控件Icon3使用的图片
+#define  _IMG_13断开连接与立即登陆_ICON3                                               18
+
+#define  _ANIMATION_13断开连接与立即登陆_ICON3                                         14
+
+//画面13断开连接与立即登陆中动画控件Icon4使用的图片
+#define  _IMG_13断开连接与立即登陆_ICON4                                                5
+
+#define  _ANIMATION_13断开连接与立即登陆_ICON4                                         15
+
+//画面13断开连接与立即登陆中动画控件Icon5使用的图片
+#define  _IMG_13断开连接与立即登陆_ICON5                                                3
+
+#define  _ANIMATION_13断开连接与立即登陆_ICON5                                         16
+
 #define  _TXT_DIS__14断开连接与退出登陆_TEXT_DISPLAY1                                   1
 
 #define  _TXT_DIS__14断开连接与退出登陆_TEXT_DISPLAY2                                   2
@@ -538,7 +685,7 @@
 #define  _TXT_DIS__14断开连接与退出登陆_TEXT_DISPLAY4                                   4
 
 //全局图片断开连接与退出登陆点击态.png
-#define  _IMG_断开连接与退出登陆点击态_PNG                                                32
+#define  _IMG_断开连接与退出登陆点击态_PNG                                                33
 
 #define  _BTN_14断开连接与退出登陆_BUTTON1                                              5
 
@@ -554,10 +701,35 @@
 
 #define  _RTC_14断开连接与退出登陆_RTC1                                                 9
 
+//画面14断开连接与退出登陆中动画控件Icon1使用的图片
+#define  _IMG_14断开连接与退出登陆_ICON1                                                7
+
+#define  _ANIMATION_14断开连接与退出登陆_ICON1                                         12
+
+//画面14断开连接与退出登陆中动画控件Icon2使用的图片
+#define  _IMG_14断开连接与退出登陆_ICON2                                                6
+
+#define  _ANIMATION_14断开连接与退出登陆_ICON2                                         13
+
+//画面14断开连接与退出登陆中动画控件Icon3使用的图片
+#define  _IMG_14断开连接与退出登陆_ICON3                                               18
+
+#define  _ANIMATION_14断开连接与退出登陆_ICON3                                         14
+
+//画面14断开连接与退出登陆中动画控件Icon4使用的图片
+#define  _IMG_14断开连接与退出登陆_ICON4                                                5
+
+#define  _ANIMATION_14断开连接与退出登陆_ICON4                                         15
+
+//画面14断开连接与退出登陆中动画控件Icon5使用的图片
+#define  _IMG_14断开连接与退出登陆_ICON5                                                3
+
+#define  _ANIMATION_14断开连接与退出登陆_ICON5                                         16
+
 #define  _BTN_15退出提醒_BUTTON1                                                   1
 
 //全局图片退出提醒点击态.png
-#define  _IMG_退出提醒点击态_PNG                                                     35
+#define  _IMG_退出提醒点击态_PNG                                                     36
 
 #define  _BTN_15退出提醒_BUTTON2                                                   2
 
@@ -571,7 +743,7 @@
 
 #define  _BTN_18开机画面_BUTTON1                                                   1
 
-#define  _TXT_DIS__18开机画面_TEXT_DISPLAY1                                        2
+#define  _PROGRESS_18开机画面_PROGRESS1                                            3
 
 //画面19加工页面点击态的背景图片
 #define  _IMG_19加工页面点击态                                                        2

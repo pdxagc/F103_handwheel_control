@@ -41,28 +41,30 @@
         <image id="15" url="f:\cnc_tft_control\new_project\Images\跳行加工点击态.png" effect_width="800" effect_height="480" />
         <image id="16" url="f:\cnc_tft_control\new_project\Images\文件管理.png" effect_width="800" effect_height="480" />
         <image id="17" url="f:\cnc_tft_control\new_project\Images\文件管理点击态.png" effect_width="800" effect_height="480" />
-        <image id="18" url="f:\cnc_tft_control\new_project\Images\传输中.png" effect_width="800" effect_height="480" />
-        <image id="19" url="f:\cnc_tft_control\new_project\Images\文档传输中.png" effect_width="380" effect_height="44" />
-        <image id="20" url="f:\cnc_tft_control\new_project\Images\传输失败.png" effect_width="800" effect_height="480" />
-        <image id="21" url="f:\cnc_tft_control\new_project\Images\内存不足.png" effect_width="380" effect_height="44" />
-        <image id="22" url="f:\cnc_tft_control\new_project\Images\删除文档.png" effect_width="800" effect_height="480" />
-        <image id="23" url="f:\cnc_tft_control\new_project\Images\删除文档点击态.png" effect_width="800" effect_height="480" />
-        <image id="24" url="f:\cnc_tft_control\new_project\Images\内存预览.png" effect_width="800" effect_height="480" />
-        <image id="25" url="f:\cnc_tft_control\new_project\Images\画板 1.png" effect_width="278" effect_height="45" />
-        <image id="26" url="f:\cnc_tft_control\new_project\Images\连接网络与立即登录.png" effect_width="800" effect_height="480" />
-        <image id="27" url="f:\cnc_tft_control\new_project\Images\连接网络与立即登录点击态.png" effect_width="800" effect_height="480" />
-        <image id="28" url="f:\cnc_tft_control\new_project\Images\选择WiFi.png" effect_width="800" effect_height="480" />
-        <image id="29" url="f:\cnc_tft_control\new_project\Images\选择WiFi点击态.png" effect_width="800" effect_height="480" />
-        <image id="30" url="f:\cnc_tft_control\new_project\Images\WIFI.icon" effect_width="26" effect_height="26" />
-        <image id="31" url="f:\cnc_tft_control\new_project\Images\断开连接与立即登陆.png" effect_width="800" effect_height="480" />
-        <image id="32" url="f:\cnc_tft_control\new_project\Images\断开连接与退出登陆点击态.png" effect_width="800" effect_height="480" />
-        <image id="33" url="f:\cnc_tft_control\new_project\Images\断开连接与退出登陆.png" effect_width="800" effect_height="480" />
-        <image id="34" url="f:\cnc_tft_control\new_project\Images\退出提醒.png" effect_width="800" effect_height="480" />
-        <image id="35" url="f:\cnc_tft_control\new_project\Images\退出提醒点击态.png" effect_width="800" effect_height="480" />
-        <image id="36" url="f:\cnc_tft_control\new_project\Images\断开提醒.png" effect_width="800" effect_height="480" />
-        <image id="37" url="f:\cnc_tft_control\new_project\Images\断开提醒未登录账户.png" effect_width="800" effect_height="480" />
-        <image id="38" url="f:\cnc_tft_control\new_project\Images\手轮启动页面.png" effect_width="800" effect_height="480" />
-        <image id="39" url="f:\cnc_tft_control\new_project\Images\软限位触发.png" effect_width="800" effect_height="480" />
+        <image id="18" url="f:\cnc_tft_control\new_project\Images\BT.icon" effect_width="26" effect_height="42" />
+        <image id="19" url="f:\cnc_tft_control\new_project\Images\传输中.png" effect_width="800" effect_height="480" />
+        <image id="20" url="f:\cnc_tft_control\new_project\Images\文档传输中.png" effect_width="380" effect_height="44" />
+        <image id="21" url="f:\cnc_tft_control\new_project\Images\传输失败.png" effect_width="800" effect_height="480" />
+        <image id="22" url="f:\cnc_tft_control\new_project\Images\内存不足.png" effect_width="380" effect_height="44" />
+        <image id="23" url="f:\cnc_tft_control\new_project\Images\删除文档.png" effect_width="800" effect_height="480" />
+        <image id="24" url="f:\cnc_tft_control\new_project\Images\删除文档点击态.png" effect_width="800" effect_height="480" />
+        <image id="25" url="f:\cnc_tft_control\new_project\Images\内存预览.png" effect_width="800" effect_height="480" />
+        <image id="26" url="f:\cnc_tft_control\new_project\Images\画板 1.png" effect_width="278" effect_height="45" />
+        <image id="27" url="f:\cnc_tft_control\new_project\Images\连接网络与立即登录.png" effect_width="800" effect_height="480" />
+        <image id="28" url="f:\cnc_tft_control\new_project\Images\连接网络与立即登录点击态.png" effect_width="800" effect_height="480" />
+        <image id="29" url="f:\cnc_tft_control\new_project\Images\选择WiFi.png" effect_width="800" effect_height="480" />
+        <image id="30" url="f:\cnc_tft_control\new_project\Images\选择WiFi点击态.png" effect_width="800" effect_height="480" />
+        <image id="31" url="f:\cnc_tft_control\new_project\Images\WIFI.icon" effect_width="26" effect_height="26" />
+        <image id="32" url="f:\cnc_tft_control\new_project\Images\断开连接与立即登陆.png" effect_width="800" effect_height="480" />
+        <image id="33" url="f:\cnc_tft_control\new_project\Images\断开连接与退出登陆点击态.png" effect_width="800" effect_height="480" />
+        <image id="34" url="f:\cnc_tft_control\new_project\Images\断开连接与退出登陆.png" effect_width="800" effect_height="480" />
+        <image id="35" url="f:\cnc_tft_control\new_project\Images\退出提醒.png" effect_width="800" effect_height="480" />
+        <image id="36" url="f:\cnc_tft_control\new_project\Images\退出提醒点击态.png" effect_width="800" effect_height="480" />
+        <image id="37" url="f:\cnc_tft_control\new_project\Images\断开提醒.png" effect_width="800" effect_height="480" />
+        <image id="38" url="f:\cnc_tft_control\new_project\Images\断开提醒未登录账户.png" effect_width="800" effect_height="480" />
+        <image id="39" url="f:\cnc_tft_control\new_project\Images\手轮启动页面.png" effect_width="800" effect_height="480" />
+        <image id="40" url="f:\cnc_tft_control\new_project\Images\启动进度条.png" effect_width="800" effect_height="8" />
+        <image id="41" url="f:\cnc_tft_control\new_project\Images\软限位触发.png" effect_width="800" effect_height="480" />
     </images>
     <waves />
 </Resource>
