@@ -135,10 +135,20 @@
 
 #define  _TXT_DIS__0加工页面_TEXT_DISPLAY23                                       39
 
+#define  _ANIMATION_0加工页面_ICON1                                                7
+
+#define  _ANIMATION_0加工页面_ICON2                                                8
+
+#define  _ANIMATION_0加工页面_ICON3                                                9
+
+#define  _ANIMATION_0加工页面_ICON4                                               10
+
+#define  _ANIMATION_0加工页面_ICON5                                               11
+
 #define  _BTN_1设置页面_BUTTON1                                                    1
 
 //全局图片设置页面点击态.png
-#define  _IMG_设置页面点击态_PNG                                                      4
+#define  _IMG_设置页面点击态_PNG                                                      9
 
 #define  _BTN_1设置页面_BUTTON2                                                    2
 
@@ -195,7 +205,7 @@
 #define  _BTN_2控制面板_BUTTON1                                                    1
 
 //全局图片控制面板点击态.png
-#define  _IMG_控制面板点击态_PNG                                                      6
+#define  _IMG_控制面板点击态_PNG                                                     11
 
 #define  _BTN_2控制面板_BUTTON2                                                    2
 
@@ -282,7 +292,7 @@
 #define  _BTN_3回工件零_BUTTON1                                                    1
 
 //全局图片回工件零点击态.png
-#define  _IMG_回工件零点击态_PNG                                                      8
+#define  _IMG_回工件零点击态_PNG                                                     13
 
 #define  _BTN_3回工件零_BUTTON2                                                    2
 
@@ -309,7 +319,7 @@
 #define  _TXT_DIS__3回工件零_TEXT_DISPLAY2                                        10
 
 //画面4回工件零点击态的背景图片
-#define  _IMG_4回工件零点击态                                                         8
+#define  _IMG_4回工件零点击态                                                        13
 
 #define  _BTN_4回工件零点击态_BUTTON1                                                 1
 
@@ -324,7 +334,7 @@
 #define  _BTN_5跳行加工_BUTTON1                                                    1
 
 //全局图片跳行加工点击态.png
-#define  _IMG_跳行加工点击态_PNG                                                     10
+#define  _IMG_跳行加工点击态_PNG                                                     15
 
 #define  _BTN_5跳行加工_BUTTON2                                                    2
 
@@ -335,7 +345,7 @@
 #define  _BTN_6文件管理_BUTTON1                                                    1
 
 //全局图片文件管理点击态.png
-#define  _IMG_文件管理点击态_PNG                                                     12
+#define  _IMG_文件管理点击态_PNG                                                     17
 
 #define  _BTN_6文件管理_BUTTON2                                                    2
 
@@ -410,7 +420,7 @@
 #define  _BTN_9删除文档_BUTTON1                                                    1
 
 //全局图片删除文档点击态.png
-#define  _IMG_删除文档点击态_PNG                                                     18
+#define  _IMG_删除文档点击态_PNG                                                     23
 
 #define  _BTN_9删除文档_BUTTON2                                                    2
 
@@ -423,7 +433,7 @@
 #define  _PROGRESS_10内存预览_PROGRESS3                                            9
 
 //画面10内存预览中进度条Progress4的背景图片
-#define  _IMG_10内存预览_PROGRESS4                                                20
+#define  _IMG_10内存预览_PROGRESS4                                                25
 
 #define  _PROGRESS_10内存预览_PROGRESS4                                           10
 
@@ -437,11 +447,11 @@
 
 #define  _BTN_10内存预览_BUTTON3                                                   1
 
-#define  _TXT_DIS__10内存预览_TEXT_DISPLAY1                                        2
-
 #define  _TXT_DIS__10内存预览_TEXT_DISPLAY2                                        3
 
 #define  _TXT_DIS__10内存预览_TEXT_DISPLAY3                                        4
+
+#define  _RTC_10内存预览_RTC1                                                      2
 
 #define  _BTN_11连接网络与立即登录_BUTTON1                                              1
 
@@ -452,7 +462,7 @@
 #define  _BTN_11连接网络与立即登录_BUTTON4                                              4
 
 //全局图片连接网络与立即登录点击态.png
-#define  _IMG_连接网络与立即登录点击态_PNG                                                22
+#define  _IMG_连接网络与立即登录点击态_PNG                                                27
 
 #define  _BTN_11连接网络与立即登录_BUTTON5                                              5
 
@@ -473,7 +483,7 @@
 #define  _BTN_12选择WIFI_BUTTON1                                                 1
 
 //全局图片选择wifi点击态.png
-#define  _IMG_选择WIFI点击态_PNG                                                   24
+#define  _IMG_选择WIFI点击态_PNG                                                   29
 
 #define  _BTN_12选择WIFI_BUTTON2                                                 2
 
@@ -494,6 +504,8 @@
 #define  _TXT_DIS__12选择WIFI_TEXT_DISPLAY4                                     10
 
 #define  _TXT_DIS__12选择WIFI_TEXT_DISPLAY5                                     11
+
+#define  _ANIMATION_12选择WIFI_ICON1                                            12
 
 #define  _BTN_13断开连接与立即登陆_BUTTON1                                              1
 
@@ -526,7 +538,7 @@
 #define  _TXT_DIS__14断开连接与退出登陆_TEXT_DISPLAY4                                   4
 
 //全局图片断开连接与退出登陆点击态.png
-#define  _IMG_断开连接与退出登陆点击态_PNG                                                26
+#define  _IMG_断开连接与退出登陆点击态_PNG                                                32
 
 #define  _BTN_14断开连接与退出登陆_BUTTON1                                              5
 
@@ -545,7 +557,7 @@
 #define  _BTN_15退出提醒_BUTTON1                                                   1
 
 //全局图片退出提醒点击态.png
-#define  _IMG_退出提醒点击态_PNG                                                     29
+#define  _IMG_退出提醒点击态_PNG                                                     35
 
 #define  _BTN_15退出提醒_BUTTON2                                                   2
 
