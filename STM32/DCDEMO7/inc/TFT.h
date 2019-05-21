@@ -13,6 +13,30 @@
 #define START_ADDR3 0x0800d800
 #define START_ADDR4 0x0800dc00
 
+
+enum Page_Status
+{
+	Working_Page,                //加工页面
+	Setting_page,                //设置页面
+	ControlPanel_Page,           //控制面板页面
+	Return_WorkPiece_Zero_Page,  //回工件零页面
+	Jump_Work_Page,              //跳行加工
+	File_Manage_Page,            //文件管理页面
+	Leading_In_Page,             //导入页面
+	Leading_Out_Pgae,            //导出页面
+	Delete_Page,                 //删除页面
+	Storage_View_Page,           //内存空间预览页面
+	Net_Account_Manage_Page,     //连接网络与立即登录页面
+	Choose_WiFi_Page,            //选择WIFi页面
+	Disconnet_and_SignIn_Page,   //断开连接与立即登录页面
+	Disconnect_and_SignOut_Page, //断开连接与退出登录页面
+	Disconnect_Remind_Page,      //断开网络提醒页面
+	SignOut_Remind_Page,         //退出登录提醒页面
+	Save_Pram_Page               //保存参数设置提醒页面
+};
+
+
+
 typedef struct Speed_Control
 {
 	uint16 Initial_Spindle_Speed;                     //主轴初始转速
@@ -161,6 +185,9 @@ void Auto_Knife_process(uint8 state);
 
 //设置页面单位切换按钮触发后处理程序
 void Unit_Change_process(uint8 state);
+
+//恢复上一次设置状态
+void Return_last_status(void);
 
 //控制面板坐标切换控制
 void Coordinate_Change_Process(void);

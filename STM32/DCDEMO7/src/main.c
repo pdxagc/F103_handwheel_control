@@ -25,29 +25,6 @@ uint8  cmd_buffer[CMD_MAX_SIZE];                     //指令缓存
 uint8  USART2_RX_STA=0;                              //USART2接收状态标记
 
 
-enum Page_Status
-{
-	Working_Page,                //加工页面
-	Setting_page,                //设置页面
-	ControlPanel_Page,           //控制面板页面
-	Return_WorkPiece_Zero_Page,  //回工件零页面
-	Jump_Work_Page,              //跳行加工
-	File_Manage_Page,            //文件管理页面
-	Leading_In_Page,             //导入页面
-	Leading_Out_Pgae,            //导出页面
-	Delete_Page,                 //删除页面
-	Storage_View_Page,           //内存空间预览页面
-	Net_Account_Manage_Page,     //连接网络与立即登录页面
-	Choose_WiFi_Page,            //选择WIFi页面
-	Disconnet_and_SignIn_Page,   //断开连接与立即登录页面
-	Disconnect_and_SignOut_Page, //断开连接与退出登录页面
-	Disconnect_Remind_Page,      //断开网络提醒页面
-	SignOut_Remind_Page,         //退出登录提醒页面
-	Save_Pram_Page               //保存参数设置提醒页面
-};
-
-
-
 uint8  Work_Page_Status = 0;              //工作页面标记
 uint8  get_cmd_type;                     //获取指令类型
 uint8  get_ctrl_msg;                     //获取消息的类型
@@ -57,12 +34,13 @@ uint16 get_screen_id;                    //获取画面ID
 uint16 get_control_id;                   //获取控件ID
 uint32 get_value;                        //获取数值
 uint8  input_buf[20];                    //键盘输入内容
+
 int32 Pulses_counter;              // 手轮脉冲数量
 uint8 first_time_power_on=0;       //掉电后第一次开机标志位
 uint8 Send_cooddinate_status;      //发送坐标标记位
 int32 Working_line;                //加工行数
 
-int32 Pulses_num_temp;             //临时保存本次脉冲数量
+int32 Pulses_num_temp;             //临时保存脉冲数量
 uint8 file_name[20];               //文件名
 char  Working_line_buf[10];        //保存加工行数
 
@@ -88,28 +66,20 @@ int main()
 	Usart1_Init(115200);      //串口1初始化(与TFT屏通讯)
   Usart2_Init(115200);      //串口2初始化(与雕刻机通讯)
 	queue_reset();            //清空串口接收缓冲区 
-	TIME2_Init();
-	TIM_Cmd(TIM2, DISABLE);
-	TIME3_Init();             //定时器3初始化(定时向主机询问坐标值)
-  TIM_Cmd(TIM3, DISABLE);
+	TIME2_Init();             //定时器2初始化(向主机发送坐标)
+	TIME3_Init();             //定时器3初始化(向主机询问坐标)
   TIME4_Init();             //定时器4初始化(计算脉冲)
 	TIM_Cmd(TIM4, DISABLE);   //关闭TIM4定时器
-	
 	                                                                                               
 	delay_ms(300);            //延时等待串口屏初始化完毕,必须等待300ms  
 	
-	Power_On_Set();                   //开机动画和参数初始化设置
-	override.Override_num=0.01;       //开机默认倍率
-	Work_Page_Status=Working_Page;    //开机进入加工页面
-	
-	
+	Power_On_Set();                 //开机动画和参数初始化设置
+		
 	Setting_page_pram_get();        //设置页面相关参数值恢复（断电保存在flash）
+	
   if(first_time_power_on==0)      //断电后第一次开机执行这个操作
   {
-		Speaker_Key_Process(pram_status.Voice_last_status);	        //设置页面语音提示按钮状态处理程序
-		Safe_Z_process(pram_status.Safe_Z_last_status);             //设置页面安全Z按钮触发后处理程序
-		Auto_Knife_process(pram_status.Auto_Knife_last_status);     //设置页面自动对刀按钮触发后处理程序
-		Unit_Change_process(pram_status.Unit_Change_last_status);   //设置页面单位切换按钮触发后处理程序
+		Return_last_status();         //恢复上一次设置状态
 		first_time_power_on=1;
   }
 	
@@ -127,15 +97,11 @@ int main()
 			ProcessMessage((PCTRL_MSG)cmd_buffer, size);                   //指令分析处理 ，判断主程序进入哪个Work_Page_Status
 			memset(cmd_buffer, 0, CMD_MAX_SIZE);
 		} 
-
-		
-//		uart2_command_handle();                                       //数据分析
 		
 		
     if(USART2_RX_STA)                                               //串口2接收到了数据
 		{
-		  uart2_command_handle();                                       //数据分析
-		
+		  uart2_command_handle();                                       //数据分析		
 		}
 
 
@@ -167,13 +133,9 @@ int main()
 		
 		 case Setting_page:  //***********************************************************设置页面*************************************************************************************************
  		 {
-	     if(pram_status.Screen_ID1_Setting_concel)     //取消按钮按下
+	     if(pram_status.Screen_ID1_Setting_concel)          //取消按钮按下
 			 {
-					Speaker_Key_Process(pram_status.Voice_last_status);	      //语音提示按钮处理函数
-					Safe_Z_process(pram_status.Safe_Z_last_status);           //安全Z触发处理函数
-					Auto_Knife_process(pram_status.Auto_Knife_last_status);   //自动对刀按钮触发后处理程序
-					Unit_Change_process(pram_status.Unit_Change_last_status);	//单位切换按钮触发后处理程序
-				 
+					Return_last_status();                           //恢复上一次设置状态 
 				  pram_status.Screen_ID1_Setting_concel=0;
           Work_Page_Status=Working_Page;				 
 			 }		
@@ -193,10 +155,7 @@ int main()
 					}
 					if(pram_status.Screen_ID21_Setting_concel)                    //取消按钮按下
 					{
-						Speaker_Key_Process(pram_status.Voice_last_status);	      //语音提示按钮处理函数
-						Safe_Z_process(pram_status.Safe_Z_last_status);           //安全Z触发处理函数
-						Auto_Knife_process(pram_status.Auto_Knife_last_status);
-						Unit_Change_process(pram_status.Unit_Change_last_status);
+						Return_last_status();                                      //恢复上一次设置状态
 						Work_Page_Status=Working_Page;					
 					}	
 			  }				
@@ -410,10 +369,10 @@ int main()
 					
 					if(control_panel_pram.X_press || control_panel_pram.Y_press || control_panel_pram.Z_press || control_panel_pram.A_press || control_panel_pram.B_press)
 					{
-						TIM_Cmd(TIM2, ENABLE);                    //使能TIM2，定时向主机发送坐标
+						TIM_Cmd(TIM2, ENABLE);                           //使能TIM2，定时向主机发送坐标
 						if(Send_cooddinate_status)
 						{
-					     Send_Coordinate_to_Host_Machine();                //向主机发送坐标	
+					     Send_Coordinate_to_Host_Machine();            //向主机发送坐标	
 							 Send_cooddinate_status=0;
 						}							
 					}

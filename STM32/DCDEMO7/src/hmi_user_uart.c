@@ -30,7 +30,7 @@ extern Control_Panel_Pram control_panel_pram;
 
 
 /*******************************************************************************  
-* 函 数 名         : Usart1_Init  
+* 函 数 名         : Usart1_Init(与TFT屏通讯)  
 * 函数功能         : IO端口及串口1，时钟初始化函数    A9,A10    
 * 输    入         : 无  
 * 输    出         : 无  
@@ -72,7 +72,7 @@ void Usart1_Init(uint32 BaudRate)
 
 
 /*******************************************************************************  
-* 函 数 名         : Usart2_Init  
+* 函 数 名         : Usart2_Init(与主机通讯)
 * 函数功能         : IO端口及串口1，时钟初始化函数    A2,A3    
 * 输    入         : 无  
 * 输    出         : 无  
@@ -115,7 +115,7 @@ void Usart2_Init(uint32 BaudRate)
 		USART_InitStructure.USART_Mode = USART_Mode_Rx | USART_Mode_Tx;	 
     USART_Init(USART2, &USART_InitStructure);
 		
-//		USART_ITConfig(USART2, USART_IT_TXE, ENABLE);
+
     USART_ITConfig(USART2, USART_IT_RXNE, ENABLE);  //
     USART_Cmd(USART2, ENABLE);                    
 }
@@ -138,10 +138,8 @@ void USART2_IRQHandler(void)
 				 }				
 				 if(Res==0x0a)                                     //0x0d:'\r'  0x0a:'\n'
 				 {
-					 //zzzzzzzzzUsart_SendString(USART2,(char *)USART2_RX_BUF);
            USART2_RX_STA=1;                                 //接收到了数据
-					// USART2_Rx_num++;                                 //有多少条指令等待解析
-					 //TIM_Cmd(TIM3, ENABLE);                         //使能 TIM3  在定时器中断里面进行指令解析，只有在读取到指令的时候才开启定时器*/									 
+					// USART2_Rx_num++;                                 //有多少条指令等待解析								 
 				 }
 		}
 
@@ -207,6 +205,7 @@ void  SendChar(uchar t)
 			item_r=cJSON_GetObjectItem(cjson,"r");        //获取一个对象"r"
 		  if(item_r!= NULL)                             //判断是否有对象“r”
 			{
+				//************************************************************************解析工件坐标*************************************
 				item_pos=cJSON_GetObjectItem(item_r,"pos");
 			  if(item_pos!= NULL)                          //判断是否有对象“pos”
 				{
@@ -236,10 +235,35 @@ void  SendChar(uchar t)
 						 control_panel_pram.B_value=item->valuedouble;
 					 }
 				}
+				//*******************************************************************************解析解析坐标***********************
 				item_pos=cJSON_GetObjectItem(item_r,"mpo");
 			  if(item_pos!= NULL)                          //判断是否有对象“pos”
 				{
-					
+					item=cJSON_GetObjectItem(item_pos,"x");      //获取一个对象"x"
+					 if(item!=NULL)
+					 {
+						 control_panel_pram.X_Mac_value=item->valuedouble;
+					 }
+					 item=cJSON_GetObjectItem(item_pos,"y");      //获取一个对象"y"
+					 if(item!=NULL)
+					 {
+						 control_panel_pram.Y_Mac_value=item->valuedouble;
+					 }
+					 item=cJSON_GetObjectItem(item_pos,"z");      //获取一个对象"z"
+					 if(item!=NULL)
+					 {
+						 control_panel_pram.Z_Mac_value=item->valuedouble;
+					 }
+					 item=cJSON_GetObjectItem(item_pos,"a");      //获取一个对象"a"
+					 if(item!=NULL)
+					 {
+						 control_panel_pram.A_Mac_value=item->valuedouble;
+					 }
+					 item=cJSON_GetObjectItem(item_pos,"b");      //获取一个对象"b"
+					 if(item!=NULL)
+					 {
+						 control_panel_pram.B_Mac_value=item->valuedouble;
+					 }				
 				}
 			}		
 		}

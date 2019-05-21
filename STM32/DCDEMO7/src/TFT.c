@@ -5,6 +5,8 @@
 #include "flash.h"
 #include "ulitity.h"
 
+
+extern uint8  Work_Page_Status;
 extern Override override;
 extern Speed_Control Speed;
 extern Pram_Status pram_status;
@@ -163,6 +165,8 @@ void Power_On_Set(void)
 	
 	SetButtonValue(2,13,0);          //开始按钮是松开状态
 	SetButtonValue(2,14,1);          //停止按钮是按下状态
+	override.Override_num=0.01;       //开机默认倍率
+	Work_Page_Status=Working_Page;    //开机进入加工页面
 	
 
 
@@ -235,7 +239,6 @@ void Safe_Z_process(uint8 state)
 		SetButtonValue(1,1,1);
 	  pram_status.Safe_Z_last_status=1;
 		Usart_SendString(USART2,"Safe_z:mode2"); 
-		
 	}
 	else
 	{
@@ -279,6 +282,15 @@ void Unit_Change_process(uint8 state)
 	}
   FLASH_WriteByte(START_ADDR4,(uint16)pram_status.Unit_Change_last_status);
 
+}
+
+//恢复上一次设置状态
+void Return_last_status(void)
+{
+  Speaker_Key_Process(pram_status.Voice_last_status);	        //设置页面语音提示按钮状态处理程序
+	Safe_Z_process(pram_status.Safe_Z_last_status);             //设置页面安全Z按钮触发后处理程序
+	Auto_Knife_process(pram_status.Auto_Knife_last_status);     //设置页面自动对刀按钮触发后处理程序
+	Unit_Change_process(pram_status.Unit_Change_last_status);   //设置页面单位切换按钮触发后处理程序
 }
 //控制面板坐标切换控制
 void Coordinate_Change_Process(void)

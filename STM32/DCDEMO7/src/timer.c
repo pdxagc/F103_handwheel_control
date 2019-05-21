@@ -9,7 +9,7 @@
 extern int32 Pulses_counter,Pulses_num_temp;
 extern Control_Panel_Pram control_panel_pram;
 extern uint8 Send_cooddinate_status; 
-uint8 Counter_Dir=0;          //计数方向,0:正转，1：反转
+//uint8 Counter_Dir=0;          //计数方向,0:正转，1：反转
 uint8 TIME3_Counter=0;         //定时器3溢出计数
 
 
@@ -27,7 +27,7 @@ void TIME2_Init(void)
 	RCC_APB1PeriphClockCmd(RCC_APB1Periph_TIM2, ENABLE);     //使能TIM2时钟 
 	
 	//配置定时器3
-	TIM_TimeBaseStructure.TIM_Period = 1999;                     //设置自动重装载寄存器周期的值
+	TIM_TimeBaseStructure.TIM_Period = 1999;                    //设置自动重装载寄存器周期的值
 	TIM_TimeBaseStructure.TIM_Prescaler =7199;                  //设置时钟频率除数的预分频值
 	TIM_TimeBaseStructure.TIM_ClockDivision = TIM_CKD_DIV1;     //设置时钟分割
 	TIM_TimeBaseStructure.TIM_CounterMode = TIM_CounterMode_Up; //TIM 向上计数
@@ -130,13 +130,56 @@ void TIME4_Init(void)
 	
 }
 
+//定时器2中断函数
+void TIM2_IRQHandler(void)
+{
+	if (TIM_GetITStatus(TIM2, TIM_IT_Update) != RESET) //检查 TIM2 更新中断发生与否
+	{
+		TIM_ClearITPendingBit(TIM2, TIM_IT_Update ); //清除 TIM2 更新中断标志
+	  Send_cooddinate_status=1;	                   //200ms向主机发送过一次坐标
+	}
+}
+
+//定时器 3 中断服务程序
+void TIM3_IRQHandler(void) //TIM3 中断
+{
+	if (TIM_GetITStatus(TIM3, TIM_IT_Update) != RESET) //检查 TIM3 更新中断发生与否
+	{
+		TIME3_Counter++;
+		TIM_ClearITPendingBit(TIM3, TIM_IT_Update );                  //清除 TIM3 更新中断标志
+    //void uart2_command_handle(void);
+		if(TIME3_Counter)
+		{
+		  Usart_SendString(USART2,"{\"pos\":null\r\n}");              //向主机询问工件坐标
+		}
+		if(TIME3_Counter==2)
+		{
+	    Usart_SendString(USART2,"{\"mpo\":null\r\n}");		           //向主机询问机械坐标
+			TIME3_Counter=0;
+		}
+		
+	}
+}
+
+//定时器 4 中断服务程序
+void TIM4_IRQHandler(void)
+{   
+    if(TIM4->SR&0x0001)         //溢出中断
+    {
+		    
+    }   
+    TIM4->SR&=~(1<<0);//清除中断标志位     
+}
+
+
+
 //计算脉冲数量
 void Get_Pulses_num(void)
 {
 	
 	uint16 counter_num1,counter_num2;
 	
-	Counter_Dir=(TIM4->CR1&0x10)>>4;
+	//Counter_Dir=(TIM4->CR1&0x10)>>4;
 	counter_num1=TIM_GetCounter(TIM4);	
 	if((counter_num1%4)!=0)
 	{
@@ -183,43 +226,3 @@ void Pulses_num_Clear(void)
 }
 
 
-//定时器2中断函数
-void TIM2_IRQHandler(void)
-{
-	if (TIM_GetITStatus(TIM2, TIM_IT_Update) != RESET) //检查 TIM2 更新中断发生与否
-	{
-		TIM_ClearITPendingBit(TIM2, TIM_IT_Update ); //清除 TIM2 更新中断标志
-	  Send_cooddinate_status=1;	    //200ms向主机发送过一次坐标
-	}
-}
-
-//定时器 3 中断服务程序
-void TIM3_IRQHandler(void) //TIM3 中断
-{
-	if (TIM_GetITStatus(TIM3, TIM_IT_Update) != RESET) //检查 TIM3 更新中断发生与否
-	{
-		TIME3_Counter++;
-		TIM_ClearITPendingBit(TIM3, TIM_IT_Update ); //清除 TIM3 更新中断标志
-    //void uart2_command_handle(void);
-		if(TIME3_Counter)
-		{
-		  Usart_SendString(USART2,"{\"pos\":null\r\n}");              //向主机询问工件坐标
-		}
-		if(TIME3_Counter==2)
-		{
-	    Usart_SendString(USART2,"{\"mpo\":null\r\n}");		           //向主机询问机械坐标
-			TIME3_Counter=0;
-		}
-		
-	}
-}
-
-//定时器 4 中断服务程序
-void TIM4_IRQHandler(void)
-{   
-    if(TIM4->SR&0x0001)         //溢出中断
-    {
-		    
-    }   
-    TIM4->SR&=~(1<<0);//清除中断标志位     
-}
