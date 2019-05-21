@@ -20,3 +20,9 @@
 .\obj\main.o: ..\inc\hw_config.h
 .\obj\main.o: ..\inc\ulitity.h
 .\obj\main.o: C:\Keil_v5\ARM\ARMCC\Bin\..\include\string.h
+.\obj\main.o: ..\inc\flash.h
+.\obj\main.o: ..\inc\timer.h
+.\obj\main.o: ..\inc\exti.h
+.\obj\main.o: ..\..\..\Libraries\STM32F10x_StdPeriph_Driver\inc\stm32f10x_tim.h
+.\obj\main.o: ..\inc\tft.h
+.\obj\main.o: ..\inc\malloc.h

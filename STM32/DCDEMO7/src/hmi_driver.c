@@ -939,7 +939,7 @@ void SetTextValue(uint16 screen_id,uint16 control_id,uchar *str)
 
 #if FIRMWARE_VER>=908
 /*! 
-*  \brief     设置文本为整数值，要求FIRMWARE_VER>=908
+*  \brief  设置文本为整数值，要求FIRMWARE_VER>=908
 *  \param  screen_id 画面ID
 *  \param  control_id 控件ID
 *  \param  value 文本数值

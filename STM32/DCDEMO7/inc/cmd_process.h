@@ -29,26 +29,7 @@
 #define PTR2U16(PTR) ((((uint8 *)(PTR))[0]<<8)|((uint8 *)(PTR))[1])  //从缓冲区取16位数据
 #define PTR2U32(PTR) ((((uint8 *)(PTR))[0]<<24)|(((uint8 *)(PTR))[1]<<16)|(((uint8 *)(PTR))[2]<<8)|((uint8 *)(PTR))[3])  //从缓冲区取32位数据
 
-enum Page_Status
-{
-	Working_Page,                //加工页面
-	Setting_page,                //设置页面
-	ControlPanel_Page,           //控制面板页面
-	Return_WorkPiece_Zero_Page,  //回工件零页面
-	Jump_Work_Page,              //跳行加工
-	File_Manage_Page,            //文件管理页面
-	Leading_In_Page,             //导入页面
-	Leading_Out_Pgae,            //导出页面
-	Delete_Page,                 //删除页面
-	Storage_View_Page,           //内存空间预览页面
-	Net_Account_Manage_Page,     //连接网络与立即登录页面
-	Choose_WiFi_Page,            //选择WIFi页面
-	Disconnet_and_SignIn_Page,   //断开连接与立即登录页面
-	Disconnect_and_SignOut_Page, //断开连接与退出登录页面
-	Disconnect_Remind_Page,      //断开网络提醒页面
-	SignOut_Remind_Page,         //退出登录提醒页面
-	Save_Pram_Page               //保存参数设置提醒页面
-};
+
 
 
 
@@ -134,7 +115,9 @@ void NotifyButton(uint16 screen_id, uint16 control_id, uint8 state);
 *  \param control_id 控件ID
 *  \param str 文本控件内容
 */
-void NotifyText(uint16 screen_id, uint16 control_id, uint32 str);
+
+float NotifyText(uint8 *str);
+//void NotifyText(uint16 screen_id, uint16 control_id, uint32 str);
 /*!                                                                              
 *  \brief  进度条控件通知                                                       
 *  \details  调用GetControlValue时，执行此函数                                  

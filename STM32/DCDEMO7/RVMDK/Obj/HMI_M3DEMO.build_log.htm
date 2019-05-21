@@ -5,7 +5,7 @@
 <h2>Tool Versions:</h2>
 IDE-Version: ¦ÌVision V5.25.3.0
 Copyright (C) 2018 ARM Ltd and ARM Germany GmbH. All rights reserved.
-License Information: pdx PX, Microsoft, LIC=03C74-F4NN3-UH08H-WKSLK-V0YQ7-0RNRI
+License Information: yuanhaiqingmu AutoBVT, Microsoft, LIC=03CWF-6WH9Y-FIB52-9ZCC3-1MV3W-AE92Z
  
 Tool Versions:
 Toolchain:       MDK-ARM Plus  Version: 5.21a
@@ -21,44 +21,56 @@ Target DLL:      STLink\ST-LINKIII-KEIL_SWO.dll V2.0.18.0
 Dialog DLL:      TARMSTM.DLL V1.65.0.0
  
 <h2>Project:</h2>
-F:\CNC_F103_control\STM32\DCDEMO7\RVMDK\DCDEMO7.uvprojx
-Project File Date:  04/24/2019
+F:\CNC_F103_control_New_mode\STM32\DCDEMO7\RVMDK\DCDEMO7.uvprojx
+Project File Date:  05/20/2019
 
 <h2>Output:</h2>
 *** Using Compiler 'V5.06 update 3 (build 300)', folder: 'C:\Keil_v5\ARM\ARMCC\Bin'
-Build target 'DCDEMO'
+Rebuild target 'DCDEMO'
+compiling hw_config.c...
+compiling stm32f10x_it.c...
 compiling main.c...
-..\src\main.c(650): warning:  #167-D: argument of type "unsigned char *" is incompatible with parameter of type "char *restrict"
-          sprintf(input_buf,"%s",msg->param);
-..\src\main.c(639): warning:  #177-D: variable "input_string" was declared but never referenced
-          char input_string;
-..\src\main.c(41): warning:  #177-D: variable "current_screen_id" was declared but never referenced
-  static uint16 current_screen_id = 0;                                  //µ±Ç°»­??ID
-..\src\main.c(43): warning:  #177-D: variable "WiFi_state" was declared but never referenced
-  static uint8 WiFi_state=0;                                            //WiFI×´Ì¬?ê¼?
-..\src\main.c(44): warning:  #177-D: variable "BT_state" was declared but never referenced
-  static uint8 BT_state=0;                                              //À¶??×´Ì¬?ê¼?
-..\src\main.c(45): warning:  #177-D: variable "Account_state" was declared but never referenced
-  static uint8 Account_state=0;                                         //?Ë»§µ???×´Ì¬?ê¼?
-..\src\main.c: 6 warnings, 0 errors
+compiling ulitity.c...
+compiling flash.c...
+compiling exti.c...
+compiling timer.c...
+compiling TFT.c...
+compiling cJSON.c...
+compiling malloc.c...
+compiling stm32f10x_usart.c...
+compiling misc.c...
+compiling stm32f10x_gpio.c...
+compiling stm32f10x_rcc.c...
+compiling stm32f10x_flash.c...
+compiling stm32f10x_exti.c...
+compiling stm32f10x_tim.c...
+assembling startup_stm32f10x_md.s...
+compiling system_stm32f10x.c...
+compiling core_cm3.c...
+compiling hmi_user_uart.c...
+..\src\hmi_user_uart.c(202): warning:  #177-D: variable "arrayItem" was declared but never referenced
+         cJSON *cjson,*item_r,*item_pos,*item,*arrayItem;          //¶¨??cJSON?á¹??å±?Á¿
+..\src\hmi_user_uart.c: 1 warning, 0 errors
+compiling cmd_queue.c...
+compiling hmi_driver.c...
 linking...
-Program Size: Code=5040 RO-data=268 RW-data=68 ZI-data=1708  
+Program Size: Code=22804 RO-data=332 RW-data=108 ZI-data=6972  
 FromELF: creating hex file...
-".\Obj\HMI_M3DEMO.axf" - 0 Error(s), 6 Warning(s).
+".\Obj\HMI_M3DEMO.axf" - 0 Error(s), 1 Warning(s).
 
 <h2>Software Packages used:</h2>
 
 Package Vendor: Keil
-                http://www.keil.com/pack/Keil.STM32F1xx_DFP.2.2.0.pack
-                Keil.STM32F1xx_DFP.2.2.0
+                http://www.keil.com/pack/Keil.STM32F1xx_DFP.2.3.0.pack
+                Keil.STM32F1xx_DFP.2.3.0
                 STMicroelectronics STM32F1 Series Device Support, Drivers and Examples
 
 <h2>Collection of Component include folders:</h2>
   .\RTE\_DCDEMO
-  C:\Keil_v5\ARM\PACK\Keil\STM32F1xx_DFP\2.2.0\Device\Include
+  C:\Keil_v5\ARM\PACK\Keil\STM32F1xx_DFP\2.3.0\Device\Include
 
 <h2>Collection of Component Files used:</h2>
-Build Time Elapsed:  00:00:02
+Build Time Elapsed:  00:00:08
 </pre>
 </body>
 </html>
