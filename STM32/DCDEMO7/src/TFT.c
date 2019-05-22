@@ -4,6 +4,8 @@
 #include "hmi_driver.h"
 #include "flash.h"
 #include "ulitity.h"
+#include "cJSON.h"
+#include "stdlib.h"
 
 
 extern uint8  Work_Page_Status;
@@ -292,6 +294,16 @@ void Return_last_status(void)
 	Auto_Knife_process(pram_status.Auto_Knife_last_status);     //设置页面自动对刀按钮触发后处理程序
 	Unit_Change_process(pram_status.Unit_Change_last_status);   //设置页面单位切换按钮触发后处理程序
 }
+
+//保存当前设置
+void Save_Set(void)
+{
+  Speaker_Key_Process(pram_status.voice_button_status);     //语音提示按钮处理函数
+	Safe_Z_process(pram_status.Safe_Z_button_satus);           //安全Z触发处理函数
+	Auto_Knife_process(pram_status.Auto_Knife_button_status);  //自动对刀按钮触发后处理程序
+	Unit_Change_process(pram_status.Unit_Change_button_status); //单位切换按钮触发后处理程序
+
+}
 //控制面板坐标切换控制
 void Coordinate_Change_Process(void)
 {
@@ -430,22 +442,42 @@ void TFT_Show_coordanate_value(void)
 
 }
 
-//向主机发送坐标
-void Send_Coordinate_to_Host_Machine(void)
+//向主机发送X轴坐标
+void Send_X_Coordinate_to_Host(void)
 {
-	char buf2[20];
-	sprintf(buf2,"X position:%f",control_panel_pram.X_value);              
-  Usart_SendString(USART2,(char *)buf2);                      //向主机发送X轴坐标
-	
-	sprintf(buf2,"Y position:%f",control_panel_pram.Y_value);              
-	Usart_SendString(USART2,(char *)buf2);                      //向主机发送Y轴坐标
-	
-	sprintf(buf2,"Z position:%f",control_panel_pram.Z_value);              
-	Usart_SendString(USART2,(char *)buf2);                       //向主机发送Z轴坐标
-	
-	sprintf(buf2,"A position:%f",control_panel_pram.A_value);              
-	Usart_SendString(USART2,(char *)buf2);                       //向主机发送A轴坐标
-	
-	sprintf(buf2,"B position:%f",control_panel_pram.B_value);              
-  Usart_SendString(USART2,(char *)buf2);                       //向主机发送B轴坐标
+	char buf1[20];
+	sprintf((char *)buf1,"{\"jogx\":%.2f%s",control_panel_pram.X_value,"}\\r\\n");
+	Usart_SendString(USART2,(char *)buf1);                           //向主机发送X轴坐标
+}
+
+//向主机发送Y轴坐标
+void Send_Y_Coordinate_to_Host(void)
+{
+  char buf1[20];
+	sprintf((char *)buf1,"{\"jogy\":%.2f%s",control_panel_pram.Y_value,"}\\r\\n");
+	Usart_SendString(USART2,(char *)buf1);                           //向主机发送Y轴坐标
+}
+
+//向主机发送Z轴坐标
+void Send_Z_Coordinate_to_Host(void)
+{
+  char buf1[20];
+	sprintf((char *)buf1,"{\"jogz\":%.2f%s",control_panel_pram.Z_value,"}\\r\\n");
+	Usart_SendString(USART2,(char *)buf1);                           //向主机发送Z轴坐标
+}
+
+//向主机发送A轴坐标
+void Send_A_Coordinate_to_Host(void)
+{
+  char buf1[20];
+	sprintf((char *)buf1,"{\"joga\":%.2f%s",control_panel_pram.A_value,"}\\r\\n");
+	Usart_SendString(USART2,(char *)buf1);                           //向主机发送A轴坐标
 } 
+
+//向主机发送B轴坐标
+void Send_B_Coordinate_to_Host(void)
+{
+  char buf1[20];
+	sprintf((char *)buf1,"{\"jogb\":%.2f%s",control_panel_pram.B_value,"}\\r\\n");
+	Usart_SendString(USART2,(char *)buf1);                           //向主机发送B轴坐标
+}

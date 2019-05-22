@@ -18,3 +18,6 @@
 .\obj\tft.o: ..\inc\hmi_driver.h
 .\obj\tft.o: ..\inc\flash.h
 .\obj\tft.o: ..\inc\ulitity.h
+.\obj\tft.o: ..\inc\cJSON.h
+.\obj\tft.o: C:\Keil_v5\ARM\ARMCC\Bin\..\include\stddef.h
+.\obj\tft.o: C:\Keil_v5\ARM\ARMCC\Bin\..\include\stdlib.h

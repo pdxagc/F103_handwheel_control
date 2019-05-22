@@ -150,11 +150,11 @@ void TIM3_IRQHandler(void) //TIM3 中断
     //void uart2_command_handle(void);
 		if(TIME3_Counter)
 		{
-		  Usart_SendString(USART2,"{\"pos\":null\r\n}");              //向主机询问工件坐标
+		  Usart_SendString(USART2,"{\"pos\":null}\\r\\n");              //向主机询问工件坐标
 		}
 		if(TIME3_Counter==2)
 		{
-	    Usart_SendString(USART2,"{\"mpo\":null\r\n}");		           //向主机询问机械坐标
+	    Usart_SendString(USART2,"{\"mpo\":null}\\r\\n");		           //向主机询问机械坐标
 			TIME3_Counter=0;
 		}
 		

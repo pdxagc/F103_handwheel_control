@@ -97,21 +97,21 @@ typedef struct Control_Panel_Pram
 	int32  Z_Pulses_counter;              //Z轴脉冲数量保存
 	int32  A_Pulses_counter;              //A轴脉冲数量保存
 	int32  B_Pulses_counter;              //B轴脉冲数量保存
-	float  X_value;                       //X轴工件坐标值
-	float  X_value_temp;
-	float  Y_value;                       //Y轴工件坐标值
-	float  Y_value_temp;
-	float  Z_value;                       //Z轴工件坐标值
-	float  Z_value_temp;
-	float  A_value;                       //A轴工件坐标值
-	float  A_value_temp;
-	float  B_value;                       //B轴工件坐标值
-	float  B_value_temp;
-	float  X_Mac_value;                   //X轴机械坐标值
-	float  Y_Mac_value;                   //Y轴机械坐标值
-	float  Z_Mac_value;                   //Z轴机械坐标值
-	float  A_Mac_value;                   //A轴机械坐标值
-	float  B_Mac_value;                   //B轴机械坐标值
+	double  X_value;                       //X轴工件坐标值
+  double  X_value_temp;
+	double  Y_value;                       //Y轴工件坐标值
+	double  Y_value_temp;
+	double  Z_value;                       //Z轴工件坐标值
+	double  Z_value_temp;
+	double  A_value;                       //A轴工件坐标值
+	double  A_value_temp;
+	double  B_value;                       //B轴工件坐标值
+	double  B_value_temp;
+	double  X_Mac_value;                   //X轴机械坐标值
+	double  Y_Mac_value;                   //Y轴机械坐标值
+	double  Z_Mac_value;                   //Z轴机械坐标值
+	double  A_Mac_value;                   //A轴机械坐标值
+	double  B_Mac_value;                   //B轴机械坐标值
 }Control_Panel_Pram;
 
 
@@ -189,6 +189,9 @@ void Unit_Change_process(uint8 state);
 //恢复上一次设置状态
 void Return_last_status(void);
 
+//保存当前设置
+void Save_Set(void);
+
 //控制面板坐标切换控制
 void Coordinate_Change_Process(void);
 
@@ -198,8 +201,23 @@ void Override_Change_Process(void);
 //加工时坐标、文件名等显示
 void TFT_Show_coordanate_value(void);
 
-//向主机发送坐标
-void Send_Coordinate_to_Host_Machine(void);
+////向主机发送坐标
+//void Send_Coordinate_to_Host_Machine(void);
+
+//向主机发送X轴坐标
+void Send_X_Coordinate_to_Host(void);
+
+//向主机发送Y轴坐标
+void Send_Y_Coordinate_to_Host(void);
+
+//向主机发送Z轴坐标
+void Send_Z_Coordinate_to_Host(void);
+
+//向主机发送A轴坐标
+void Send_A_Coordinate_to_Host(void);
+
+//向主机发送B轴坐标
+void Send_B_Coordinate_to_Host(void);
 
 #endif
 

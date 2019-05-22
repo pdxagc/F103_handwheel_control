@@ -197,7 +197,7 @@ void  SendChar(uchar t)
  
  void uart2_command_handle(void)
  {
-	 cJSON *cjson,*item_r,*item_pos,*item,*arrayItem;          //定义cJSON结构体变量
+	 cJSON *cjson,*item_r,*item_pos,*item;//*arrayItem;          //定义cJSON结构体变量
 	 char *Rec_data=(char *)USART2_RX_BUF;   //定义一个指针指向USART2接收数据buf
 	 cjson=cJSON_Parse(Rec_data);            //把接收到的数据打包JSON字符串,成功返回一个指向内存块中的cJSON的指针，失败返回NULL
 	 if(cjson!= NULL)                         //判断cJSON_Parse函数返回值,确定是否打包成功

@@ -143,19 +143,16 @@ int main()
 			break;
 			case Save_Pram_Page:  //****************************************************提示是否保存参数设置****************************************************************************************
 			{
-				if(state.Work_state==Stop)      //停止加工
+				if(state.Work_state==Stop)                                   //停止加工
 				{
-					if(pram_status.Screen_ID21_Setting_Sure)                    //“确定按钮”按下
+					if(pram_status.Screen_ID21_Setting_Sure)                   //“确定按钮”按下
 					{
-						Speaker_Key_Process(pram_status.voice_button_status);     //语音提示按钮处理函数
-						Safe_Z_process(pram_status.Safe_Z_button_satus);           //安全Z触发处理函数
-						Auto_Knife_process(pram_status.Auto_Knife_button_status);  //自动对刀按钮触发后处理程序
-						Unit_Change_process(pram_status.Unit_Change_button_status); //单位切换按钮触发后处理程序
+						Save_Set();                                              //保存设置
 						Work_Page_Status=Working_Page;
 					}
-					if(pram_status.Screen_ID21_Setting_concel)                    //取消按钮按下
+					if(pram_status.Screen_ID21_Setting_concel)                 //取消按钮按下
 					{
-						Return_last_status();                                      //恢复上一次设置状态
+						Return_last_status();                                    //恢复上一次设置状态
 						Work_Page_Status=Working_Page;					
 					}	
 			  }				
@@ -164,9 +161,9 @@ int main()
 			case ControlPanel_Page:  //******************************************************控制面板页面*****************************************************************************************
 			{
 				char buf2[20];
-        if(state.Work_state==Stop)	                          //停止加工
+        if(state.Work_state==Stop)	                           //停止加工
 				{					
-					if(control_panel_pram.X_press)                       //X轴选定状态***************************************************************                   
+					if(control_panel_pram.X_press)                        //***********************X轴选定状态******************************************************                 
 					{
 						if(control_panel_pram.Clear_Button==0 && control_panel_pram.All_Spindle_Clear_Button==0)
 						{
@@ -201,12 +198,17 @@ int main()
 							
 							Pulses_num_Clear();                    //脉冲数量清零
 						  All_Workpiece_coordinate_clear();      //对所有轴工件坐标清零							
-							XYZAB_button_reset();                  //XYZAB坐标按钮复位
+//							XYZAB_button_reset();                  //XYZAB坐标按钮复位
 							control_panel_pram.All_Spindle_Clear_Button=0;
+						}
+						if(Send_cooddinate_status)
+						{          
+							Send_X_Coordinate_to_Host();          //向主机发送X轴坐标	
+							Send_cooddinate_status=0;
 						}
 						
 					}
-					else if(control_panel_pram.Y_press)                   //Y轴选定状态*******************************************************
+					else if(control_panel_pram.Y_press)                   //**********************Y轴选定状态*******************************************************
 					{
 						if(control_panel_pram.Clear_Button==0 && control_panel_pram.All_Spindle_Clear_Button==0)
 						{
@@ -241,12 +243,16 @@ int main()
 						{
 							Pulses_num_Clear();                    //脉冲数量清零
 						  All_Workpiece_coordinate_clear();      //对所有工件坐标清零														
-							XYZAB_button_reset();                   //XYZAB坐标按钮复位
+//							XYZAB_button_reset();                   //XYZAB坐标按钮复位
 							control_panel_pram.All_Spindle_Clear_Button=0;
 						}
-						
+						if(Send_cooddinate_status)
+						{          
+							Send_Y_Coordinate_to_Host();          //向主机发送Y轴坐标	
+							Send_cooddinate_status=0;
+						}
 					}
-					else if(control_panel_pram.Z_press)                   //Z轴选定状态**********************************************************
+					else if(control_panel_pram.Z_press)                   //**********************Z轴选定状态*******************************************************
 					{
 						if(control_panel_pram.Clear_Button==0 && control_panel_pram.All_Spindle_Clear_Button==0)
 						{
@@ -281,12 +287,16 @@ int main()
 						{
 							Pulses_num_Clear();                    //脉冲数量清零
 						  All_Workpiece_coordinate_clear();      //对所有工件坐标清零								
-							XYZAB_button_reset();                  //XYZAB坐标按钮复位
+//							XYZAB_button_reset();                  //XYZAB坐标按钮复位
 							control_panel_pram.All_Spindle_Clear_Button=0;
 						}
-					
+					  if(Send_cooddinate_status)
+						{          
+							Send_Z_Coordinate_to_Host();          //向主机发送Z轴坐标	
+							Send_cooddinate_status=0;
+						}
 					}
-					else if(control_panel_pram.A_press)                   //A轴选定状态************************************************************************
+					else if(control_panel_pram.A_press)                   //***********************A轴选定状态******************************************************
 					{
 						if(control_panel_pram.Clear_Button==0 && control_panel_pram.All_Spindle_Clear_Button==0)
 						{
@@ -322,12 +332,16 @@ int main()
 						{
 							Pulses_num_Clear();                    //脉冲数量清零
 						  All_Workpiece_coordinate_clear();      //对所有工件坐标清零								
-							XYZAB_button_reset();                  //XYZAB坐标按钮复位
+//							XYZAB_button_reset();                  //XYZAB坐标按钮复位
 							control_panel_pram.All_Spindle_Clear_Button=0;
 						}
-																							
+						if(Send_cooddinate_status)
+						{          
+							Send_A_Coordinate_to_Host();          //向主机发送A轴坐标	
+							Send_cooddinate_status=0;
+						}																	
 					}
-					else if(control_panel_pram.B_press)                   //B轴选定状态*****************************************************************************
+					else if(control_panel_pram.B_press)                   //**********************B轴选定状态********************************************************
 					{
 						if(control_panel_pram.Clear_Button==0 && control_panel_pram.All_Spindle_Clear_Button==0)
 						{
@@ -362,36 +376,35 @@ int main()
 						{
 							Pulses_num_Clear();                  //脉冲数量清零
 						  All_Workpiece_coordinate_clear();    //对所有工件坐标清零								
-							XYZAB_button_reset();                //XYZAB坐标按钮复位
+//							XYZAB_button_reset();                //XYZAB坐标按钮复位
 							control_panel_pram.All_Spindle_Clear_Button=0;
-						}				
+						}	
+            if(Send_cooddinate_status)
+						{          
+							Send_B_Coordinate_to_Host();          //向主机发送B轴坐标	
+							Send_cooddinate_status=0;
+						}						
 					}
 					
 					if(control_panel_pram.X_press || control_panel_pram.Y_press || control_panel_pram.Z_press || control_panel_pram.A_press || control_panel_pram.B_press)
 					{
-						TIM_Cmd(TIM2, ENABLE);                           //使能TIM2，定时向主机发送坐标
-						if(Send_cooddinate_status)
-						{
-					     Send_Coordinate_to_Host_Machine();            //向主机发送坐标	
-							 Send_cooddinate_status=0;
-						}							
+						TIM_Cmd(TIM2, ENABLE);                           //使能TIM2，定时向主机发送坐标							
 					}
 					else 
 					{
-					   TIM_Cmd(TIM2, DISABLE);
+					   TIM_Cmd(TIM2, DISABLE);                         //禁止TIM2，禁止向主机发送坐标
+						 Send_cooddinate_status=0;
 					}
           					
 			  }
 				else                                                 //机器处于加工状态中
 				{
-					 TIM_Cmd(TIM3, ENABLE);                        //使能 TIM3
-					// TIM_Cmd(TIM4, DISABLE);                       //禁止TIM4
-					 TFT_Show_coordanate_value();			             //显示工件和机械坐标
+					 TIM_Cmd(TIM3, ENABLE);                            //使能 TIM3
+					 TFT_Show_coordanate_value();			                 //显示工件和机械坐标
 					
-					 SetTextValue(0,21,(uchar *)file_name);        //显示正在加载的文件名	         				
+					 SetTextValue(0,21,(uchar *)file_name);            //显示正在加载的文件名	         				
 					 sprintf(Working_line_buf,"%d",Working_line);  
-					 SetTextValue(0,22,(uchar *)Working_line_buf); //显示加工行数，需要向主机询问
-				
+					 SetTextValue(0,22,(uchar *)Working_line_buf);     //显示加工行数，需要向主机询问			
 				}
 				
 			}break;
@@ -775,7 +788,9 @@ void ProcessMessage( PCTRL_MSG msg, uint16 size )
 										else                            //停止加工
 										{										
 												control_panel_pram.All_Spindle_Clear_Button=1;
-												TIM_Cmd(TIM4, DISABLE);       //关闭TIM4定时器
+//												TIM_Cmd(TIM4, DISABLE);       //关闭TIM4定时器
+//											  TIM_Cmd(TIM2, DISABLE);        //禁止TIM2，禁止向主机发送坐标
+//						            Send_cooddinate_status=0;
 										}
 									}break;
 									case 6:                                            //回工件零按钮触发
