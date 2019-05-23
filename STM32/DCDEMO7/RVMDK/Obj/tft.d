@@ -21,3 +21,4 @@
 .\obj\tft.o: ..\inc\cJSON.h
 .\obj\tft.o: C:\Keil_v5\ARM\ARMCC\Bin\..\include\stddef.h
 .\obj\tft.o: C:\Keil_v5\ARM\ARMCC\Bin\..\include\stdlib.h
+.\obj\tft.o: ..\inc\timer.h

@@ -6,9 +6,11 @@
 #include "ulitity.h"
 #include "cJSON.h"
 #include "stdlib.h"
+#include "timer.h"
 
 
 extern uint8  Work_Page_Status;
+extern int32 Pulses_counter;              // 手轮脉冲数量
 extern Override override;
 extern Speed_Control Speed;
 extern Pram_Status pram_status;
@@ -481,3 +483,72 @@ void Send_B_Coordinate_to_Host(void)
 	sprintf((char *)buf1,"{\"jogb\":%.2f%s",control_panel_pram.B_value,"}\\r\\n");
 	Usart_SendString(USART2,(char *)buf1);                           //向主机发送B轴坐标
 }
+
+
+//计算脉冲并显示X轴坐标
+void Show_X_Coordinata(void)
+{
+	char buf2[20];
+	Get_Pulses_num();   //计算脉冲个数							
+	control_panel_pram.X_Pulses_counter=Pulses_counter;						
+	control_panel_pram.X_value=control_panel_pram.X_value_temp+Pulses_counter*override.Override_num;
+	sprintf((char *)buf2,"%09.2f",control_panel_pram.X_value);
+	SetTextValue(2,17,(uchar *)buf2);	        //在手轮上显示工件坐标
+	SetTextValue(0,16,(uchar *)buf2);         //在手轮上显示工件坐标	
+}
+
+
+//计算脉冲并显示Y轴坐标
+void Show_Y_Coordinata(void)
+{
+	char buf2[20];
+	Get_Pulses_num();
+	control_panel_pram.Y_Pulses_counter=Pulses_counter;
+	control_panel_pram.Y_value=control_panel_pram.Y_value_temp+Pulses_counter*override.Override_num;
+	sprintf((char *)buf2,"%09.2f",control_panel_pram.Y_value);
+	SetTextValue(2,18,(uchar *)buf2);
+	SetTextValue(0,17,(uchar *)buf2);         //在手轮上显示工件坐标
+
+}
+
+//计算脉冲并显示Z轴坐标
+void Show_Z_Coordinata(void)
+{
+	char buf2[20];
+	Get_Pulses_num();
+	control_panel_pram.Z_Pulses_counter=Pulses_counter;
+	control_panel_pram.Z_value=control_panel_pram.Z_value_temp+Pulses_counter*override.Override_num;
+	sprintf((char *)buf2,"%09.2f",control_panel_pram.Z_value);
+	SetTextValue(2,19,(uchar *)buf2);
+	SetTextValue(0,18,(uchar *)buf2);        //在手轮上显示工件坐标
+	
+
+}
+
+//计算脉冲并显示A轴坐标
+void Show_A_Coordinata(void)
+{
+	char buf2[20];
+	Get_Pulses_num();
+	control_panel_pram.A_Pulses_counter=Pulses_counter;
+	control_panel_pram.A_value=control_panel_pram.A_value_temp+Pulses_counter*override.Override_num;
+	sprintf((char *)buf2,"%09.2f",control_panel_pram.A_value);
+	SetTextValue(2,20,(uchar *)buf2);
+	SetTextValue(0,19,(uchar *)buf2);         //在手轮上显示工件坐标
+	
+
+}
+
+//计算脉冲并显示B轴坐标
+void Show_B_Coordinata(void)
+{
+	char buf2[20];
+	Get_Pulses_num();
+	control_panel_pram.B_Pulses_counter=Pulses_counter;
+	control_panel_pram.B_value=control_panel_pram.B_value_temp+Pulses_counter*override.Override_num;
+	sprintf((char *)buf2,"%09.2f",control_panel_pram.B_value);
+	SetTextValue(2,21,(uchar *)buf2);
+	SetTextValue(0,20,(uchar *)buf2);         //在手轮上显示工件坐标
+
+}
+

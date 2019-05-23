@@ -135,7 +135,23 @@ typedef struct Override
 	float Override_num_temp_B;                    //保存B轴倍率	
 }Override;
 
+typedef struct Return_Workpiece
+{
+	uint8 all_spindle;            //全轴按钮状态，1：按下，0:松开
+	uint8 Re_X;                   //X 轴选定状态，1：选中，0:没选中
+	uint8 Re_Y;
+	uint8 Re_Z;
+	uint8 Re_A;
+	uint8 Re_B;
+	float Re_X_Value;            //保存修改前X轴的坐标值
+	float Re_Y_Value;
+	float Re_Z_Value;
+	float Re_A_Value;
+	float Re_B_Value;
+	
+	
 
+}Return_Workpiece;
 
 
 //显示机器已经停止加工
@@ -218,6 +234,23 @@ void Send_A_Coordinate_to_Host(void);
 
 //向主机发送B轴坐标
 void Send_B_Coordinate_to_Host(void);
+
+
+//计算脉冲并显示X轴坐标
+void Show_X_Coordinata(void);
+
+//计算脉冲并显示X轴坐标
+void Show_Y_Coordinata(void);
+
+//计算脉冲并显示X轴坐标
+void Show_Z_Coordinata(void);
+
+//计算脉冲并显示A轴坐标
+void Show_A_Coordinata(void);
+
+//计算脉冲并显示B轴坐标
+void Show_B_Coordinata(void);
+
 
 #endif
 
