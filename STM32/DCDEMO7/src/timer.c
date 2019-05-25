@@ -8,6 +8,7 @@
 
 extern int32 Pulses_counter,Pulses_num_temp;
 extern Control_Panel_Pram control_panel_pram;
+extern Return_Workpiece_Zero return_workpiece_zero;
 extern uint8 Send_cooddinate_status; 
 //uint8 Counter_Dir=0;          //计数方向,0:正转，1：反转
 uint8 TIME3_Counter=0;         //定时器3溢出计数
@@ -199,12 +200,18 @@ void Get_Pulses_num(void)
 	
 }
 
-//脉冲数量清零
-void Pulses_num_Clear(void)
+//脉冲计数寄存器清零
+void Puless_count_clear(void)
 {
-  TIM4->CNT = 0;
+	TIM4->CNT = 0;
 	Pulses_counter=0;
 	Pulses_num_temp=0;
+}
+
+//所有轴脉冲数量清零
+void Pulses_num_Clear(void)
+{
+  Puless_count_clear();
 	
 	control_panel_pram.X_Pulses_counter=0;	
 	control_panel_pram.Y_Pulses_counter=0;
@@ -223,6 +230,12 @@ void Pulses_num_Clear(void)
 	control_panel_pram.Z_value_temp=0;
 	control_panel_pram.A_value_temp=0;
 	control_panel_pram.B_value_temp=0;
+	
+	return_workpiece_zero.Re_X_Value=0;
+	return_workpiece_zero.Re_Y_Value=0;
+	return_workpiece_zero.Re_Z_Value=0;
+	return_workpiece_zero.Re_A_Value=0;
+	return_workpiece_zero.Re_B_Value=0;
 }
 
 

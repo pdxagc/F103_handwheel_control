@@ -50,7 +50,7 @@ Override override;                       //声明倍率相关结构体
 Speed_Control Speed;                     //声明主轴速度相关的结构体变量
 Pram_Status pram_status;                 //声明设置页面相关参数的结构体变量
 Control_Panel_Pram control_panel_pram;   //声明控制面板相关参数的结构体变量
-Return_Workpiece return_workpiece;       //声明回工件零相关参数的结构体变量
+Return_Workpiece_Zero return_workpiece_zero;//声明回工件零相关参数的结构体变量
 
 
 /******************************************************************************************************/
@@ -187,8 +187,9 @@ int main()
 			case ControlPanel_Page:  //******************************************************控制面板页面*****************************************************************************************
 			{
         if(state.Work_state==Stop)	                           //停止加工
-				{					
-					if(control_panel_pram.X_press)                        //***********************X轴选定状态******************************************************                 
+				{
+          //*********************************************X轴选定状态******************************************************   					
+					if(control_panel_pram.X_press)                                     
 					{
 						if(control_panel_pram.Clear_Button==0 && control_panel_pram.All_Spindle_Clear_Button==0)
 						{
@@ -196,26 +197,24 @@ int main()
 							{	 
 							   control_panel_pram.X_value_temp = control_panel_pram.X_value;
 								 override.Override_num_temp_X = override.Override_num;
-								 TIM4->CNT = 0;
-								 Pulses_counter = 0;
-							   Pulses_num_temp = 0;
+								 return_workpiece_zero.Re_X_Value=0;
+								 Puless_count_clear();             //脉冲计数寄存器清零
 							}
               Show_X_Coordinata();                 //计算脉冲并显示X轴坐标						
 						}
 						if(control_panel_pram.Clear_Button && control_panel_pram.All_Spindle_Clear_Button==0)    //清零按钮触发
 						{
-							TIM4->CNT = 0;
-							Pulses_counter=0;
-							Pulses_num_temp=0;
+							Puless_count_clear();                 //脉冲计数寄存器清零
 							control_panel_pram.X_value_temp=0;
-							control_panel_pram.X_Pulses_counter=0;							
+							control_panel_pram.X_Pulses_counter=0;
+							return_workpiece_zero.Re_X_Value=0;						
               X_coordinate_clear();                    //对X轴工件坐标清零	
 							control_panel_pram.Clear_Button=0;						
 						}
 						if( control_panel_pram.Clear_Button==0 && control_panel_pram.All_Spindle_Clear_Button)  //全轴清零触发
 						{
 							
-							Pulses_num_Clear();                    //脉冲数量清零
+							Pulses_num_Clear();                    //所有轴脉冲数量清零
 						  All_Workpiece_coordinate_clear();      //对所有轴工件坐标清零							
 //							XYZAB_button_reset();                  //XYZAB坐标按钮复位
 							control_panel_pram.All_Spindle_Clear_Button=0;
@@ -227,7 +226,8 @@ int main()
 						}
 						
 					}
-					else if(control_panel_pram.Y_press)                   //**********************Y轴选定状态*******************************************************
+					//***************************************************Y轴选定状态*******************************************************
+					else if(control_panel_pram.Y_press)                   
 					{
 						if(control_panel_pram.Clear_Button==0 && control_panel_pram.All_Spindle_Clear_Button==0)
 						{
@@ -235,26 +235,24 @@ int main()
 							{	 
 							   control_panel_pram.Y_value_temp=control_panel_pram.Y_value;
 								 override.Override_num_temp_Y=override.Override_num;
-								 TIM4->CNT=0;
-								 Pulses_counter=0;
-							   Pulses_num_temp=0;
+								 return_workpiece_zero.Re_Y_Value=0;
+								 Puless_count_clear();                   //脉冲计数寄存器清零
 							}
 							Show_Y_Coordinata();                          //计算脉冲并显示Y轴坐标					
 						}
 						if(control_panel_pram.Clear_Button && control_panel_pram.All_Spindle_Clear_Button==0)    //清零按钮触发
 						{
-							TIM4->CNT = 0;
-							Pulses_counter=0;
-	            Pulses_num_temp=0;
+							Puless_count_clear();                   //脉冲计数寄存器清零
 							control_panel_pram.Y_value_temp=0;
 							control_panel_pram.Y_Pulses_counter=0;
+							return_workpiece_zero.Re_Y_Value=0;
 							delay_ms(20);							
               Y_coordinate_clear();                   //对Y轴工件坐标清零
 							control_panel_pram.Clear_Button=0;
 						}
 						if( control_panel_pram.Clear_Button==0 && control_panel_pram.All_Spindle_Clear_Button)  //全轴清零触发
 						{
-							Pulses_num_Clear();                    //脉冲数量清零
+							Pulses_num_Clear();                    //所有轴脉冲数量清零
 						  All_Workpiece_coordinate_clear();      //对所有工件坐标清零														
 //							XYZAB_button_reset();                   //XYZAB坐标按钮复位
 							control_panel_pram.All_Spindle_Clear_Button=0;
@@ -265,7 +263,8 @@ int main()
 							Send_cooddinate_status=0;
 						}
 					}
-					else if(control_panel_pram.Z_press)                   //**********************Z轴选定状态*******************************************************
+					//*******************************************************Z轴选定状态*******************************************************
+					else if(control_panel_pram.Z_press)                  
 					{
 						if(control_panel_pram.Clear_Button==0 && control_panel_pram.All_Spindle_Clear_Button==0)
 						{
@@ -273,30 +272,27 @@ int main()
 							{	 
 							   control_panel_pram.Z_value_temp=control_panel_pram.Z_value;
 								 override.Override_num_temp_Z = override.Override_num;
-								 TIM4->CNT=0;
-							 	 Pulses_counter=0;
-							   Pulses_num_temp=0;
+								 return_workpiece_zero.Re_Z_Value=0;
+								 Puless_count_clear();              //脉冲计数寄存器清零
 							}
-							Show_Z_Coordinata();  //计算脉冲并显示Z轴坐标
+							Show_Z_Coordinata();                 //计算脉冲并显示Z轴坐标
  
 							
 						}
 						if(control_panel_pram.Clear_Button && control_panel_pram.All_Spindle_Clear_Button==0)    //清零按钮触发
 						{
-							TIM4->CNT = 0;
-							Pulses_counter=0;
-	            Pulses_num_temp=0;
+							Puless_count_clear();                      //脉冲计数寄存器清零
 							control_panel_pram.Z_value_temp=0;
 							control_panel_pram.Z_Pulses_counter=0;
+							return_workpiece_zero.Re_Z_Value=0;
 							delay_ms(20);						
               Z_coordinate_clear();         //对Z轴工件坐标清零
 							control_panel_pram.Clear_Button=0;						
 						}
 						if( control_panel_pram.Clear_Button==0 && control_panel_pram.All_Spindle_Clear_Button)  //全轴清零触发
 						{
-							Pulses_num_Clear();                    //脉冲数量清零
+							Pulses_num_Clear();                    //所有轴脉冲数量清零
 						  All_Workpiece_coordinate_clear();      //对所有工件坐标清零								
-//							XYZAB_button_reset();                  //XYZAB坐标按钮复位
 							control_panel_pram.All_Spindle_Clear_Button=0;
 						}
 					  if(Send_cooddinate_status)
@@ -305,7 +301,8 @@ int main()
 							Send_cooddinate_status=0;
 						}
 					}
-					else if(control_panel_pram.A_press)                   //***********************A轴选定状态******************************************************
+					//*******************************************************A轴选定状态******************************************************
+					else if(control_panel_pram.A_press)                   
 					{
 						if(control_panel_pram.Clear_Button==0 && control_panel_pram.All_Spindle_Clear_Button==0)
 						{
@@ -313,9 +310,8 @@ int main()
 							{	 
 							   control_panel_pram.A_value_temp = control_panel_pram.A_value;
 								 override.Override_num_temp_A = override.Override_num;
-								 TIM4->CNT=0;
-								 Pulses_counter=0;
-							   Pulses_num_temp=0;
+								 return_workpiece_zero.Re_A_Value=0;
+								 Puless_count_clear();               //脉冲计数寄存器清零
 							}
 							Show_A_Coordinata();//计算脉冲并显示A轴坐标
  
@@ -323,19 +319,16 @@ int main()
 						}
 						if(control_panel_pram.Clear_Button && control_panel_pram.All_Spindle_Clear_Button==0)    //清零按钮触发
 						{
-							TIM4->CNT = 0;
-							Pulses_counter=0;
-	            Pulses_num_temp=0;
+							Puless_count_clear();                   //脉冲计数寄存器清零
 							control_panel_pram.A_value_temp=0;
 							control_panel_pram.A_Pulses_counter=0;
-							delay_ms(20);
-							
+							return_workpiece_zero.Re_A_Value=0;						
               A_coordinate_clear();                  //对A轴工件坐标清零
 							control_panel_pram.Clear_Button=0;
 						}
 						if( control_panel_pram.Clear_Button==0 && control_panel_pram.All_Spindle_Clear_Button)  //全轴清零触发
 						{
-							Pulses_num_Clear();                    //脉冲数量清零
+							Pulses_num_Clear();                    //所有轴脉冲数量清零
 						  All_Workpiece_coordinate_clear();      //对所有工件坐标清零								
 //							XYZAB_button_reset();                  //XYZAB坐标按钮复位
 							control_panel_pram.All_Spindle_Clear_Button=0;
@@ -346,7 +339,8 @@ int main()
 							Send_cooddinate_status=0;
 						}																	
 					}
-					else if(control_panel_pram.B_press)                   //**********************B轴选定状态********************************************************
+					//*********************************************************B轴选定状态********************************************************
+					else if(control_panel_pram.B_press)                   
 					{
 						if(control_panel_pram.Clear_Button==0 && control_panel_pram.All_Spindle_Clear_Button==0)
 						{
@@ -354,26 +348,24 @@ int main()
 							{	 
 							   control_panel_pram.B_value_temp=control_panel_pram.B_value;
 								 override.Override_num_temp_B= override.Override_num;
-								 TIM4->CNT=0;
-								 Pulses_counter=0;
-							   Pulses_num_temp=0;
+								return_workpiece_zero.Re_B_Value=0;
+								 Puless_count_clear();             //脉冲计数寄存器清零
 							}
 							Show_B_Coordinata();             //计算脉冲并显示B轴坐标							
 						}
 						if(control_panel_pram.Clear_Button && control_panel_pram.All_Spindle_Clear_Button==0)    //清零按钮触发
 						{
-							TIM4->CNT = 0;
-							Pulses_counter=0;
-	            Pulses_num_temp=0;
+							Puless_count_clear();                 //脉冲计数寄存器清零
 							control_panel_pram.B_value_temp=0;
 							control_panel_pram.B_Pulses_counter=0;
+							return_workpiece_zero.Re_B_Value=0;
 							delay_ms(20);		
               B_coordinate_clear();                      	//对B轴工件坐标清零
 							control_panel_pram.Clear_Button=0;
 						}
 						if( control_panel_pram.Clear_Button==0 && control_panel_pram.All_Spindle_Clear_Button)  //全轴清零触发
 						{
-							Pulses_num_Clear();                  //脉冲数量清零
+							Pulses_num_Clear();                  //所有轴脉冲数量清零
 						  All_Workpiece_coordinate_clear();    //对所有工件坐标清零								
 //							XYZAB_button_reset();                //XYZAB坐标按钮复位
 							control_panel_pram.All_Spindle_Clear_Button=0;
@@ -409,46 +401,136 @@ int main()
 			}break;
 			case Return_WorkPiece_Zero_Page:   //*******************************************回工件零页面***************************************************************************************
 			{ 
-				char buf[20];
+				TIM_Cmd(TIM4, DISABLE);         //禁止 TIM4，脉冲不计数
 				if(first_time_re_workpiece)     //首次进入这个页面
 				{
-					SetButtonValue(3,1,0);
+					SetButtonValue(3,1,0);         //所有轴显示为选中状态
 					SetButtonValue(3,4,0);
 					SetButtonValue(3,5,0);
 					SetButtonValue(3,6,0);
 					SetButtonValue(3,7,0);
 					SetButtonValue(3,8,0);
-          return_workpiece.all_spindle=0;
-					return_workpiece.Re_X=0;
-					return_workpiece.Re_Y=0;
-					return_workpiece.Re_Z=0;
-					return_workpiece.Re_A=0;
-					return_workpiece.Re_B=0;	
+					
+          return_workpiece_zero.all_spindle=0;
+					return_workpiece_zero.Re_X=0;
+					return_workpiece_zero.Re_Y=0;
+					return_workpiece_zero.Re_Z=0;
+					return_workpiece_zero.Re_A=0;
+					return_workpiece_zero.Re_B=0;
+					
+					return_workpiece_zero.Save_X_Value=control_panel_pram.X_value;   //把相应坐标值保存起来
+					return_workpiece_zero.Save_Y_Value=control_panel_pram.Y_value;
+				  return_workpiece_zero.Save_Z_Value=control_panel_pram.Z_value;
+				  return_workpiece_zero.Save_A_Value=control_panel_pram.A_value;
+				  return_workpiece_zero.Save_B_Value=control_panel_pram.B_value;
           first_time_re_workpiece=0;					
 				}
-				sprintf((char *)buf,"%09.2f",control_panel_pram.X_value);
-	      SetTextValue(3,9,(uchar *)buf);	                        //在手轮上显示X轴工件坐标
 				
-				sprintf((char *)buf,"%09.2f",control_panel_pram.Y_value);
-	      SetTextValue(3,10,(uchar *)buf);	                        //在手轮上显示Y轴工件坐标
-				
-				sprintf((char *)buf,"%09.2f",control_panel_pram.Z_value);
-	      SetTextValue(3,11,(uchar *)buf);	                        //在手轮上显示Z轴工件坐标
-				
-				sprintf((char *)buf,"%09.2f",control_panel_pram.A_value);
-	      SetTextValue(3,12,(uchar *)buf);	                        //在手轮上显示A轴工件坐标
-				
-				sprintf((char *)buf,"%09.2f",control_panel_pram.B_value);
-	      SetTextValue(3,13,(uchar *)buf);	                        //在手轮上显示B轴工件坐标
-			  
-				if(return_workpiece.Re_X==0 && return_workpiece.Re_Y==0 && return_workpiece.Re_Z==0 && return_workpiece.Re_A==0 && return_workpiece.Re_B==0) //所有轴都选中
+				if(return_workpiece_zero.Re_X==0 && return_workpiece_zero.Re_Y==0 && return_workpiece_zero.Re_Z==0 && return_workpiece_zero.Re_A==0 && return_workpiece_zero.Re_B==0)   //所有轴都选中
 				{
-				  SetButtonValue(3,1,0);
+				  SetButtonValue(3,1,0);            //全轴按钮显示按下状态
 				}
 				else
 				{
-				  SetButtonValue(3,1,1);
+				  SetButtonValue(3,1,1);            //全轴按钮显示没按下状态
 				}
+				
+				if(return_workpiece_zero.Sure)        //确定按钮按下
+				{
+					if(return_workpiece_zero.Re_X==0)
+					{
+						Puless_count_clear();
+						control_panel_pram.X_value=0;
+						control_panel_pram.X_value_temp=0;						
+						control_panel_pram.X_Pulses_counter=0;
+            return_workpiece_zero.Re_X_Value=0;						
+					}
+					else
+					{
+						// control_panel_pram.X_value_temp=return_workpiece_zero.Re_X_Value;
+					}
+					if(return_workpiece_zero.Re_Y==0)
+					{
+						Puless_count_clear();
+						control_panel_pram.Y_value=0;
+						control_panel_pram.Y_value_temp=0;						
+						control_panel_pram.Y_Pulses_counter=0;
+            return_workpiece_zero.Re_Y_Value=0;						
+					}
+					else
+					{
+						//control_panel_pram.Y_value_temp=return_workpiece_zero.Re_Y_Value;
+					}
+					if(return_workpiece_zero.Re_Z==0)
+					{
+						Puless_count_clear();
+						control_panel_pram.Z_value=0;
+						control_panel_pram.Z_value_temp=0;						
+						control_panel_pram.Z_Pulses_counter=0;
+            return_workpiece_zero.Re_Z_Value=0;						
+					}
+					else
+					{
+						//control_panel_pram.Z_value_temp= return_workpiece_zero.Re_Z_Value;
+					}
+					if(return_workpiece_zero.Re_A==0)
+					{
+						Puless_count_clear();
+						control_panel_pram.A_value=0;
+						control_panel_pram.A_value_temp=0;					
+						control_panel_pram.A_Pulses_counter=0;
+            return_workpiece_zero.Re_A_Value=0;						
+					}
+					else
+					{
+						//control_panel_pram.A_value_temp= return_workpiece_zero.Re_A_Value;
+					}
+					if(return_workpiece_zero.Re_B==0)
+					{
+						Puless_count_clear();
+						control_panel_pram.B_value=0;
+						control_panel_pram.B_value_temp=0;					
+						control_panel_pram.B_Pulses_counter=0;
+            return_workpiece_zero.Re_B_Value=0;						
+					}
+					else 
+					{
+						//control_panel_pram.B_value_temp= return_workpiece_zero.Re_B_Value;
+					}
+					return_workpiece_zero.Sure=0;				
+				  Work_Page_Status=ControlPanel_Page;
+				
+
+				} 
+				if(return_workpiece_zero.Cancel)    //取消按钮按下
+				{
+					if(return_workpiece_zero.all_spindle)
+					{
+						control_panel_pram.X_value=return_workpiece_zero.Save_X_Value;
+						control_panel_pram.Y_value=return_workpiece_zero.Save_Y_Value;
+						control_panel_pram.Z_value=return_workpiece_zero.Save_Z_Value;
+						control_panel_pram.A_value=return_workpiece_zero.Save_A_Value;
+						control_panel_pram.B_value=return_workpiece_zero.Save_B_Value;
+						
+						return_workpiece_zero.Re_X_Value=return_workpiece_zero.Save_X_Value;
+						return_workpiece_zero.Re_Y_Value=return_workpiece_zero.Save_Y_Value;
+						return_workpiece_zero.Re_Z_Value=return_workpiece_zero.Save_Z_Value;
+						return_workpiece_zero.Re_A_Value=return_workpiece_zero.Save_A_Value;
+						return_workpiece_zero.Re_B_Value=return_workpiece_zero.Save_B_Value;	
+						
+						control_panel_pram.X_Pulses_counter=0;
+						control_panel_pram.Y_Pulses_counter=0;
+						control_panel_pram.Z_Pulses_counter=0;
+						control_panel_pram.A_Pulses_counter=0;
+						control_panel_pram.B_Pulses_counter=0;
+						
+						return_workpiece_zero.Cancel=0;
+					}
+					
+				}
+       	Show_coordinate_on_return_workpiece_zero_page();  //在回工件零页面显示所有轴坐标值		
+			  TFT_Show_coordanate_value();                      //在加工页面和控制面板页面显示所有轴坐标		
+				
 			}
 			break;
 			case Jump_Work_Page:     //*****************************************************跳行加工页面****************************************************************************************
@@ -514,7 +596,7 @@ int main()
 				break;
 			case SignOut_Remind_Page: 
 				break;
-			case Leading_Out_Pgae:
+		  	case Leading_Out_Pgae:
 				break;
 			default:
 				break;
@@ -1026,113 +1108,110 @@ void ProcessMessage( PCTRL_MSG msg, uint16 size )
 						{
 							switch(get_control_id)                                
 							{
-									case 1:                           //全轴按钮触发
+									case 1:                  //全轴按钮触发
 									{
 										if(get_button_state)            //按钮是按下状态  
 										{
-											return_workpiece.all_spindle=1; //此时全轴按钮按下，XYZAB轴显示成没有选中状态
+											return_workpiece_zero.all_spindle=1; //此时全轴按钮按下，XYZAB轴显示成没有选中状态
 											SetButtonValue(3,4,1);
 											SetButtonValue(3,5,1);
 											SetButtonValue(3,6,1);
 											SetButtonValue(3,7,1);
 											SetButtonValue(3,8,1);
-											return_workpiece.Re_X=1;
-											return_workpiece.Re_Y=1;
-											return_workpiece.Re_Z=1;
-											return_workpiece.Re_A=1;
-											return_workpiece.Re_B=1;										
+											return_workpiece_zero.Re_X=1;
+											return_workpiece_zero.Re_Y=1;
+											return_workpiece_zero.Re_Z=1;
+											return_workpiece_zero.Re_A=1;
+											return_workpiece_zero.Re_B=1;										
 										}
 										else 
 										{
-											return_workpiece.all_spindle=0;
-											return_workpiece.Re_X=0;
-											return_workpiece.Re_Y=0;
-											return_workpiece.Re_Z=0;
-											return_workpiece.Re_A=0;
-											return_workpiece.Re_B=0;
+											return_workpiece_zero.all_spindle=0;
+											return_workpiece_zero.Re_X=0;
+											return_workpiece_zero.Re_Y=0;
+											return_workpiece_zero.Re_Z=0;
+											return_workpiece_zero.Re_A=0;
+											return_workpiece_zero.Re_B=0;
 											
 										}
 									
 									}break;
-									case 2:                           //取消按钮触发
+									case 2:                     //取消按钮触发
 									{
-										control_panel_pram.X_value=return_workpiece.Re_X_Value;
-										control_panel_pram.Y_value=return_workpiece.Re_Y_Value;
-										control_panel_pram.Z_value=return_workpiece.Re_Z_Value;
-										control_panel_pram.A_value=return_workpiece.Re_A_Value;
-										control_panel_pram.B_value=return_workpiece.Re_B_Value;
-									
-									}break;
-									case 3:                           //确定按钮触发
-									{
+											TIM_Cmd(TIM4, ENABLE);      //使能 TIM4
 										if(get_button_state) 
 										{
-											if(return_workpiece.Re_X==0)
-											{
-												control_panel_pram.X_value=0;
-											}
-											if(return_workpiece.Re_Y==0)
-											{
-												control_panel_pram.Y_value=0;
-											}
-											if(return_workpiece.Re_Z==0)
-											{
-												control_panel_pram.Z_value=0;
-											}
-											if(return_workpiece.Re_A==0)
-											{
-												control_panel_pram.A_value=0;
-											}
-											if(return_workpiece.Re_B==0)
-											{
-												control_panel_pram.B_value=0;
-											}
-												
-										
+											return_workpiece_zero.Cancel=1;  //确定按钮按下											
 										}
+										else
+										{
+											Work_Page_Status=ControlPanel_Page;
+										}
+										
 									
+									}break;
+									case 3:               //确定按钮触发
+									{
+										TIM_Cmd(TIM4, ENABLE);      //使能 TIM4
+										if(get_button_state) 
+										{
+											return_workpiece_zero.Sure=1;  //确定按钮按下											
+										}
+										else
+										{
+											Work_Page_Status=ControlPanel_Page;
+										}
+																		
 									}break;
 									case 4:                           //X轴按钮触发
 									{
-										if(get_button_state) 						
-										  return_workpiece.Re_X=1;
+										if(get_button_state) 
+										{											
+										  return_workpiece_zero.Re_X=1;
+										}
 										else
 										{
-											return_workpiece.Re_X=0;
-											return_workpiece.all_spindle=0;
+											return_workpiece_zero.Re_X=0;
+											return_workpiece_zero.all_spindle=0;
 										}
 									
 									}break;
 									case 5:                           //Y轴按钮触发
 									{
-										if(get_button_state) 						
-										  return_workpiece.Re_Y=1;
+										if(get_button_state) 
+										{											
+										  return_workpiece_zero.Re_Y=1;
+										}
 										else
 										{
-											return_workpiece.Re_Y=0;
-											return_workpiece.all_spindle=0;
+											return_workpiece_zero.Re_Y=0;
+											return_workpiece_zero.all_spindle=0;
 										}
 									
 									}break;
 									case 6:                           //Z轴按钮触发
 									{
-										if(get_button_state) 						
-										  return_workpiece.Re_Z=1;
+										if(get_button_state)
+										{											
+										  return_workpiece_zero.Re_Z=1;
+										}
 										else
 										{
-											return_workpiece.Re_Z=0;
-											return_workpiece.all_spindle=0;
+											return_workpiece_zero.Re_Z=0;
+											return_workpiece_zero.all_spindle=0;
 										}
 									
 									}break;
 									case 7:                           //A轴按钮触发
 									{
-										if(get_button_state) 						
-										  return_workpiece.Re_A=1;
+										if(get_button_state)
+										{											
+										  return_workpiece_zero.Re_A=1;
+										}
 										else
 										{
-											return_workpiece.Re_A=0;
-											return_workpiece.all_spindle=0;
+											return_workpiece_zero.Re_A=0;
+											return_workpiece_zero.all_spindle=0;
 										}
 									
 									}break;
@@ -1140,39 +1219,59 @@ void ProcessMessage( PCTRL_MSG msg, uint16 size )
 									{
 										if(get_button_state)
 										{											
-										  return_workpiece.Re_B=1;
+										  return_workpiece_zero.Re_B=1;
 										}
 										else
 										{
-											return_workpiece.Re_B=0;
-                      return_workpiece.all_spindle=0;											
+											return_workpiece_zero.Re_B=0;
+                      return_workpiece_zero.all_spindle=0;											
 										}											
 									}break;
-									case 9:
+									case 9:                    //通过数字键盘更改X轴坐标值
 									{
-									  return_workpiece.Re_X_Value=control_panel_pram.X_value;
-										control_panel_pram.X_value=NotifyText(msg->param);
+									  
+										control_panel_pram.X_value = NotifyText(msg->param);
+										return_workpiece_zero.Re_X_Value = control_panel_pram.X_value;
+										Puless_count_clear();
+										control_panel_pram.X_value_temp=0;
+										control_panel_pram.X_Pulses_counter=0;
 										
 									}break;
-									case 10:
+									case 10:                 //通过数字键盘更改Y轴坐标值
 									{
-									  return_workpiece.Re_Y_Value=control_panel_pram.Y_value;
+									  
 										control_panel_pram.Y_value=NotifyText(msg->param);
+										return_workpiece_zero.Re_Y_Value = control_panel_pram.Y_value;
+										Puless_count_clear();
+										control_panel_pram.Y_value_temp=0;
+										control_panel_pram.Y_Pulses_counter=0;
 									}break;
-									case 11:
+									case 11:                  //通过数字键盘更改Z轴坐标值
 									{
-									  return_workpiece.Re_Z_Value=control_panel_pram.Z_value;
+									 
 										control_panel_pram.Z_value=NotifyText(msg->param);
+										return_workpiece_zero.Re_Z_Value = control_panel_pram.Z_value;
+										Puless_count_clear();
+										control_panel_pram.Z_value_temp=0;
+										control_panel_pram.Z_Pulses_counter=0;
 									}break;
-									case 12:
+									case 12:                  //通过数字键盘更改A轴坐标值
 									{
-									   return_workpiece.Re_A_Value=control_panel_pram.A_value;
+									  
 										control_panel_pram.A_value=NotifyText(msg->param);
+										return_workpiece_zero.Re_A_Value = control_panel_pram.A_value;
+										Puless_count_clear();
+										control_panel_pram.A_value_temp=0;
+										control_panel_pram.A_Pulses_counter=0;
 									}break;
-									case 13:
+									case 13:                  //通过数字键盘更改B轴坐标值
 									{
-									   return_workpiece.Re_B_Value=control_panel_pram.B_value;
+									  
 										control_panel_pram.B_value=NotifyText(msg->param);
+										return_workpiece_zero.Re_B_Value = control_panel_pram.B_value;
+										Puless_count_clear();
+										control_panel_pram.B_value_temp=0;
+										control_panel_pram.B_Pulses_counter=0;
 									}break;
 									default:break;
 							}

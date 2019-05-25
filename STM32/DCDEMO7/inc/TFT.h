@@ -92,13 +92,13 @@ typedef struct Control_Panel_Pram
 	uint8  Override_Change_button;       //倍率切换按钮标志位
 	uint8  All_Spindle_Clear_Button;     //全轴清零按钮
 	uint8  Start_Button;                  //开始按钮
-	int32  X_Pulses_counter;              //X轴脉冲数量保存
+	int32  X_Pulses_counter;              //X轴脉冲数量保存（轴切换时启用）
 	int32  Y_Pulses_counter;              //Y轴脉冲数量保存
 	int32  Z_Pulses_counter;              //Z轴脉冲数量保存
 	int32  A_Pulses_counter;              //A轴脉冲数量保存
 	int32  B_Pulses_counter;              //B轴脉冲数量保存
 	double  X_value;                       //X轴工件坐标值
-  double  X_value_temp;
+  double  X_value_temp;                  //倍率切换时保存原X轴坐标值
 	double  Y_value;                       //Y轴工件坐标值
 	double  Y_value_temp;
 	double  Z_value;                       //Z轴工件坐标值
@@ -135,7 +135,7 @@ typedef struct Override
 	float Override_num_temp_B;                    //保存B轴倍率	
 }Override;
 
-typedef struct Return_Workpiece
+typedef struct Return_Workpiece_Zero
 {
 	uint8 all_spindle;            //全轴按钮状态，1：按下，0:松开
 	uint8 Re_X;                   //X 轴选定状态，1：选中，0:没选中
@@ -143,15 +143,20 @@ typedef struct Return_Workpiece
 	uint8 Re_Z;
 	uint8 Re_A;
 	uint8 Re_B;
-	float Re_X_Value;            //保存修改前X轴的坐标值
-	float Re_Y_Value;
+	uint8 Sure;                  //确定按钮
+	uint8 Cancel;                //取消按钮
+	float Save_X_Value;          //保存修改前X轴的坐标值
+	float Save_Y_Value;          //保存修改前Y轴的坐标值
+	float Save_Z_Value;
+	float Save_A_Value;
+	float Save_B_Value;
+	
+	float Re_X_Value;            //接收数字键盘传给X轴的坐标值
+	float Re_Y_Value;            //接收数字键盘传给Y轴的坐标值
 	float Re_Z_Value;
 	float Re_A_Value;
 	float Re_B_Value;
-	
-	
-
-}Return_Workpiece;
+}Return_Workpiece_Zero;
 
 
 //显示机器已经停止加工
@@ -214,9 +219,12 @@ void Coordinate_Change_Process(void);
 //控制面板倍率控制
 void Override_Change_Process(void);
 
-//加工时坐标、文件名等显示
+//在加工页面和控制面板页面显示所有轴坐标
 void TFT_Show_coordanate_value(void);
 
+
+//在回工件零页面显示所有轴坐标值
+void Show_coordinate_on_return_workpiece_zero_page(void);
 ////向主机发送坐标
 //void Send_Coordinate_to_Host_Machine(void);
 

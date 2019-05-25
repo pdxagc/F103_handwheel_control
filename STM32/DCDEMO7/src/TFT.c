@@ -15,6 +15,7 @@ extern Override override;
 extern Speed_Control Speed;
 extern Pram_Status pram_status;
 extern Control_Panel_Pram control_panel_pram;
+extern Return_Workpiece_Zero return_workpiece_zero;
 
 uint8 Coordinate_Change_Counter=0;                                    //坐标切换按钮触发计数
 uint8 Override_Change_Counter=1;                                      //倍率切换按钮触发计数
@@ -398,7 +399,7 @@ void Override_Change_Process(void)
   
 }
 
-//加工时坐标、文件名等显示
+// 在加工页面和控制面板页面显示所有轴坐标
 void TFT_Show_coordanate_value(void)
 {
 	char buf1[20];
@@ -444,6 +445,28 @@ void TFT_Show_coordanate_value(void)
 
 }
 
+
+//显示回工件零页面所有轴坐标值
+void Show_coordinate_on_return_workpiece_zero_page(void)
+{
+	char buf[20];
+  sprintf((char *)buf,"%09.2f",control_panel_pram.X_value);
+	SetTextValue(3,9,(uchar *)buf);	          //在手轮上显示X轴工件坐标
+	
+	sprintf((char *)buf,"%09.2f",control_panel_pram.Y_value);
+	SetTextValue(3,10,(uchar *)buf);	        //在手轮上显示Y轴工件坐标     	
+	
+	sprintf((char *)buf,"%09.2f",control_panel_pram.Z_value);
+	SetTextValue(3,11,(uchar *)buf);	       //在手轮上显示Z轴工件坐标
+	
+	
+	sprintf((char *)buf,"%09.2f",control_panel_pram.A_value);
+	SetTextValue(3,12,(uchar *)buf);	       //在手轮上显示A轴工件坐标
+		
+	
+	sprintf((char *)buf,"%09.2f",control_panel_pram.B_value);
+	SetTextValue(3,13,(uchar *)buf);	        //在手轮上显示B轴工件坐标
+}
 //向主机发送X轴坐标
 void Send_X_Coordinate_to_Host(void)
 {
@@ -485,13 +508,15 @@ void Send_B_Coordinate_to_Host(void)
 }
 
 
+
+
 //计算脉冲并显示X轴坐标
 void Show_X_Coordinata(void)
 {
 	char buf2[20];
 	Get_Pulses_num();   //计算脉冲个数							
 	control_panel_pram.X_Pulses_counter=Pulses_counter;						
-	control_panel_pram.X_value=control_panel_pram.X_value_temp+Pulses_counter*override.Override_num;
+	control_panel_pram.X_value=control_panel_pram.X_value_temp + return_workpiece_zero.Re_X_Value + Pulses_counter*override.Override_num;
 	sprintf((char *)buf2,"%09.2f",control_panel_pram.X_value);
 	SetTextValue(2,17,(uchar *)buf2);	        //在手轮上显示工件坐标
 	SetTextValue(0,16,(uchar *)buf2);         //在手轮上显示工件坐标	
@@ -504,7 +529,7 @@ void Show_Y_Coordinata(void)
 	char buf2[20];
 	Get_Pulses_num();
 	control_panel_pram.Y_Pulses_counter=Pulses_counter;
-	control_panel_pram.Y_value=control_panel_pram.Y_value_temp+Pulses_counter*override.Override_num;
+	control_panel_pram.Y_value=control_panel_pram.Y_value_temp + return_workpiece_zero.Re_Y_Value + Pulses_counter*override.Override_num;
 	sprintf((char *)buf2,"%09.2f",control_panel_pram.Y_value);
 	SetTextValue(2,18,(uchar *)buf2);
 	SetTextValue(0,17,(uchar *)buf2);         //在手轮上显示工件坐标
@@ -517,7 +542,7 @@ void Show_Z_Coordinata(void)
 	char buf2[20];
 	Get_Pulses_num();
 	control_panel_pram.Z_Pulses_counter=Pulses_counter;
-	control_panel_pram.Z_value=control_panel_pram.Z_value_temp+Pulses_counter*override.Override_num;
+	control_panel_pram.Z_value=control_panel_pram.Z_value_temp + return_workpiece_zero.Re_Z_Value + Pulses_counter*override.Override_num;
 	sprintf((char *)buf2,"%09.2f",control_panel_pram.Z_value);
 	SetTextValue(2,19,(uchar *)buf2);
 	SetTextValue(0,18,(uchar *)buf2);        //在手轮上显示工件坐标
@@ -531,7 +556,7 @@ void Show_A_Coordinata(void)
 	char buf2[20];
 	Get_Pulses_num();
 	control_panel_pram.A_Pulses_counter=Pulses_counter;
-	control_panel_pram.A_value=control_panel_pram.A_value_temp+Pulses_counter*override.Override_num;
+	control_panel_pram.A_value=control_panel_pram.A_value_temp + return_workpiece_zero.Re_A_Value + Pulses_counter*override.Override_num;
 	sprintf((char *)buf2,"%09.2f",control_panel_pram.A_value);
 	SetTextValue(2,20,(uchar *)buf2);
 	SetTextValue(0,19,(uchar *)buf2);         //在手轮上显示工件坐标
@@ -545,7 +570,7 @@ void Show_B_Coordinata(void)
 	char buf2[20];
 	Get_Pulses_num();
 	control_panel_pram.B_Pulses_counter=Pulses_counter;
-	control_panel_pram.B_value=control_panel_pram.B_value_temp+Pulses_counter*override.Override_num;
+	control_panel_pram.B_value=control_panel_pram.B_value_temp + return_workpiece_zero.Re_B_Value + Pulses_counter*override.Override_num;
 	sprintf((char *)buf2,"%09.2f",control_panel_pram.B_value);
 	SetTextValue(2,21,(uchar *)buf2);
 	SetTextValue(0,20,(uchar *)buf2);         //在手轮上显示工件坐标

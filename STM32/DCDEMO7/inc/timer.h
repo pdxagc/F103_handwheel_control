@@ -13,6 +13,11 @@ void TIM3_IRQHandler(void);
 void TIM4_IRQHandler(void);
 
 void Get_Pulses_num(void);
+
+//脉冲计数寄存器清零
+void Puless_count_clear(void);
+
+//所有轴脉冲数量清零
 void Pulses_num_Clear(void);
 
 
