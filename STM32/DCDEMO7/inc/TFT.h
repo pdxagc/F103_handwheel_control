@@ -159,6 +159,32 @@ typedef struct Return_Workpiece_Zero
 }Return_Workpiece_Zero;
 
 
+
+
+typedef struct Devide_Set
+{
+	uint8 Devide_contronl;       //分中控制标记位
+	uint8 first_clear;           //第一次清零标记位
+	uint8 Second_clear;          //第二次清零标记位
+  float X_clear_data1;         //X轴第一次清零数据
+	float X_clear_data2;         //X轴第二次清零数据
+	float X_devide_date;         //X轴分中数据
+	float Y_clear_data1;         //Y轴第一次清零数据
+	float Y_clear_data2;         //Y轴第一次清零数据
+	float Y_devide_date;         //Y轴分中数据
+ 
+}Devide_Set;
+
+typedef struct Jump_Work_Set
+{
+	uint8 First_get_into;              //首次进入跳行加工页面标记位
+	uint8 Jump_Work_Sure;              //跳行加工确定
+	uint8 Jump_Work_cancel;            //跳行加工取消
+	int32 New_work_line;               //跳转的加工行数
+	
+}Jump_Work_Set;
+
+
 //显示机器已经停止加工
 void WorkingStatus_Stoped(void);
 

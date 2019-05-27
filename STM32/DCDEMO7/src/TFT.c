@@ -16,6 +16,7 @@ extern Speed_Control Speed;
 extern Pram_Status pram_status;
 extern Control_Panel_Pram control_panel_pram;
 extern Return_Workpiece_Zero return_workpiece_zero;
+extern Devide_Set devide_set;  
 
 uint8 Coordinate_Change_Counter=0;                                    //坐标切换按钮触发计数
 uint8 Override_Change_Counter=1;                                      //倍率切换按钮触发计数
@@ -516,7 +517,7 @@ void Show_X_Coordinata(void)
 	char buf2[20];
 	Get_Pulses_num();   //计算脉冲个数							
 	control_panel_pram.X_Pulses_counter=Pulses_counter;						
-	control_panel_pram.X_value=control_panel_pram.X_value_temp + return_workpiece_zero.Re_X_Value + Pulses_counter*override.Override_num;
+	control_panel_pram.X_value=control_panel_pram.X_value_temp + return_workpiece_zero.Re_X_Value + devide_set.X_devide_date + Pulses_counter*override.Override_num;
 	sprintf((char *)buf2,"%09.2f",control_panel_pram.X_value);
 	SetTextValue(2,17,(uchar *)buf2);	        //在手轮上显示工件坐标
 	SetTextValue(0,16,(uchar *)buf2);         //在手轮上显示工件坐标	
@@ -529,7 +530,7 @@ void Show_Y_Coordinata(void)
 	char buf2[20];
 	Get_Pulses_num();
 	control_panel_pram.Y_Pulses_counter=Pulses_counter;
-	control_panel_pram.Y_value=control_panel_pram.Y_value_temp + return_workpiece_zero.Re_Y_Value + Pulses_counter*override.Override_num;
+	control_panel_pram.Y_value=control_panel_pram.Y_value_temp + return_workpiece_zero.Re_Y_Value + devide_set.Y_devide_date + Pulses_counter*override.Override_num;
 	sprintf((char *)buf2,"%09.2f",control_panel_pram.Y_value);
 	SetTextValue(2,18,(uchar *)buf2);
 	SetTextValue(0,17,(uchar *)buf2);         //在手轮上显示工件坐标

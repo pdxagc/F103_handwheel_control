@@ -10,6 +10,7 @@ extern int32 Pulses_counter,Pulses_num_temp;
 extern Control_Panel_Pram control_panel_pram;
 extern Return_Workpiece_Zero return_workpiece_zero;
 extern uint8 Send_cooddinate_status; 
+extern Devide_Set devide_set;  
 //uint8 Counter_Dir=0;          //计数方向,0:正转，1：反转
 uint8 TIME3_Counter=0;         //定时器3溢出计数
 
@@ -236,6 +237,9 @@ void Pulses_num_Clear(void)
 	return_workpiece_zero.Re_Z_Value=0;
 	return_workpiece_zero.Re_A_Value=0;
 	return_workpiece_zero.Re_B_Value=0;
+	
+	devide_set.X_devide_date=0;
+	devide_set.Y_devide_date=0;
 }
 
 

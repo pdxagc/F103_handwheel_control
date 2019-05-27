@@ -41,8 +41,9 @@ uint8 Send_cooddinate_status;      //发送坐标标记位,1:发送坐标，0：不发送
 uint8 first_time_re_workpiece;     //首次进入回工件零页面
 int32 Working_line;                //加工行数
 
+
 int32 Pulses_num_temp;             //临时保存脉冲数量
-uint8 file_name[20];               //文件名
+uint8 file_name[20]="精雕佛像";               //文件名
 char  Working_line_buf[10];        //保存加工行数
 
 State state;                             //申明工作状态结构体变量
@@ -51,7 +52,8 @@ Speed_Control Speed;                     //声明主轴速度相关的结构体变量
 Pram_Status pram_status;                 //声明设置页面相关参数的结构体变量
 Control_Panel_Pram control_panel_pram;   //声明控制面板相关参数的结构体变量
 Return_Workpiece_Zero return_workpiece_zero;//声明回工件零相关参数的结构体变量
-
+Devide_Set devide_set;                   //声明分中设置相关参数的结构体变量
+Jump_Work_Set jump_work_set;             //声明跳行加工相关参数的结构体变量
 
 /******************************************************************************************************/
 /*!                                                                                 
@@ -76,6 +78,8 @@ int main()
 	delay_ms(300);            //延时等待串口屏初始化完毕,必须等待300ms  
 	
 	Power_On_Set();                 //开机动画和参数初始化设置
+	Working_line=1111;
+	//file_name[20]="精雕佛像";
 		
 	Setting_page_pram_get();        //设置页面相关参数值恢复（断电保存在flash）
 	
@@ -127,9 +131,9 @@ int main()
 				if(state.Work_state==Start)                        //机器处于加工状态中
 				{
 					  TFT_Show_coordanate_value();			            //显示工件和机械坐标
-						SetTextValue(0,21,(uchar *)file_name);        //显示正在加载的文件名			
-						sprintf(Working_line_buf,"%d",Working_line);  
-						SetTextValue(0,22,(uchar *)Working_line_buf); //显示加工行数，需要向主机询问
+//						SetTextValue(0,21,(uchar *)file_name);        //显示正在加载的文件名			
+//						sprintf(Working_line_buf,"%d",Working_line);  
+//						SetTextValue(0,22,(uchar *)Working_line_buf); //显示加工行数，需要向主机询问
 				}
 				else
 				{
@@ -154,6 +158,9 @@ int main()
 						Show_B_Coordinata();                 //计算脉冲并显示B轴坐标		
 					}
 				}
+				SetTextValue(0,21,(uchar *)file_name);        //显示正在加载的文件名	
+				sprintf(Working_line_buf,"%d",Working_line);  
+				SetTextValue(0,22,(uchar *)Working_line_buf);     //显示加工行数，需要向主机询问
 				
 			}break;
 		
@@ -188,7 +195,7 @@ int main()
 			{
         if(state.Work_state==Stop)	                           //停止加工
 				{
-          //*********************************************X轴选定状态******************************************************   					
+          //******************************************************X轴选定状态******************************************************   					
 					if(control_panel_pram.X_press)                                     
 					{
 						if(control_panel_pram.Clear_Button==0 && control_panel_pram.All_Spindle_Clear_Button==0)
@@ -198,16 +205,26 @@ int main()
 							   control_panel_pram.X_value_temp = control_panel_pram.X_value;
 								 override.Override_num_temp_X = override.Override_num;
 								 return_workpiece_zero.Re_X_Value=0;
+								 devide_set.X_devide_date=0;
 								 Puless_count_clear();             //脉冲计数寄存器清零
 							}
               Show_X_Coordinata();                 //计算脉冲并显示X轴坐标						
 						}
 						if(control_panel_pram.Clear_Button && control_panel_pram.All_Spindle_Clear_Button==0)    //清零按钮触发
 						{
+							if(devide_set.first_clear)      //第一次清零
+							{
+							  devide_set.X_clear_data1=control_panel_pram.X_value;						
+							}
+							if(devide_set.Second_clear)      //第二次清零
+							{
+							  devide_set.X_clear_data2=control_panel_pram.X_value;
+							}
 							Puless_count_clear();                 //脉冲计数寄存器清零
 							control_panel_pram.X_value_temp=0;
 							control_panel_pram.X_Pulses_counter=0;
-							return_workpiece_zero.Re_X_Value=0;						
+							return_workpiece_zero.Re_X_Value=0;
+              devide_set.X_devide_date=0;							
               X_coordinate_clear();                    //对X轴工件坐标清零	
 							control_panel_pram.Clear_Button=0;						
 						}
@@ -219,14 +236,23 @@ int main()
 //							XYZAB_button_reset();                  //XYZAB坐标按钮复位
 							control_panel_pram.All_Spindle_Clear_Button=0;
 						}
-						if(Send_cooddinate_status)
-						{          
-							Send_X_Coordinate_to_Host();          //向主机发送X轴坐标	
-							Send_cooddinate_status=0;
+						if(devide_set.Devide_contronl)         //分中设置
+						{
+							devide_set.X_devide_date = (devide_set.X_clear_data1 + devide_set.X_clear_data2)/2;
+						  control_panel_pram.X_value = devide_set.X_devide_date;
+              devide_set.Devide_contronl = 0;							
 						}
+						else
+						{
+							if(Send_cooddinate_status)
+							{          
+								Send_X_Coordinate_to_Host();          //向主机发送X轴坐标	
+								Send_cooddinate_status=0;
+							}
+					  }
 						
 					}
-					//***************************************************Y轴选定状态*******************************************************
+					//******************************************************Y轴选定状态*******************************************************
 					else if(control_panel_pram.Y_press)                   
 					{
 						if(control_panel_pram.Clear_Button==0 && control_panel_pram.All_Spindle_Clear_Button==0)
@@ -236,16 +262,26 @@ int main()
 							   control_panel_pram.Y_value_temp=control_panel_pram.Y_value;
 								 override.Override_num_temp_Y=override.Override_num;
 								 return_workpiece_zero.Re_Y_Value=0;
+								devide_set.Y_devide_date=0;
 								 Puless_count_clear();                   //脉冲计数寄存器清零
 							}
 							Show_Y_Coordinata();                          //计算脉冲并显示Y轴坐标					
 						}
 						if(control_panel_pram.Clear_Button && control_panel_pram.All_Spindle_Clear_Button==0)    //清零按钮触发
 						{
+							if(devide_set.first_clear)          //第一次清零
+							{
+							  devide_set.Y_clear_data1=control_panel_pram.Y_value;				
+							}
+							if(devide_set.Second_clear)         //第二次清零
+							{
+							  devide_set.Y_clear_data2=control_panel_pram.Y_value;
+							}
 							Puless_count_clear();                   //脉冲计数寄存器清零
 							control_panel_pram.Y_value_temp=0;
 							control_panel_pram.Y_Pulses_counter=0;
 							return_workpiece_zero.Re_Y_Value=0;
+							devide_set.Y_devide_date=0;
 							delay_ms(20);							
               Y_coordinate_clear();                   //对Y轴工件坐标清零
 							control_panel_pram.Clear_Button=0;
@@ -257,11 +293,20 @@ int main()
 //							XYZAB_button_reset();                   //XYZAB坐标按钮复位
 							control_panel_pram.All_Spindle_Clear_Button=0;
 						}
-						if(Send_cooddinate_status)
-						{          
-							Send_Y_Coordinate_to_Host();          //向主机发送Y轴坐标	
-							Send_cooddinate_status=0;
+						if(devide_set.Devide_contronl)         //分中设置
+						{
+							devide_set.Y_devide_date = (devide_set.Y_clear_data1 + devide_set.Y_clear_data2)/2;
+						  control_panel_pram.Y_value = devide_set.Y_devide_date;
+              devide_set.Devide_contronl = 0;							
 						}
+						else
+						{
+							if(Send_cooddinate_status)
+							{          
+								Send_Y_Coordinate_to_Host();          //向主机发送Y轴坐标	
+								Send_cooddinate_status=0;
+							}
+					  }
 					}
 					//*******************************************************Z轴选定状态*******************************************************
 					else if(control_panel_pram.Z_press)                  
@@ -367,7 +412,6 @@ int main()
 						{
 							Pulses_num_Clear();                  //所有轴脉冲数量清零
 						  All_Workpiece_coordinate_clear();    //对所有工件坐标清零								
-//							XYZAB_button_reset();                //XYZAB坐标按钮复位
 							control_panel_pram.All_Spindle_Clear_Button=0;
 						}	
             if(Send_cooddinate_status)
@@ -386,17 +430,21 @@ int main()
 					   TIM_Cmd(TIM2, DISABLE);                         //禁止TIM2，禁止向主机发送坐标
 						 Send_cooddinate_status=0;
 					}
-          					
+  		
 			  }
 				else                                                 //机器处于加工状态中
 				{
 					 TIM_Cmd(TIM3, ENABLE);                            //使能 TIM3
 					 TFT_Show_coordanate_value();			                 //显示工件和机械坐标
 					
-					 SetTextValue(0,21,(uchar *)file_name);            //显示正在加载的文件名	         				
-					 sprintf(Working_line_buf,"%d",Working_line);  
-					 SetTextValue(0,22,(uchar *)Working_line_buf);     //显示加工行数，需要向主机询问			
+//					 SetTextValue(2,27,(uchar *)file_name);            //显示正在加载的文件名	         				
+//					 sprintf(Working_line_buf,"%d",Working_line);  
+//					 SetTextValue(2,28,(uchar *)Working_line_buf);     //显示加工行数，需要向主机询问			
 				}
+				
+				SetTextValue(2,27,(uchar *)file_name);            //显示正在加载的文件名	         				
+			 sprintf(Working_line_buf,"%d",Working_line);  
+			 SetTextValue(2,28,(uchar *)Working_line_buf);     //显示加工行数，需要向主机询问	
 				
 			}break;
 			case Return_WorkPiece_Zero_Page:   //*******************************************回工件零页面***************************************************************************************
@@ -443,7 +491,8 @@ int main()
 						control_panel_pram.X_value=0;
 						control_panel_pram.X_value_temp=0;						
 						control_panel_pram.X_Pulses_counter=0;
-            return_workpiece_zero.Re_X_Value=0;						
+            return_workpiece_zero.Re_X_Value=0;
+            devide_set.X_devide_date=0;							
 					}
 					else
 					{
@@ -455,7 +504,8 @@ int main()
 						control_panel_pram.Y_value=0;
 						control_panel_pram.Y_value_temp=0;						
 						control_panel_pram.Y_Pulses_counter=0;
-            return_workpiece_zero.Re_Y_Value=0;						
+            return_workpiece_zero.Re_Y_Value=0;
+            devide_set.Y_devide_date=0;							
 					}
 					else
 					{
@@ -535,6 +585,13 @@ int main()
 			break;
 			case Jump_Work_Page:     //*****************************************************跳行加工页面****************************************************************************************
 			{
+				if(jump_work_set.First_get_into)
+				{
+					sprintf(Working_line_buf,"%d",Working_line);  
+					SetTextValue(5,4,(uchar *)Working_line_buf);     //显示上次加工行数 
+					SetTextValue(5,3,(uchar *)Working_line_buf);     //显示上次加工行数
+					jump_work_set.First_get_into=0;
+				}
 				
 			}
 				break;
@@ -864,17 +921,30 @@ void ProcessMessage( PCTRL_MSG msg, uint16 size )
 							{
                   case 1:                                           //清零按钮触发
 									{
-										if(state.Work_state==Start)    //开始加工
+										if(state.Work_state == Start)    //开始加工
 										{									
 										}
 										else                          //停止加工
 										{
-											control_panel_pram.Clear_Button=1;     
+											if(get_button_state)
+											{
+												control_panel_pram.Clear_Button = 1;
+												if(devide_set.first_clear)
+												{
+													devide_set.Second_clear = 1;
+													devide_set.first_clear = 0;
+												}
+												else
+												{
+													devide_set.first_clear = 1;
+													devide_set.Second_clear = 0;
+												}	
+										  }											
 										}
 									}break;    
                   case 2:                                             //回机械零按钮触发	
                   {
-										if(state.Work_state==Start)    //开始加工
+										if(state.Work_state == Start)    //开始加工
 										{									
 										}
 										else                           //停止加工
@@ -968,6 +1038,7 @@ void ProcessMessage( PCTRL_MSG msg, uint16 size )
 										}
 										else                           //停止加工
 										{
+											jump_work_set.First_get_into = 1;
 											Work_Page_Status=Jump_Work_Page;
 										}
 									}break;
@@ -978,7 +1049,7 @@ void ProcessMessage( PCTRL_MSG msg, uint16 size )
 										}
 										else                           //停止加工
 										{
-											Work_Page_Status=Jump_Work_Page;
+											
 										}
 									}break;
 									case 12:                                         //分中按钮触发
@@ -988,7 +1059,10 @@ void ProcessMessage( PCTRL_MSG msg, uint16 size )
 										}
 										else                           //停止加工
 										{
-											Work_Page_Status=Jump_Work_Page;
+//											if(get_button_state)
+//											{	
+											  devide_set.Devide_contronl=1;
+//											}
 										}
 									}break;
 									case 13:                                           //开始按钮触发
@@ -1138,7 +1212,7 @@ void ProcessMessage( PCTRL_MSG msg, uint16 size )
 									}break;
 									case 2:                     //取消按钮触发
 									{
-											TIM_Cmd(TIM4, ENABLE);      //使能 TIM4
+									  TIM_Cmd(TIM4, ENABLE);      //使能 TIM4
 										if(get_button_state) 
 										{
 											return_workpiece_zero.Cancel=1;  //确定按钮按下											
@@ -1150,7 +1224,7 @@ void ProcessMessage( PCTRL_MSG msg, uint16 size )
 										
 									
 									}break;
-									case 3:               //确定按钮触发
+									case 3:                   //确定按钮触发
 									{
 										TIM_Cmd(TIM4, ENABLE);      //使能 TIM4
 										if(get_button_state) 
@@ -1281,7 +1355,30 @@ void ProcessMessage( PCTRL_MSG msg, uint16 size )
 						
 						}
 					}break; 
-					case 5: Work_Page_Status=Jump_Work_Page;break;              //画面5
+					case 5:                                         //画面5:跳行加工页面
+					{
+						switch(get_control_id)
+						{
+							case 1:                         //确定按钮触发
+							{
+							  jump_work_set.Jump_Work_Sure = 1;
+								jump_work_set.Jump_Work_cancel = 0;
+								Working_line = jump_work_set.New_work_line;
+								Work_Page_Status = ControlPanel_Page;
+							}break;
+							case 2:                        //取消按钮触发
+							{
+							  jump_work_set.Jump_Work_cancel = 1;
+								jump_work_set.Jump_Work_Sure = 0;
+								Work_Page_Status = ControlPanel_Page;
+							}break;
+							case 3:                        //获取新的行数
+							{
+							  jump_work_set.New_work_line=NotifyText(msg->param);
+							}break;
+						}
+						
+					}break;              
 					case 6:                                                     //画面6
 					{
 						Work_Page_Status=File_Manage_Page;
