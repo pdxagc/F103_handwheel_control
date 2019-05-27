@@ -153,7 +153,24 @@
           <Name>-U-O206 -O206 -S8 -C0 -P00 -N00("") -D00(00000000) -L00(0) -TO18 -TC10000000 -TP21 -TDS8007 -TDT0 -TDC1F -TIEFFFFFFFF -TIP8 -FO15 -FD20000000 -FC1000 -FN2 -FF0STM32F10x_128.FLM -FS08000000 -FL020000 -FP0($$Device:STM32F103C8$Flash\STM32F10x_128.FLM) -FF1M29W640FB -FS160000000 -FL1800000</Name>
         </SetRegEntry>
       </TargetDriverDllRegistry>
-      <Breakpoint/>
+      <Breakpoint>
+        <Bp>
+          <Number>0</Number>
+          <Type>0</Type>
+          <LineNumber>1164</LineNumber>
+          <EnabledFlag>1</EnabledFlag>
+          <Address>134226460</Address>
+          <ByteObject>0</ByteObject>
+          <HtxType>0</HtxType>
+          <ManyObjects>0</ManyObjects>
+          <SizeOfObject>0</SizeOfObject>
+          <BreakByAccess>0</BreakByAccess>
+          <BreakIfRCount>1</BreakIfRCount>
+          <Filename>..\src\main.c</Filename>
+          <ExecCommand></ExecCommand>
+          <Expression>\\HMI_M3DEMO\../src/main.c\1164</Expression>
+        </Bp>
+      </Breakpoint>
       <WatchWindow1>
         <Ww>
           <count>0</count>
@@ -163,43 +180,38 @@
         <Ww>
           <count>1</count>
           <WinNumber>1</WinNumber>
-          <ItemText>control_panel_pram.X_value</ItemText>
+          <ItemText>get_button_state</ItemText>
         </Ww>
         <Ww>
           <count>2</count>
           <WinNumber>1</WinNumber>
-          <ItemText>devide_set.X_clear_data1</ItemText>
+          <ItemText>devide_set.first_clear</ItemText>
         </Ww>
         <Ww>
           <count>3</count>
           <WinNumber>1</WinNumber>
-          <ItemText>devide_set.X_clear_data2</ItemText>
+          <ItemText>devide_set.Second_clear</ItemText>
         </Ww>
         <Ww>
           <count>4</count>
           <WinNumber>1</WinNumber>
-          <ItemText>devide_set.X_devide_date</ItemText>
+          <ItemText>Pulses_counter</ItemText>
         </Ww>
         <Ww>
           <count>5</count>
           <WinNumber>1</WinNumber>
-          <ItemText>get_button_state</ItemText>
+          <ItemText>control_panel_pram.Y_value</ItemText>
         </Ww>
         <Ww>
           <count>6</count>
           <WinNumber>1</WinNumber>
-          <ItemText>devide_set.first_clear</ItemText>
-        </Ww>
-        <Ww>
-          <count>7</count>
-          <WinNumber>1</WinNumber>
-          <ItemText>devide_set.Second_clear</ItemText>
+          <ItemText>return_workpiece_zero.Re_Y_Value</ItemText>
         </Ww>
       </WatchWindow1>
       <MemoryWindow1>
         <Mm>
           <WinNumber>1</WinNumber>
-          <SubType>264</SubType>
+          <SubType>2</SubType>
           <ItemText>cmd_buffer</ItemText>
           <AccSizeX>0</AccSizeX>
         </Mm>

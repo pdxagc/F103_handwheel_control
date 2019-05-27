@@ -83,35 +83,31 @@ typedef struct Pram_Status
 
 typedef struct Control_Panel_Pram
 {
-  uint8  X_press;                      //选中X轴
-	uint8  Y_press;                      //选中Y轴
-	uint8  Z_press;                      //选中Z轴
-  uint8	 A_press;                      //选中A轴
-  uint8  B_press;                      //选中B轴
-	uint8  Clear_Button;                 //清零按钮
-	uint8  Override_Change_button;       //倍率切换按钮标志位
-	uint8  All_Spindle_Clear_Button;     //全轴清零按钮
+  uint8  X_press;                       //选中X轴
+	uint8  Y_press;                       //选中Y轴
+	uint8  Z_press;                       //选中Z轴
+  uint8	 A_press;                       //选中A轴
+  uint8  B_press;                       //选中B轴
+	uint8  Clear_Button;                  //清零按钮
+	uint8  Override_Change_button;        //倍率切换按钮标志位
+	uint8  All_Spindle_Clear_Button;      //全轴清零按钮
 	uint8  Start_Button;                  //开始按钮
-	int32  X_Pulses_counter;              //X轴脉冲数量保存（轴切换时启用）
-	int32  Y_Pulses_counter;              //Y轴脉冲数量保存
-	int32  Z_Pulses_counter;              //Z轴脉冲数量保存
-	int32  A_Pulses_counter;              //A轴脉冲数量保存
-	int32  B_Pulses_counter;              //B轴脉冲数量保存
-	double  X_value;                       //X轴工件坐标值
-  double  X_value_temp;                  //倍率切换时保存原X轴坐标值
-	double  Y_value;                       //Y轴工件坐标值
-	double  Y_value_temp;
-	double  Z_value;                       //Z轴工件坐标值
-	double  Z_value_temp;
-	double  A_value;                       //A轴工件坐标值
-	double  A_value_temp;
-	double  B_value;                       //B轴工件坐标值
-	double  B_value_temp;
-	double  X_Mac_value;                   //X轴机械坐标值
-	double  Y_Mac_value;                   //Y轴机械坐标值
-	double  Z_Mac_value;                   //Z轴机械坐标值
-	double  A_Mac_value;                   //A轴机械坐标值
-	double  B_Mac_value;                   //B轴机械坐标值
+	float  X_value;                       //X轴工件坐标值
+	float  Y_value;                       //Y轴工件坐标值
+	float  Z_value;                       //Z轴工件坐标值
+	float  A_value;                       //A轴工件坐标值
+	float  B_value;                       //B轴工件坐标值
+	float  X_Mac_value;                   //X轴机械坐标值
+	float  Y_Mac_value;                   //Y轴机械坐标值
+	float  Z_Mac_value;                   //Z轴机械坐标值
+	float  A_Mac_value;                   //A轴机械坐标值
+	float  B_Mac_value;                   //B轴机械坐标值
+	float  Temp_save_Xvalue;              //临时保存X轴坐标值
+	float  Temp_save_Yvalue;              //临时保存X轴坐标值            
+	float  Temp_save_Zvalue;              //临时保存X轴坐标值
+	float  Temp_save_Avalue;              //临时保存X轴坐标值
+	float  Temp_save_Bvalue;              //临时保存X轴坐标值
+	
 }Control_Panel_Pram;
 
 
@@ -128,34 +124,33 @@ typedef struct State
 typedef struct Override
 {
 	float Override_num;                           //默认倍率 
-	float Override_num_temp_X;                    //保存X轴倍率
-	float Override_num_temp_Y;                    //保存Y轴倍率
-	float Override_num_temp_Z;                    //保存Z轴倍率
-	float Override_num_temp_A;                    //保存A轴倍率
-	float Override_num_temp_B;                    //保存B轴倍率	
+	float Override_num_temp_X;                    //临时保存X轴倍率
+	float Override_num_temp_Y;                    //临时保存Y轴倍率
+	float Override_num_temp_Z;                    //临时保存Z轴倍率
+	float Override_num_temp_A;                    //临时保存A轴倍率
+	float Override_num_temp_B;                    //临时保存B轴倍率	
 }Override;
 
 typedef struct Return_Workpiece_Zero
 {
-	uint8 all_spindle;            //全轴按钮状态，1：按下，0:松开
-	uint8 Re_X;                   //X 轴选定状态，1：选中，0:没选中
-	uint8 Re_Y;
-	uint8 Re_Z;
-	uint8 Re_A;
-	uint8 Re_B;
-	uint8 Sure;                  //确定按钮
-	uint8 Cancel;                //取消按钮
-	float Save_X_Value;          //保存修改前X轴的坐标值
-	float Save_Y_Value;          //保存修改前Y轴的坐标值
-	float Save_Z_Value;
-	float Save_A_Value;
-	float Save_B_Value;
-	
-	float Re_X_Value;            //接收数字键盘传给X轴的坐标值
-	float Re_Y_Value;            //接收数字键盘传给Y轴的坐标值
+	uint8 all_spindle_status;     //全轴按钮选中状态，1：松开，0:选中（所有轴都清零）
+	uint8 X_clear_status;         //X轴选定清零状态，1：没选中，0:选中清零
+	uint8 Y_clear_status;         //Y轴选定清零状态，1：没选中，0:选中清零
+	uint8 Z_clear_status;
+	uint8 A_clear_status;
+	uint8 B_clear_status;	
+	uint8 Sure;                  //确定按钮选中标志位，1：选中，0：未选中
+	uint8 Cancel;                //取消按钮选中标志位，1：选中，0：未选中	
+	float Re_X_Value;            //数字键盘传给X轴的坐标值
+	float Re_Y_Value;            //数字键盘传给Y轴的坐标值
 	float Re_Z_Value;
 	float Re_A_Value;
 	float Re_B_Value;
+	uint8 X_get_value;           //X轴获取到新坐标值标志位，1：获取到新坐标值，0：没有获取到新坐标值
+	uint8 Y_get_value;           //Y轴获取到新坐标值标志位，1：获取到新坐标值，0：没有获取到新坐标值
+	uint8 Z_get_value;
+	uint8 A_get_value;
+	uint8 B_get_value;
 }Return_Workpiece_Zero;
 
 

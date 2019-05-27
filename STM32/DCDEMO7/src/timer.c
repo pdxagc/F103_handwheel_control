@@ -205,8 +205,8 @@ void Get_Pulses_num(void)
 void Puless_count_clear(void)
 {
 	TIM4->CNT = 0;
-	Pulses_counter=0;
-	Pulses_num_temp=0;
+	Pulses_num_temp = 0;
+	Pulses_counter = 0;
 }
 
 //所有轴脉冲数量清零
@@ -214,23 +214,17 @@ void Pulses_num_Clear(void)
 {
   Puless_count_clear();
 	
-	control_panel_pram.X_Pulses_counter=0;	
-	control_panel_pram.Y_Pulses_counter=0;
-	control_panel_pram.Z_Pulses_counter=0;
-	control_panel_pram.A_Pulses_counter=0;
-	control_panel_pram.B_Pulses_counter=0;
-	
 	control_panel_pram.X_value=0;
 	control_panel_pram.Y_value=0;
 	control_panel_pram.Z_value=0;
 	control_panel_pram.A_value=0;
 	control_panel_pram.B_value=0;
 	
-	control_panel_pram.X_value_temp=0;
-	control_panel_pram.Y_value_temp=0;
-	control_panel_pram.Z_value_temp=0;
-	control_panel_pram.A_value_temp=0;
-	control_panel_pram.B_value_temp=0;
+	control_panel_pram.Temp_save_Xvalue=0;
+  control_panel_pram.Temp_save_Yvalue=0;
+	control_panel_pram.Temp_save_Zvalue=0;
+	control_panel_pram.Temp_save_Avalue=0;
+	control_panel_pram.Temp_save_Bvalue=0;
 	
 	return_workpiece_zero.Re_X_Value=0;
 	return_workpiece_zero.Re_Y_Value=0;
