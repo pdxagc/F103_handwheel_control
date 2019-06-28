@@ -1,16 +1,12 @@
-/*! 
-*  \file hmi_driver.h
-*  \brief 指令分类处理
-*  \version 1.0
-*  \date 2012-2018
-*  \copyright 广州大彩光电科技有限公司
-*/
-
 
 #ifndef _CMD_PROCESS_H
 #define _CMD_PROCESS_H
 #include "hmi_driver.h"
 #include "stm32f10x.h"
+
+
+#define Start 1
+#define Stop  0
 
 #define NOTIFY_TOUCH_PRESS         0X01  //触摸屏按下通知
 #define NOTIFY_TOUCH_RELEASE       0X03  //触摸屏松开通知
@@ -77,6 +73,11 @@ typedef struct
 *  \brief  握手通知
 */
 void NOTIFYHandShake(void);
+
+
+//程序进入标记的工作页面，处理相关任务
+void Work_Page_Process(void);
+
 
 /*! 
 *  \brief  消息处理流程

@@ -11,7 +11,7 @@
 
 extern uint8  Work_Page_Status;
 extern int32 Pulses_counter;              // 手轮脉冲数量
-extern Override override;
+extern uint8 Override_num;
 extern Speed_Control Speed;
 extern Pram_Status pram_status;
 extern Control_Panel_Pram control_panel_pram;
@@ -47,55 +47,6 @@ void WorkingStatus_Starting(void)
 	
 }
 
-//对X轴工件坐标清零
-void X_coordinate_clear(void)
-{
-  SetTextValue(2,17,"000000.00");
-	SetTextValue(0,16,"000000.00");
-}
-
-//对Y轴工件坐标清零
-void Y_coordinate_clear(void)
-{
-	SetTextValue(2,18,"000000.00");
-	SetTextValue(0,17,"000000.00");
-  
-}
-
-//对Z轴工件坐标清零
-void Z_coordinate_clear(void)
-{
-  SetTextValue(2,19,"000000.00");
-	SetTextValue(0,18,"000000.00");
-}
-
-//对A轴工件坐标清零
-void A_coordinate_clear(void)
-{
-  SetTextValue(2,20,"000000.00");
-	SetTextValue(0,19,"000000.00");
-}
-
-//对B轴工件坐标清零
-void B_coordinate_clear(void)
-{
-  SetTextValue(2,21,"000000.00");
-	SetTextValue(0,20,"000000.00");
-}
-
-//对所有轴工件坐标清零
-void All_Workpiece_coordinate_clear(void)
-{
-	uint8 i=0;
-  for(i=16;i<21;i++)
-	{
-		SetTextValue(0,i,"000000.00"); 	   //工件坐标设置文本值
-	}
-	for(i=17;i<22;i++)
-	{
-		SetTextValue(2,i,"000000.00"); 	   //工件坐标设置文本值
-	}
-}
 
 //XYZAB坐标按钮复位
 void XYZAB_button_reset(void)
@@ -125,7 +76,6 @@ void Power_On_Set(void)
 	SetScreen(0);           //切换到加工页面
 	delay_ms(10);
 	
-  All_Workpiece_coordinate_clear();//对所有工件坐标清零
 	
 	for(i=34;i<39;i++)
 	{
@@ -171,8 +121,9 @@ void Power_On_Set(void)
 	
 	SetButtonValue(2,13,0);          //开始按钮是松开状态
 	SetButtonValue(2,14,1);          //停止按钮是按下状态
-	override.Override_num=0.01;       //开机默认倍率
+	Override_num=1;                   //开机默认倍率
 	Work_Page_Status=Working_Page;    //开机进入加工页面
+	control_panel_pram.Axis_press = CMD_X_AXIS;
 	
 
 
@@ -202,8 +153,8 @@ void Spindle_and_Work_Speed_Key_Process(void)
 		SetTextValue(0,24,(uchar *)buf);                                 //修改主轴速度文本框数值		               
 		SetProgressValue(0,1,Speed.Initial_Spindle_Speed_Percent);       //修改主轴速度进度条数值
 		
-		sprintf(buf,"$xvm:%d",Speed.Changed_Spindle_Speed);              
-		Usart_SendString(USART2,(char *)buf);                            //通过USART2向主机发送主轴速度
+//		sprintf(buf,"$xvm:%d",Speed.Changed_Spindle_Speed);              
+//		Usart_SendString(USART2,(char *)buf);                            //通过USART2向主机发送主轴速度
 	}
 	if(Speed.Work_Speed_Changed==Changed)
 	{
@@ -214,8 +165,8 @@ void Spindle_and_Work_Speed_Key_Process(void)
 		sprintf(buf,"%d",Speed.Initial_Work_Speed_Percent);
 		SetTextValue(0,39,(uchar *)buf);
 		
-		sprintf(buf,"$xfr:%d",Speed.Changed_Work_Speed);
-		Usart_SendString(USART2,(char *)buf);                             //通过USART2向主机发送加工速度           
+//		sprintf(buf,"$xfr:%d",Speed.Changed_Work_Speed);
+//		Usart_SendString(USART2,(char *)buf);                             //通过USART2向主机发送加工速度           
 		
 	}
 }
@@ -244,13 +195,13 @@ void Safe_Z_process(uint8 state)
 	{
 		SetButtonValue(1,1,1);
 	  pram_status.Safe_Z_last_status=1;
-		Usart_SendString(USART2,"Safe_z:mode2"); 
+//		Usart_SendString(USART2,"Safe_z:mode2"); 
 	}
 	else
 	{
 		SetButtonValue(1,1,0);      //模式1
 	  pram_status.Safe_Z_last_status=0;
-		Usart_SendString(USART2,"Safe_z:mode1"); 
+//		Usart_SendString(USART2,"Safe_z:mode1"); 
 	}
 	FLASH_WriteByte(START_ADDR2,(uint16)pram_status.Safe_Z_last_status);
 }
@@ -261,13 +212,13 @@ void Auto_Knife_process(uint8 state)
 	{
 		SetButtonValue(1,2,1);
 	  pram_status.Auto_Knife_last_status=1;
-		Usart_SendString(USART2,"Auto_Knife:mode2");
+//		Usart_SendString(USART2,"Auto_Knife:mode2");
 	}
 	else
 	{
 		SetButtonValue(1,2,0);      //模式1
 	  pram_status.Auto_Knife_last_status=0;
-		Usart_SendString(USART2,"Auto_Knife:mode2");
+//		Usart_SendString(USART2,"Auto_Knife:mode2");
 	}
 	FLASH_WriteByte(START_ADDR3,(uint16)pram_status.Auto_Knife_last_status);
 }
@@ -278,13 +229,13 @@ void Unit_Change_process(uint8 state)
 	{
 		SetButtonValue(1,3,1);
 	  pram_status.Unit_Change_last_status=1;
-		Usart_SendString(USART2,"Unit:mode2");
+//		Usart_SendString(USART2,"Unit:mode2");
 	}
 	else
 	{
 		SetButtonValue(1,3,0);      //模式1
 	  pram_status.Unit_Change_last_status=0;
-		Usart_SendString(USART2,"Unit:mode1");
+//		Usart_SendString(USART2,"Unit:mode1");
 	}
   FLASH_WriteByte(START_ADDR4,(uint16)pram_status.Unit_Change_last_status);
 
@@ -363,35 +314,35 @@ void Override_Change_Process(void)
 		{
 			SetTextValue(0,29,"X1");    //设置文本值
 			SetTextValue(2,32,"X1");
-			override.Override_num=0.01;
+			Override_num=1;
 			break;  
 		}
 		case 2:
 		{
 			SetTextValue(0,29,"X2");                                                                                                                                 
 			SetTextValue(2,32,"X2");
-			override.Override_num=0.02;
+			Override_num=2;
 			break;
 		}
 		case 3:
 		{
 			SetTextValue(0,29,"X5");
 			SetTextValue(2,32,"X5");
-			override.Override_num=0.05;
+			Override_num=5;
 			break;
 		}
 		case 4:
 		{
 			SetTextValue(0,29,"X10");
 			SetTextValue(2,32,"X10");
-			override.Override_num=0.1;
+			Override_num=10;
 			break;
 		}
 		case 5:
 		{
 			SetTextValue(0,29,"X20");
 			SetTextValue(2,32,"X20");
-			override.Override_num=0.2;
+			Override_num=20;
 			Override_Change_Counter=0;
 			break;
 		}	
@@ -468,108 +419,52 @@ void Show_coordinate_on_return_workpiece_zero_page(void)
 	sprintf((char *)buf,"%09.2f",control_panel_pram.B_value);
 	SetTextValue(3,13,(uchar *)buf);	        //在手轮上显示B轴工件坐标
 }
-//向主机发送X轴坐标
-void Send_X_Coordinate_to_Host(void)
-{
-	char buf1[20];
-	sprintf((char *)buf1,"{\"jogx\":%.2f%s",control_panel_pram.X_value,"}\\r\\n");
-	Usart_SendString(USART2,(char *)buf1);                           //向主机发送X轴坐标
-}
-
-//向主机发送Y轴坐标
-void Send_Y_Coordinate_to_Host(void)
-{
-  char buf1[20];
-	sprintf((char *)buf1,"{\"jogy\":%.2f%s",control_panel_pram.Y_value,"}\\r\\n");
-	Usart_SendString(USART2,(char *)buf1);                           //向主机发送Y轴坐标
-}
-
-//向主机发送Z轴坐标
-void Send_Z_Coordinate_to_Host(void)
-{
-  char buf1[20];
-	sprintf((char *)buf1,"{\"jogz\":%.2f%s",control_panel_pram.Z_value,"}\\r\\n");
-	Usart_SendString(USART2,(char *)buf1);                           //向主机发送Z轴坐标
-}
-
-//向主机发送A轴坐标
-void Send_A_Coordinate_to_Host(void)
-{
-  char buf1[20];
-	sprintf((char *)buf1,"{\"joga\":%.2f%s",control_panel_pram.A_value,"}\\r\\n");
-	Usart_SendString(USART2,(char *)buf1);                           //向主机发送A轴坐标
-} 
-
-//向主机发送B轴坐标
-void Send_B_Coordinate_to_Host(void)
-{
-  char buf1[20];
-	sprintf((char *)buf1,"{\"jogb\":%.2f%s",control_panel_pram.B_value,"}\\r\\n");
-	Usart_SendString(USART2,(char *)buf1);                           //向主机发送B轴坐标
-}
 
 
-
-
-//计算脉冲并显示X轴坐标
+//显示X轴坐标
 void Show_X_Coordinata(void)
-{
+{	
 	char buf2[20];
-	Get_Pulses_num();   //计算脉冲个数												
-	control_panel_pram.X_value=control_panel_pram.Temp_save_Xvalue + Pulses_counter*override.Override_num;
 	sprintf((char *)buf2,"%09.2f",control_panel_pram.X_value);
 	SetTextValue(2,17,(uchar *)buf2);	        //在手轮上显示工件坐标
 	SetTextValue(0,16,(uchar *)buf2);         //在手轮上显示工件坐标	
 }
 
 
-//计算脉冲并显示Y轴坐标
+//显示Y轴坐标
 void Show_Y_Coordinata(void)
 {
 	char buf2[20];
-	Get_Pulses_num();
-	control_panel_pram.Y_value=control_panel_pram.Temp_save_Yvalue + Pulses_counter*override.Override_num;
 	sprintf((char *)buf2,"%09.2f",control_panel_pram.Y_value);
 	SetTextValue(2,18,(uchar *)buf2);
 	SetTextValue(0,17,(uchar *)buf2);         //在手轮上显示工件坐标
 
 }
 
-//计算脉冲并显示Z轴坐标
+//显示Z轴坐标
 void Show_Z_Coordinata(void)
 {
 	char buf2[20];
-	Get_Pulses_num();
-	control_panel_pram.Z_value=control_panel_pram.Temp_save_Zvalue + Pulses_counter*override.Override_num;
 	sprintf((char *)buf2,"%09.2f",control_panel_pram.Z_value);
 	SetTextValue(2,19,(uchar *)buf2);
 	SetTextValue(0,18,(uchar *)buf2);        //在手轮上显示工件坐标
-	
-
 }
 
-//计算脉冲并显示A轴坐标
+//显示A轴坐标
 void Show_A_Coordinata(void)
 {
 	char buf2[20];
-	Get_Pulses_num();
-	control_panel_pram.A_value=control_panel_pram.Temp_save_Avalue + Pulses_counter*override.Override_num;
 	sprintf((char *)buf2,"%09.2f",control_panel_pram.A_value);
 	SetTextValue(2,20,(uchar *)buf2);
 	SetTextValue(0,19,(uchar *)buf2);         //在手轮上显示工件坐标
-	
-
 }
 
-//计算脉冲并显示B轴坐标
+//显示B轴坐标
 void Show_B_Coordinata(void)
 {
 	char buf2[20];
-	Get_Pulses_num();
-	control_panel_pram.B_value=control_panel_pram.Temp_save_Bvalue + Pulses_counter*override.Override_num;
 	sprintf((char *)buf2,"%09.2f",control_panel_pram.B_value);
 	SetTextValue(2,21,(uchar *)buf2);
 	SetTextValue(0,20,(uchar *)buf2);         //在手轮上显示工件坐标
-
 }
 

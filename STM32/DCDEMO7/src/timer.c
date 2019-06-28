@@ -6,18 +6,19 @@
 #include "hmi_driver.h"
 #include "stdio.h"
 
-extern int32 Pulses_counter,Pulses_num_temp;
+extern int16 Pulses_counter;
 extern Control_Panel_Pram control_panel_pram;
 extern Return_Workpiece_Zero return_workpiece_zero;
 extern uint8 Send_cooddinate_status; 
 extern Devide_Set devide_set;  
 //uint8 Counter_Dir=0;          //计数方向,0:正转，1：反转
 uint8 TIME3_Counter=0;         //定时器3溢出计数
+uint16 ABCD=1;
 
 
 /*******************************************************************************  
 * 函 数 名         : TIME2_Init  
-* 函数功能         :  TIME2初始化   
+* 函数功能         :  TIME2初始化  ,//200ms向主机发送过一次坐标 
 * 输    入         : 无  
 * 输    出         : 无  
 *******************************************************************************/ 
@@ -149,7 +150,6 @@ void TIM3_IRQHandler(void) //TIM3 中断
 	{
 		TIME3_Counter++;
 		TIM_ClearITPendingBit(TIM3, TIM_IT_Update );                  //清除 TIM3 更新中断标志
-    //void uart2_command_handle(void);
 		if(TIME3_Counter)
 		{
 		  Usart_SendString(USART2,"{\"pos\":null}\\r\\n");              //向主机询问工件坐标
@@ -176,36 +176,17 @@ void TIM4_IRQHandler(void)
 
 
 //计算脉冲数量
-void Get_Pulses_num(void)
-{
-	
-	uint16 counter_num1,counter_num2;
-	
-	//Counter_Dir=(TIM4->CR1&0x10)>>4;
-	counter_num1=TIM_GetCounter(TIM4);	
-	if((counter_num1%4)!=0)
-	{
-		return;
-	}
-	counter_num2=counter_num1/4;
-	if(counter_num2<8000)
-	{
-		Pulses_num_temp=counter_num2;
-	}
-	else
-	{
-		Pulses_num_temp=counter_num2-16384;
-	}
-	Pulses_counter+=Pulses_num_temp;
-	TIM4->CNT=0;
-	
+int16 Get_Pulses_num(void)
+{	
+	int16 temp_count;
+	temp_count=TIM_GetCounter(TIM4);
+	return temp_count;
 }
 
 //脉冲计数寄存器清零
 void Puless_count_clear(void)
 {
 	TIM4->CNT = 0;
-	Pulses_num_temp = 0;
 	Pulses_counter = 0;
 }
 
@@ -231,9 +212,6 @@ void Pulses_num_Clear(void)
 	return_workpiece_zero.Re_Z_Value=0;
 	return_workpiece_zero.Re_A_Value=0;
 	return_workpiece_zero.Re_B_Value=0;
-	
-	devide_set.X_devide_date=0;
-	devide_set.Y_devide_date=0;
 }
 
 

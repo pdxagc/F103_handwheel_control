@@ -43,7 +43,7 @@ void mymemset(void *s,u8 c,u32 count)
 //内存管理初始化  
 void mem_init(void)  
 {  
-    mymemset(mallco_dev.memmap, 0,memtblsize*2);//内存状态表数据清零  
+  mymemset(mallco_dev.memmap, 0,memtblsize*2);//内存状态表数据清零  
 	mymemset(mallco_dev.membase, 0,memsize);	//内存池所有数据清零  
 	mallco_dev.memrdy=1;						//内存管理初始化OK  
 }  
@@ -67,7 +67,7 @@ u32 mem_malloc(u32 size)
 {  
     signed long offset=0;  
     u16 nmemb;	//需要的内存块数  
-	u16 cmemb=0;//连续空内存块数
+	  u16 cmemb=0;//连续空内存块数
     u32 i;  
     if(!mallco_dev.memrdy)mallco_dev.init();	//未初始化,先执行初始化 
     if(size==0)return 0XFFFFFFFF;				//不需要分配
@@ -93,8 +93,8 @@ u32 mem_malloc(u32 size)
 //返回值:0,释放成功;1,释放失败;  
 u8 mem_free(u32 offset)  
 {  
-    int i;  
-    if(!mallco_dev.memrdy)//未初始化,先执行初始化
+  int i;  
+  if(!mallco_dev.memrdy)//未初始化,先执行初始化
 	{
 		mallco_dev.init();    
         return 1;//未初始化  
@@ -115,9 +115,9 @@ u8 mem_free(u32 offset)
 void myfree(void *ptr)  
 {  
 	u32 offset;  
-    if(ptr==NULL)return;//地址为0.  
+  if(ptr==NULL)return;//地址为0.  
  	offset=(u32)ptr-(u32)mallco_dev.membase;  
-    mem_free(offset);	//释放内存     
+  mem_free(offset);	//释放内存     
 }  
 //分配内存(外部调用)
 //size:内存大小(字节)
@@ -125,7 +125,7 @@ void myfree(void *ptr)
 void *mymalloc(u32 size)  
 {  
     u32 offset;  									      
-	offset=mem_malloc(size);  	   				   
+	  offset=mem_malloc(size);  	   				   
     if(offset==0XFFFFFFFF)return NULL;  
     else return (void*)((u32)mallco_dev.membase+offset);  
 }  
@@ -137,7 +137,8 @@ void *myrealloc(void *ptr,u32 size)
 {  
     u32 offset;  
     offset=mem_malloc(size);  
-    if(offset==0XFFFFFFFF)return NULL;     
+    if(offset==0XFFFFFFFF)
+			return NULL;     
     else  
     {  									   
 	    mymemcpy((void*)((u32)mallco_dev.membase+offset),ptr,size);	//拷贝旧内存内容到新内存   

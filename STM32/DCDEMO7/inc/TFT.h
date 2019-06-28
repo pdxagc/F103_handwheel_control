@@ -83,14 +83,23 @@ typedef struct Pram_Status
 
 typedef struct Control_Panel_Pram
 {
-  uint8  X_press;                       //选中X轴
-	uint8  Y_press;                       //选中Y轴
-	uint8  Z_press;                       //选中Z轴
-  uint8	 A_press;                       //选中A轴
-  uint8  B_press;                       //选中B轴
+	uint8  Press_button;                  //记录哪个按钮触发
+  uint8  Axis_press;                    //记录哪个轴选中
+//	uint8  Y_press;                       //选中Y轴
+//	uint8  Z_press;                       //选中Z轴
+//  uint8	 A_press;                       //选中A轴
+//  uint8  B_press;                       //选中B轴
 	uint8  Clear_Button;                  //清零按钮
-	uint8  Override_Change_button;        //倍率切换按钮标志位
+	uint8  Return_Mac_Zero_button;        //回机械零按钮
+	uint8  Override_Change_button;        //倍率切换按钮
+	uint8  Spin_Switch_button;            //主轴开关
 	uint8  All_Spindle_Clear_Button;      //全轴清零按钮
+	uint8  Return_WorkPiece_Zero_button;  //回工件零按钮
+	uint8  Coordinate_Change_button;      //坐标切换按钮、
+	uint8  Soft_limit_button;            //软限位开关按钮
+	uint8  Safe_Z_button;                 //安全Z开关按钮
+	uint8  Jump_Work_button;              //跳行加工按钮
+	uint8  Auto_knife_button;             //自动对刀按钮
 	uint8  Start_Button;                  //开始按钮
 	float  X_value;                       //X轴工件坐标值
 	float  Y_value;                       //Y轴工件坐标值
@@ -121,15 +130,6 @@ typedef struct State
 	uint8 Hand_wheel_state;                     //手轮开关状态	
 }State;
 
-typedef struct Override
-{
-	float Override_num;                           //默认倍率 
-	float Override_num_temp_X;                    //临时保存X轴倍率
-	float Override_num_temp_Y;                    //临时保存Y轴倍率
-	float Override_num_temp_Z;                    //临时保存Z轴倍率
-	float Override_num_temp_A;                    //临时保存A轴倍率
-	float Override_num_temp_B;                    //临时保存B轴倍率	
-}Override;
 
 typedef struct Return_Workpiece_Zero
 {
@@ -159,14 +159,6 @@ typedef struct Return_Workpiece_Zero
 typedef struct Devide_Set
 {
 	uint8 Devide_contronl;       //分中控制标记位
-	uint8 first_clear;           //第一次清零标记位
-	uint8 Second_clear;          //第二次清零标记位
-  float X_clear_data1;         //X轴第一次清零数据
-	float X_clear_data2;         //X轴第二次清零数据
-	float X_devide_date;         //X轴分中数据
-	float Y_clear_data1;         //Y轴第一次清零数据
-	float Y_clear_data2;         //Y轴第一次清零数据
-	float Y_devide_date;         //Y轴分中数据
  
 }Devide_Set;
 
@@ -185,24 +177,6 @@ void WorkingStatus_Stoped(void);
 
 //显示机器正在加工
 void WorkingStatus_Starting(void);
-
-//对X轴工件坐标清零
-void X_coordinate_clear(void);
-
-//对Y轴工件坐标清零
-void Y_coordinate_clear(void);
-
-//对Z轴工件坐标清零
-void Z_coordinate_clear(void);
-
-//对A轴工件坐标清零
-void A_coordinate_clear(void);
-
-//对B轴工件坐标清零
-void B_coordinate_clear(void);
-
-//对所有工件坐标清零
-void All_Workpiece_coordinate_clear(void);
 
 //XYZAB坐标按钮复位
 void XYZAB_button_reset(void);
@@ -249,35 +223,21 @@ void Show_coordinate_on_return_workpiece_zero_page(void);
 ////向主机发送坐标
 //void Send_Coordinate_to_Host_Machine(void);
 
-//向主机发送X轴坐标
-void Send_X_Coordinate_to_Host(void);
-
-//向主机发送Y轴坐标
-void Send_Y_Coordinate_to_Host(void);
-
-//向主机发送Z轴坐标
-void Send_Z_Coordinate_to_Host(void);
-
-//向主机发送A轴坐标
-void Send_A_Coordinate_to_Host(void);
-
-//向主机发送B轴坐标
-void Send_B_Coordinate_to_Host(void);
 
 
-//计算脉冲并显示X轴坐标
+//显示X轴坐标
 void Show_X_Coordinata(void);
 
-//计算脉冲并显示X轴坐标
+//显示X轴坐标
 void Show_Y_Coordinata(void);
 
-//计算脉冲并显示X轴坐标
+//显示X轴坐标
 void Show_Z_Coordinata(void);
 
-//计算脉冲并显示A轴坐标
+//显示A轴坐标
 void Show_A_Coordinata(void);
 
-//计算脉冲并显示B轴坐标
+//显示B轴坐标
 void Show_B_Coordinata(void);
 
 

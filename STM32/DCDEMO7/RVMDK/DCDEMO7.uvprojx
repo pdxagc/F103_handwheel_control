@@ -401,36 +401,6 @@
               <FileType>1</FileType>
               <FilePath>..\src\ulitity.c</FilePath>
             </File>
-            <File>
-              <FileName>flash.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\src\flash.c</FilePath>
-            </File>
-            <File>
-              <FileName>exti.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\src\exti.c</FilePath>
-            </File>
-            <File>
-              <FileName>timer.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\src\timer.c</FilePath>
-            </File>
-            <File>
-              <FileName>TFT.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\src\TFT.c</FilePath>
-            </File>
-            <File>
-              <FileName>cJSON.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\src\cJSON.c</FilePath>
-            </File>
-            <File>
-              <FileName>malloc.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\src\malloc.c</FilePath>
-            </File>
           </Files>
         </Group>
         <Group>
@@ -525,6 +495,36 @@
               <FileName>hmi_driver.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\src\hmi_driver.c</FilePath>
+            </File>
+            <File>
+              <FileName>flash.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\src\flash.c</FilePath>
+            </File>
+            <File>
+              <FileName>malloc.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\src\malloc.c</FilePath>
+            </File>
+            <File>
+              <FileName>TFT.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\src\TFT.c</FilePath>
+            </File>
+            <File>
+              <FileName>cJSON.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\src\cJSON.c</FilePath>
+            </File>
+            <File>
+              <FileName>timer.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\src\timer.c</FilePath>
+            </File>
+            <File>
+              <FileName>exti.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\src\exti.c</FilePath>
             </File>
           </Files>
         </Group>

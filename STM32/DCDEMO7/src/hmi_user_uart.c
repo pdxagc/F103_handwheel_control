@@ -16,17 +16,40 @@ hmi_user_uart.c中的串口发送接收函数共3个函数：
 #include "cJSON.h"
 #include "tft.h"
 #include "string.h"
+#include "stm32f10x_gpio.h"
+#include "ulitity.h"
 
 
 #define USART2_REC_LEN 2048
+#define Mac_address 0
+#define PACKAGELEN 30
+#define CMD_Length 8
+#define PULSE_DIV 4
+
+extern int32 Pulses_counter;
+extern uint8 Override_num;
+extern uint8  TX_Data [30]; //the sending package
+extern uint8  RX_Data [30]; //the receiving package
+extern uint8  USART2_RX_STA;
+extern Control_Panel_Pram control_panel_pram;
+
+#define My_Address 2
+uint8  RX_Busy=0;
+uint8  HC_Address, rxcounter, remaincounter; //this unit is this unit address, if change to master become 0000 
+uint8  ready2send; // bit is 1 while there is command to send
+uint8  ready2read;
+unsigned char multiplier_MSB=0;
+unsigned char multiplier_LSB=0;
+unsigned char controlling_mode=0;
+unsigned char mpg_counter_MSB=0;
+unsigned char mpg_counter_LSB=0;
 
 
 uint8  USART2_RX_BUF[USART2_REC_LEN];     //接收缓冲,最大USART2_REC_LEN个字节.
 uint8  USART2_Recdata_Len=0;              //接收字符个数            
 uint16 USART2_Rx_num=0;                   //带解析数据个数          
 
-extern uint8  USART2_RX_STA;
-extern Control_Panel_Pram control_panel_pram;
+
 
 
 /*******************************************************************************  
@@ -51,6 +74,7 @@ void Usart1_Init(uint32 BaudRate)
 
     //  /* Configure USART Rx as input floating */
     GPIO_InitStructure.GPIO_Pin = GPIO_Pin_10;                    //USART1_RX PA.10
+	  GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
     GPIO_InitStructure.GPIO_Mode = GPIO_Mode_IN_FLOATING;         //浮空输入
     GPIO_Init(GPIOA, &GPIO_InitStructure);
 	  //串口参数初始化 /* USART configuration */
@@ -73,7 +97,7 @@ void Usart1_Init(uint32 BaudRate)
 
 /*******************************************************************************  
 * 函 数 名         : Usart2_Init(与主机通讯)
-* 函数功能         : IO端口及串口1，时钟初始化函数    A2,A3    
+* 函数功能         : IO端口及串口2，时钟初始化函数    A2,A3    
 * 输    入         : 无  
 * 输    出         : 无  
 *******************************************************************************/ 
@@ -88,15 +112,22 @@ void Usart2_Init(uint32 BaudRate)
 		RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOA|RCC_APB2Periph_AFIO, ENABLE);
     RCC_APB1PeriphClockCmd(RCC_APB1Periph_USART2|RCC_APB2Periph_AFIO, ENABLE); 
 		
-		//USART2_TX   PA.2
+		//USART2_TX   PA.2      //TX-485
     GPIO_InitStructure.GPIO_Pin = GPIO_Pin_2; 
     GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
     GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AF_PP;	
     GPIO_Init(GPIOA, &GPIO_InitStructure);
  
-    //USART2_RX	  PA.3
-    GPIO_InitStructure.GPIO_Pin = GPIO_Pin_3;    
+    //USART2_RX	  PA.3      //RX-485  
+    GPIO_InitStructure.GPIO_Pin = GPIO_Pin_3;
+    GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;    
     GPIO_InitStructure.GPIO_Mode = GPIO_Mode_IN_FLOATING;
+    GPIO_Init(GPIOA, &GPIO_InitStructure);
+		
+		//初始化485发送或接收使能引脚 PA1
+		GPIO_InitStructure.GPIO_Pin = GPIO_Pin_1;
+    GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;    
+    GPIO_InitStructure.GPIO_Mode = GPIO_Mode_Out_PP;     //推挽输出
     GPIO_Init(GPIOA, &GPIO_InitStructure);
  
    //Usart2 NVIC 配置
@@ -108,49 +139,41 @@ void Usart2_Init(uint32 BaudRate)
 
  
 		USART_InitStructure.USART_BaudRate =BaudRate;
-		USART_InitStructure.USART_WordLength = USART_WordLength_8b;
-		USART_InitStructure.USART_StopBits = USART_StopBits_1;
-		USART_InitStructure.USART_Parity = USART_Parity_No;
-		USART_InitStructure.USART_HardwareFlowControl = USART_HardwareFlowControl_None;
-		USART_InitStructure.USART_Mode = USART_Mode_Rx | USART_Mode_Tx;	 
-    USART_Init(USART2, &USART_InitStructure);
+		USART_InitStructure.USART_WordLength = USART_WordLength_9b;            //字长为9位数据格式
+		USART_InitStructure.USART_StopBits = USART_StopBits_1;                 //一个停止位
+		USART_InitStructure.USART_Parity = USART_Parity_No;                    //无奇偶校验位
+		USART_InitStructure.USART_HardwareFlowControl = USART_HardwareFlowControl_None;   //无硬件流控
+		USART_InitStructure.USART_Mode = USART_Mode_Rx | USART_Mode_Tx;	       //收发模式
+    USART_Init(USART2, &USART_InitStructure);       
 		
 
-    USART_ITConfig(USART2, USART_IT_RXNE, ENABLE);  //
-    USART_Cmd(USART2, ENABLE);                    
+    USART_ITConfig(USART2, USART_IT_RXNE, ENABLE);  //接收中断使能
+    USART_Cmd(USART2, ENABLE);    
+    
+    RS485_TX_Set(0);		//使能485接收模式
 }
 
 
 
 void USART2_IRQHandler(void)
 {
-	uint8 Res;
-  if(USART_GetITStatus(USART2, USART_IT_RXNE) != RESET)   //读数据寄存器非空 接收中断（接收到的数据必须是0x0d 0x0a结尾）
-	{ 
-		 Res =USART_ReceiveData(USART2);                      //(USART1->DR); //读取接收到的数据	 
-		 if((Res>32 && Res<=126)||Res=='\r'||Res=='\n')      //Ascii字符大于33是显示字符	或者是回车
-			{	
-         USART2_RX_BUF[USART2_Recdata_Len]= Res ;
-				 USART2_Recdata_Len++;
-				 if(USART2_Recdata_Len>(USART2_REC_LEN-1))
-				 {
-					 USART2_Recdata_Len=0;                              //接收数据错误，重新开始接收
-				 }				
-				 if(Res==0x0a)                                     //0x0d:'\r'  0x0a:'\n'
-				 {
-           USART2_RX_STA=1;                                 //接收到了数据
-					// USART2_Rx_num++;                                 //有多少条指令等待解析								 
-				 }
-		}
-
-	}
+	Usart2_Recieve_ISR_Process();
 
 }
 
+
+//RS485 模式控制.en:0,接收;1,发送.
+void RS485_TX_Set(uint8 en)
+{
+	if(en)
+		GPIO_SetBits(GPIOA, GPIO_Pin_1);
+	else
+		GPIO_ResetBits(GPIOA, GPIO_Pin_1);
+}
  
 /***************************************************************************
-*   \name   SendChar()
-*   \brief  发送1个字节（本程序USART1专用） 
+*   \name   SendChar()（本函数是USART1专用）
+*   \brief  发送1个字节 
 *   \param  t 发送的字节
 *****************************************************************************/
 void  SendChar(uchar t)     
@@ -162,7 +185,6 @@ void  SendChar(uchar t)
 
 
 /***************************************************************************
-*   \name   Usart_SendByte( )
 *   \brief  发送一个字符 
 *   \param  ch 发送的字节
 *****************************************************************************/
@@ -173,11 +195,19 @@ void  SendChar(uchar t)
     while (USART_GetFlagStatus(pUSARTx, USART_FLAG_TXE) == RESET); /* 等待发送数据寄存器为空 */
  }
  
-/***************************************************************************
-*   \name   Usart_SendString( )
-*   \brief  发送一个字符 
-*   \param  str 发送的字符串
-*****************************************************************************/
+ //Usart2_send_Str 发送数组内容
+ void Usart2_send_Str(uint8 buf[])
+ {
+	 uint8 i=0;
+	 while(i<10)
+	 {
+		 Usart_SendByte( USART2, buf[i] );
+			i++;
+	    while (USART_GetFlagStatus(USART2,USART_FLAG_TC)==RESET); /* 等待发送完成 */	 
+	 }
+ 
+ }
+// 发送的字符串
  void Usart_SendString( USART_TypeDef * pUSARTx, char *str)
  {
 		//unsigned int k=0;
@@ -189,92 +219,203 @@ void  SendChar(uchar t)
 	  while (USART_GetFlagStatus(pUSARTx,USART_FLAG_TC)==RESET); /* 等待发送完成 */
  }
  
-/***************************************************************************
-*   \name   uart2_command_handle( )
-*   \brief  解析串口2接收到的数据
-*   \param  无
-*****************************************************************************/
- 
- void uart2_command_handle(void)
- {
-	 cJSON *cjson,*item_r,*item_pos,*item;//*arrayItem;          //定义cJSON结构体变量
-	 char *Rec_data=(char *)USART2_RX_BUF;   //定义一个指针指向USART2接收数据buf
-	 cjson=cJSON_Parse(Rec_data);            //把接收到的数据打包JSON字符串,成功返回一个指向内存块中的cJSON的指针，失败返回NULL
-	 if(cjson!= NULL)                         //判断cJSON_Parse函数返回值,确定是否打包成功
-    {
-			item_r=cJSON_GetObjectItem(cjson,"r");        //获取一个对象"r"
-		  if(item_r!= NULL)                             //判断是否有对象“r”
+
+ // 发送数据前，生成一个校验参数	
+char SetXor	(char length, char start)
+{
+	char i, buf;;
+
+	buf=TX_Data[start];
+	for (i=start+1; i<=(length); i++)
+		buf=buf^TX_Data[i];
+	return buf;
+}
+
+//接收数据后，生成一个检验参数，前后参数对比，一致的话则接收的数据正确
+unsigned char CheckXor (char data, unsigned char len)
+{
+	char buf1, buf;
+	char i;
+
+	buf1=RX_Data[len];
+	buf=RX_Data[0];
+	for (i=1; i<(len); i++)
+	{
+		buf= buf^RX_Data[i];
+	}
+	if (buf1==buf)
+		return 1;
+	else
+		return 0;
+}
+
+//地址校验
+uint8_t Check_Address (char data)
+{
+	unsigned char buf;
+	buf = data&(0x1f);//0b0001 1111;
+	if (buf==My_Address)	
+		return 1;
+	else
+		return	0;
+}
+
+
+// 串口2接收中断执行函数  //place at ISR，接收主机发送的数据
+void Usart2_Recieve_ISR_Process (void)
+{ 	
+	 //as master , because customer can easy to upgrade the master unit, 
+	 //if main board without a master for over 200ms, main board become master
+	 unsigned char RX_Buffer;
+	 short dat; //16 bit
+	 dat=USART2->DR;
+	 USART2->SR&=~(1<<5);  //SR寄存器的第五位清0
+	 RX_Buffer=dat;
+	 if(dat&(1<<8))
+	 {
+
+		 if (Check_Address(RX_Buffer))
+	   {
+	  		rxcounter=0;
+	  		RX_Busy=1;
+	   }
+	 }
+   else if(RX_Busy==1)
+	 {
+			if(rxcounter >= PACKAGELEN ) 
 			{
-				//************************************************************************解析工件坐标*************************************
-				item_pos=cJSON_GetObjectItem(item_r,"pos");
-			  if(item_pos!= NULL)                          //判断是否有对象“pos”
-				{
-				   item=cJSON_GetObjectItem(item_pos,"x");      //获取一个对象"x"
-					 if(item!=NULL)
-					 {
-						 control_panel_pram.X_value=item->valuedouble;
-					 }
-					 item=cJSON_GetObjectItem(item_pos,"y");      //获取一个对象"y"
-					 if(item!=NULL)
-					 {
-						 control_panel_pram.Y_value=item->valuedouble;
-					 }
-					 item=cJSON_GetObjectItem(item_pos,"z");      //获取一个对象"z"
-					 if(item!=NULL)
-					 {
-						 control_panel_pram.Z_value=item->valuedouble;
-					 }
-					 item=cJSON_GetObjectItem(item_pos,"a");      //获取一个对象"a"
-					 if(item!=NULL)
-					 {
-						 control_panel_pram.A_value=item->valuedouble;
-					 }
-					 item=cJSON_GetObjectItem(item_pos,"b");      //获取一个对象"b"
-					 if(item!=NULL)
-					 {
-						 control_panel_pram.B_value=item->valuedouble;
-					 }
-				}
-				//*******************************************************************************解析解析坐标***********************
-				item_pos=cJSON_GetObjectItem(item_r,"mpo");
-			  if(item_pos!= NULL)                          //判断是否有对象“pos”
-				{
-					item=cJSON_GetObjectItem(item_pos,"x");      //获取一个对象"x"
-					 if(item!=NULL)
-					 {
-						 control_panel_pram.X_Mac_value=item->valuedouble;
-					 }
-					 item=cJSON_GetObjectItem(item_pos,"y");      //获取一个对象"y"
-					 if(item!=NULL)
-					 {
-						 control_panel_pram.Y_Mac_value=item->valuedouble;
-					 }
-					 item=cJSON_GetObjectItem(item_pos,"z");      //获取一个对象"z"
-					 if(item!=NULL)
-					 {
-						 control_panel_pram.Z_Mac_value=item->valuedouble;
-					 }
-					 item=cJSON_GetObjectItem(item_pos,"a");      //获取一个对象"a"
-					 if(item!=NULL)
-					 {
-						 control_panel_pram.A_Mac_value=item->valuedouble;
-					 }
-					 item=cJSON_GetObjectItem(item_pos,"b");      //获取一个对象"b"
-					 if(item!=NULL)
-					 {
-						 control_panel_pram.B_Mac_value=item->valuedouble;
-					 }				
-				}
-			}		
+				RX_Busy=0;
+				return; 
+			}
+	  	RX_Data[rxcounter]=RX_Buffer;   //RX_Data[0]存储数据长度
+	  	rxcounter++;
+	  	 //it is package length
+	  	if(RX_Data[0]>PACKAGELEN)
+	  	{ 
+	  	 	RX_Busy=0;//等待下一个起始指令
+	  	}
+	  	if(rxcounter>RX_Data[0])
+	  	{
+	  		//check package xor
+	  		RX_Busy=0;
+	  		if(CheckXor(RX_Data[rxcounter-1],RX_Data[0]))
+	  		{
+	  			ready2read=1; //校验通过
+	  		}
+	 	   }
+	  }
+
+}
+
+
+//串口2接收数据处理函数
+void Usart2_Data_handle (void)
+{
+	uint8 command;
+	uint16 Recdata1,Recdata2;
+	if(ready2read)        //检验通过
+	{
+		command=RX_Data[1];
+		
+		switch(command)
+		{
+			case CMD_ASK_SLAVE:           //发送数据
+				Usart2_Send_Data(10);
+			break;			
+			case CMD_UPDATE_MACH3_NUMBER: //接收到坐标  
+			{
+				Recdata1=RX_Data[2];
+				Recdata2=RX_Data[4];
+				control_panel_pram.X_value = (int16)(Recdata1<<8)+RX_Data[3]+((int16)((Recdata2<<8)+RX_Data[5]))*0.001;
+				Recdata1=RX_Data[6];
+				Recdata2=RX_Data[8];
+				control_panel_pram.Y_value = (int16)(Recdata1<<8)+RX_Data[7]+((int16)((Recdata2<<8)+RX_Data[9]))*0.001;
+				Recdata1=RX_Data[10];
+				Recdata2=RX_Data[12];
+				control_panel_pram.Z_value = (int16)(Recdata1<<8)+RX_Data[11]+((int16)((Recdata2<<8)+RX_Data[13]))*0.001;
+				Recdata1=RX_Data[14];
+				Recdata2=RX_Data[16];
+				control_panel_pram.A_value = (int16)(Recdata1<<8)+RX_Data[15]+((int16)((Recdata2<<8)+RX_Data[17]))*0.001;		
+			}break;
+			
 		}
-		cJSON_Delete(cjson);
-		memset(USART2_RX_BUF,0,USART2_Recdata_Len);
-		USART2_RX_STA=0;
-		USART2_Recdata_Len=0;
-	 
- 
- 
- 
- 
- }
+		ready2read=0;
+	}
+
+
+}
+
+// 串口2发送数据
+void Usart2_Send_Data (uint8 length)
+{ 
+	
+	
+	uint8 i;
+	Create_CMD_and_Date();
+	RS485_TX_Set(1);
+	delay_ms(1);
+	for(i=0;i<length;i++)
+	{
+		//Send the next data byte at the buffer
+		if (i==0)
+		{
+			USART2->DR =(uint32_t)(1<<8)|TX_Data[0];
+		//	USART2->DR =0x0055;
+			while((USART2->SR&0X40)==0)
+			{
+
+			};//循环发送,直到发送完毕  
+		}	
+		else
+		{
+			USART2->DR = TX_Data[i];
+			while((USART2->SR&0X40)==0)
+			{
+
+			};//循环发送,直到发送完毕   
+		}
+	}
+	RS485_TX_Set(0);
+
+}
+
+
+//确定是哪个轴选中
+uint8 Axis_Gets()
+{
+	uint8 axis;
+	switch(control_panel_pram.Axis_press)
+	{
+		case CMD_X_AXIS: axis=10;break;
+	  case CMD_Y_AXIS: axis=11;break;
+		case CMD_Z_AXIS: axis=12;break;
+		case CMD_A_AXIS: axis=13;break;
+		case CMD_B_AXIS: axis=14;break;
+	}
+	
+	return axis;
+}
+
+//创建发给主机的指令和数据
+//  address  length  null   mpgmsb  mpglsb  multiplierlsb   key   axis  div     xorcheck
+// bit 0     1       2      3       4       5                6    7      8       9
+
+//倍率：x1 x2 x5 x10 x20 有效
+//0-16 按键 50-66（长按） 0xff无效
+//控制模式 10:x轴 11:y轴 12:z 13:a轴
+void Create_CMD_and_Date(void)
+{
+	
+			TX_Data[0] = Mac_address;
+			TX_Data[1] = CMD_Length;
+			TX_Data[2] = 0;
+			TX_Data[3] = Pulses_counter>>8;
+			TX_Data[4] = Pulses_counter;
+			TX_Data[5] = Override_num;
+			TX_Data[6] = control_panel_pram.Press_button;
+			TX_Data[7] = Axis_Gets();
+			TX_Data[8] = 4;
+			TX_Data[9] = SetXor(TX_Data[1],1);	
+		
+}
 
