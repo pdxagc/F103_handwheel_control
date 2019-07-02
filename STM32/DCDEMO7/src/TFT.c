@@ -10,7 +10,6 @@
 
 
 extern uint8  Work_Page_Status;
-extern int32 Pulses_counter;              // 手轮脉冲数量
 extern uint8 Override_num;
 extern Speed_Control Speed;
 extern Pram_Status pram_status;
@@ -124,6 +123,8 @@ void Power_On_Set(void)
 	Override_num=1;                   //开机默认倍率
 	Work_Page_Status=Working_Page;    //开机进入加工页面
 	control_panel_pram.Axis_press = CMD_X_AXIS;
+	SetButtonValue(0,42,1);           //X轴选中状态
+	SetButtonValue(2,22,1);
 	
 
 
@@ -352,48 +353,64 @@ void Override_Change_Process(void)
 }
 
 // 在加工页面和控制面板页面显示所有轴坐标
-void TFT_Show_coordanate_value(void)
+void TFT_Show_coordanate_value(uint8 state)
 {
 	char buf1[20];
-	sprintf((char *)buf1,"%09.2f",control_panel_pram.X_value); 
-	SetTextValue(2,17,(uchar *)buf1);	                                //显示X轴工件坐标
-	SetTextValue(0,16,(uchar *)buf1);
+	if(state==Working_Page)
+	{
+		sprintf((char *)buf1,"%09.2f",control_panel_pram.X_value);      //显示X轴工件坐标
+		SetTextValue(0,16,(uchar *)buf1);
+		
+		sprintf((char *)buf1,"%09.2f",control_panel_pram.Y_value);       //显示Y轴工件坐标
+		SetTextValue(0,17,(uchar *)buf1);
+		
+		sprintf((char *)buf1,"%09.2f",control_panel_pram.Z_value);      //显示Z轴工件坐标
+		SetTextValue(0,18,(uchar *)buf1);
+		
+		sprintf((char *)buf1,"%09.2f",control_panel_pram.A_value);       //显示A轴工件坐标
+		SetTextValue(0,19,(uchar *)buf1);
+		
+		sprintf((char *)buf1,"%09.2f",control_panel_pram.B_value);        //显示B轴工件坐标
+		SetTextValue(0,20,(uchar *)buf1);
+	}
+	else if(state==ControlPanel_Page)
+	{
+		sprintf((char *)buf1,"%09.2f",control_panel_pram.X_value); 
+	  SetTextValue(2,17,(uchar *)buf1);
+		
+		sprintf((char *)buf1,"%09.2f",control_panel_pram.Y_value);
+  	SetTextValue(2,18,(uchar *)buf1); 
+		
+		sprintf((char *)buf1,"%09.2f",control_panel_pram.Z_value);
+	  SetTextValue(2,19,(uchar *)buf1); 
+		
+		sprintf((char *)buf1,"%09.2f",control_panel_pram.A_value);
+		SetTextValue(2,20,(uchar *)buf1);
+		
+		sprintf((char *)buf1,"%09.2f",control_panel_pram.B_value);
+	  SetTextValue(2,21,(uchar *)buf1); 
 	
-	sprintf((char *)buf1,"%09.2f",control_panel_pram.Y_value);
-	SetTextValue(2,18,(uchar *)buf1);                                //显示Y轴工件坐标
-	SetTextValue(0,17,(uchar *)buf1);
-	
-	sprintf((char *)buf1,"%09.2f",control_panel_pram.Z_value);
-	SetTextValue(2,19,(uchar *)buf1);                                //显示Z轴工件坐标
-	SetTextValue(0,18,(uchar *)buf1);
-	
-	sprintf((char *)buf1,"%09.2f",control_panel_pram.A_value);
-	SetTextValue(2,20,(uchar *)buf1);                                //显示A轴工件坐标
-	SetTextValue(0,19,(uchar *)buf1);
-	
-	sprintf((char *)buf1,"%09.2f",control_panel_pram.B_value);
-	SetTextValue(2,21,(uchar *)buf1);                               //显示B轴工件坐标
-	SetTextValue(0,20,(uchar *)buf1);
-	
-	sprintf((char *)buf1,"%09.2f",control_panel_pram.X_Mac_value); 
-	SetTextValue(2,38,(uchar *)buf1);	                               //显示X轴机械坐标
-	SetTextValue(0,34,(uchar *)buf1);
-	
-	sprintf((char *)buf1,"%09.2f",control_panel_pram.Y_Mac_value);
-	SetTextValue(2,39,(uchar *)buf1);                                //显示Y轴机械坐标
-	SetTextValue(0,35,(uchar *)buf1);
-	
-	sprintf((char *)buf1,"%09.2f",control_panel_pram.Z_Mac_value);
-	SetTextValue(2,40,(uchar *)buf1);                                //显示Z轴机械坐标
-	SetTextValue(0,36,(uchar *)buf1);
-	
-	sprintf((char *)buf1,"%09.2f",control_panel_pram.A_Mac_value);
-	SetTextValue(2,41,(uchar *)buf1);                                //显示A轴机械坐标
-	SetTextValue(0,37,(uchar *)buf1);
-	
-	sprintf((char *)buf1,"%09.2f",control_panel_pram.B_Mac_value);
-	SetTextValue(2,42,(uchar *)buf1);                               //显示B轴机械坐标
-	SetTextValue(0,38,(uchar *)buf1);
+	}
+//	sprintf((char *)buf1,"%09.2f",control_panel_pram.X_Mac_value); 
+//	SetTextValue(2,38,(uchar *)buf1);	                               //显示X轴机械坐标
+//	SetTextValue(0,34,(uchar *)buf1);
+
+//	
+//	sprintf((char *)buf1,"%09.2f",control_panel_pram.Y_Mac_value);
+//	SetTextValue(2,39,(uchar *)buf1);                                //显示Y轴机械坐标
+//	SetTextValue(0,35,(uchar *)buf1);
+//	
+//	sprintf((char *)buf1,"%09.2f",control_panel_pram.Z_Mac_value);
+//	SetTextValue(2,40,(uchar *)buf1);                                //显示Z轴机械坐标
+//	SetTextValue(0,36,(uchar *)buf1);
+//	
+//	sprintf((char *)buf1,"%09.2f",control_panel_pram.A_Mac_value);
+//	SetTextValue(2,41,(uchar *)buf1);                                //显示A轴机械坐标
+//	SetTextValue(0,37,(uchar *)buf1);
+//	
+//	sprintf((char *)buf1,"%09.2f",control_panel_pram.B_Mac_value);
+//	SetTextValue(2,42,(uchar *)buf1);                               //显示B轴机械坐标
+//	SetTextValue(0,38,(uchar *)buf1);
 
 }
 

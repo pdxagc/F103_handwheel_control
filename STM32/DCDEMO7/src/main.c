@@ -20,7 +20,7 @@
 
 volatile uint32  timer_tick_count = 0;               //定时器节拍
 uint8  cmd_buffer[CMD_MAX_SIZE];                     //指令缓存
-uint8  USART2_RX_STA=0;                              //USART2接收状态标记
+uint8  USART3_RX_STA=0;                              //USART2接收状态标记
 
 uint8  TX_Data [30]; //the sending package    存储串口2要发送的数据（主程序发送）
 uint8  RX_Data [30]; //the receiving package  接收串口2发来的数据（在中断中接收）
@@ -34,11 +34,12 @@ uint16 get_screen_id;                    //获取画面ID
 uint16 get_control_id;                   //获取控件ID
 uint32 get_value;                        //获取数值
 uint8  input_buf[20];                    //键盘输入内容
-
+uint8 last_time_work_state;              //记录上一次机器工作状态
 int16 Pulses_counter;              // 手轮脉冲数量
 uint8 Override_num;                //倍率
 uint8 Send_cooddinate_status;      //发送坐标标记位,1:发送坐标，0：不发送
 uint8 first_time_re_workpiece;     //首次进入回工件零页面
+uint8 first_time_into_ISR=0;        //第一次进入中断标志位 
 int32 Working_line;                //加工行数
 
 uint8 file_name[20]="精雕佛像";    //文件名
@@ -58,24 +59,24 @@ Jump_Work_Set jump_work_set;               //声明跳行加工相关参数的结构体变量
 */ 
 /*******************************************************************************************************/
 int main()                                                                          
-{  
+ {  
 	qsize  size = 0;          //指令长度 
-	Set_System();             //配置时钟                                                                                                                                 
-	Interrupts_Config();      //配置串口中断                                                                                                                             
-	systicket_init();         //配置时钟节拍	
+	Set_System();             //配置时钟                                                                                                                                                                                                                                                              
+	systicket_init();         //配置时钟节拍
+  Interrupts_Config();      //配置串口中断	 
 	Usart1_Init(115200);      //串口1初始化(与串口屏通讯)
-  Usart2_Init(115200);      //串口2初始化(与雕刻机通讯)
+  Usart3_Init(115200);      //串口3初始化(与雕刻机通讯)
 	queue_reset();            //清空串口接收缓冲区 
 	//TIME2_Init();             //定时器2初始化(向主机发送坐标)
 	//TIME3_Init();             //定时器3初始化(向主机询问坐标)
   TIME4_Init();             //定时器4初始化(计算手轮脉冲)
-	TIM_Cmd(TIM4, DISABLE);   //关闭TIM4定时器                                                                                               
+	//TIM_Cmd(TIM4, DISABLE);   //关闭TIM4定时器                                                                                               
 	delay_ms(300);            //延时等待串口屏初始化完毕,必须等待300ms  
 	
 	Power_On_Set();                 //串口屏开机动画和参数初始化设置	
 	Setting_page_pram_get();        //获取串口屏设置页面相关参数值（保存在flash）	
 	Return_last_status();           //恢复上一次串口屏设置页面相关参数值
-		
+
 		//    特别注意
 		//    MCU不要频繁向串口屏发送数据，否则串口屏的内部缓存区会满，从而导致数据丢失(缓冲区大小：标准型8K，基本型4.7K)
 		//    1) 一般情况下，控制MCU向串口屏发送数据的周期大于100ms，就可以避免数据丢失的问题；
@@ -83,7 +84,7 @@ int main()
 	
 	while(1)                                                                        
 	{
-		size = queue_find_cmd(cmd_buffer,CMD_MAX_SIZE);              //接收到串口屏的数据，从USART1的指令缓冲区cmd_buffer中获取一条指令，得到指令长度       
+  	size = queue_find_cmd(cmd_buffer,CMD_MAX_SIZE);              //接收到串口屏的数据，从USART1的指令缓冲区cmd_buffer中获取一条指令，得到指令长度       
 		if(size>0 && cmd_buffer[1]!=0x07)                            //接收到指令 ，及判断是否为开机提示
 		{                                                                           
 			ProcessMessage((PCTRL_MSG)cmd_buffer, size);               //指令分析处理 ，标记应该进入哪个Work_Page_Status，标记相应的操作位
@@ -91,10 +92,16 @@ int main()
 		}
 		
 		Work_Page_Process();                                         //进入标记的工作页面，处理相关任务
-    
-		//Usart2_Data_handle();                                       //串口2接收数据后，对数据进行处理
-		Usart2_Send_Data(10);
-				
+		USART3->CR1 &=(~(1<<2));
+		if(USART3->SR &1<<3)
+		{
+			uint8_t i;
+			i=USART3->SR;
+			i=USART3->DR;
+		}
+		Usart3_Data_handle();                                       //串口3接收数据后，对数据进行处理
+		USART3->CR1|=1<<2;
+
 	}  
 }
 
@@ -108,28 +115,31 @@ int main()
 *************************************************************/
 void Work_Page_Process(void)
 {
-	if(state.Work_state==Start)         
+	if(last_time_work_state!=state.Work_state)
 	{
-		WorkingStatus_Starting();      //串口屏显示当前处于加工状态
-	}
-	else                                 
-	{
-		WorkingStatus_Stoped();        //串口屏显示当前已经停止加工
+		if(state.Work_state==Start)         
+		{
+			WorkingStatus_Starting();      //串口屏显示当前处于加工状态
+		}
+		else                                 
+		{
+			WorkingStatus_Stoped();        //串口屏显示当前已经停止加工
+		}
 	}
 	
 	switch(Work_Page_Status)
 	{	
 		case Working_Page: //*********************************************************加工页面***************************************************************************************************
 		{	
-			TFT_Show_coordanate_value();		                   //串口屏显示工件和机械坐标	
+			Pulses_counter=Get_Pulses_num();       //计算脉冲个数 
+			TFT_Show_coordanate_value(Work_Page_Status);		   //串口屏显示工件和机械坐标	
 			Spindle_and_Work_Speed_Key_Process();	           	//加工中心主轴速度和加工速度按钮处理
 			if(state.Work_state==Start)                        //机器处于加工状态中
 			{
-				 
-			}
-			
+				
+			}		
 			SetTextValue(0,21,(uchar *)file_name);        //显示正在加载的文件名	
-			sprintf(Working_line_buf,"%d",Working_line);  
+			sprintf(Working_line_buf,"%d",Pulses_counter);  
 			SetTextValue(0,22,(uchar *)Working_line_buf);     //显示加工行数，需要向主机询问
 			
 		}break;
@@ -164,64 +174,64 @@ void Work_Page_Process(void)
 		{			
 //			if(state.Work_state==Stop)	                        //停止加工
 //			{
-				Pulses_counter=Get_Pulses_num();       //计算脉冲个数  					
-				switch (control_panel_pram.Axis_press)   			
-				{
-					case CMD_X_AXIS:            //***************X轴选定状态**************	
-					{
-						
-							if( control_panel_pram.Clear_Button==0 && control_panel_pram.All_Spindle_Clear_Button)  //全轴清零触发
-							{				
-								control_panel_pram.All_Spindle_Clear_Button=0;
-							}
-							if(devide_set.Devide_contronl)         //分中设置
-							{
-								devide_set.Devide_contronl = 0;									
-							}													
-					}break;
-					case CMD_Y_AXIS:                //****************Y轴选定状态*************
-					{
-	
-						if( control_panel_pram.Clear_Button==0 && control_panel_pram.All_Spindle_Clear_Button)  //全轴清零触发
-						{										
-							control_panel_pram.All_Spindle_Clear_Button=0;
-						}
-						if(devide_set.Devide_contronl)         //分中设置
-						{
-							devide_set.Devide_contronl = 0;
-							
-						}
-					
-					}break;
-					case CMD_Z_AXIS:                 //*****************Z轴选定状态********
-					{
-						if( control_panel_pram.Clear_Button==0 && control_panel_pram.All_Spindle_Clear_Button)  //全轴清零触发
-						{						
-							control_panel_pram.All_Spindle_Clear_Button=0;
-						}
-					
-					}break;
-					case CMD_A_AXIS:                //***************A轴选定状态*************
-					{
-						if( control_panel_pram.Clear_Button==0 && control_panel_pram.All_Spindle_Clear_Button)  //全轴清零触发
-						{						
-							control_panel_pram.All_Spindle_Clear_Button=0;
-						}
-						
-					}break;
-					case CMD_B_AXIS:                //****************B轴选定状态*************
-					{
-						if( control_panel_pram.Clear_Button==0 && control_panel_pram.All_Spindle_Clear_Button)  //全轴清零触发
-						{							
-							control_panel_pram.All_Spindle_Clear_Button=0;
-						}	
-					}break;
+				Pulses_counter=Get_Pulses_num();       //计算脉冲个数 
+        			
+//				switch (control_panel_pram.Axis_press)   			
+//				{
+//					case CMD_X_AXIS:            //***************X轴选定状态**************	
+//					{				
+//							if( control_panel_pram.Clear_Button==0 && control_panel_pram.All_Spindle_Clear_Button)  //全轴清零触发
+//							{				
+//								control_panel_pram.All_Spindle_Clear_Button=0;
+//							}
+//							if(devide_set.Devide_contronl)         //分中设置
+//							{
+//								devide_set.Devide_contronl = 0;									
+//							}													
+//					}break;
+//					case CMD_Y_AXIS:                //****************Y轴选定状态*************
+//					{
+//	
+//						if( control_panel_pram.Clear_Button==0 && control_panel_pram.All_Spindle_Clear_Button)  //全轴清零触发
+//						{										
+//							control_panel_pram.All_Spindle_Clear_Button=0;
+//						}
+//						if(devide_set.Devide_contronl)         //分中设置
+//						{
+//							devide_set.Devide_contronl = 0;
+//							
+//						}
+//					
+//					}break;
+//					case CMD_Z_AXIS:                 //*****************Z轴选定状态********
+//					{
+//						if( control_panel_pram.Clear_Button==0 && control_panel_pram.All_Spindle_Clear_Button)  //全轴清零触发
+//						{						
+//							control_panel_pram.All_Spindle_Clear_Button=0;
+//						}
+//					
+//					}break;
+//					case CMD_A_AXIS:                //***************A轴选定状态*************
+//					{
+//						if( control_panel_pram.Clear_Button==0 && control_panel_pram.All_Spindle_Clear_Button)  //全轴清零触发
+//						{						
+//							control_panel_pram.All_Spindle_Clear_Button=0;
+//						}
+//						
+//					}break;
+//					case CMD_B_AXIS:                //****************B轴选定状态*************
+//					{
+//						if( control_panel_pram.Clear_Button==0 && control_panel_pram.All_Spindle_Clear_Button)  //全轴清零触发
+//						{							
+//							control_panel_pram.All_Spindle_Clear_Button=0;
+//						}	
+//					}break;
 										
-				}					
+//				}					
 //			}
-			TFT_Show_coordanate_value();		                  //串口屏显示工件和机械坐标
+			TFT_Show_coordanate_value(ControlPanel_Page);		  //串口屏显示工件和机械坐标
 			SetTextValue(2,27,(uchar *)file_name);            //显示正在加载的文件名	         				
-			sprintf(Working_line_buf,"%d",Working_line);  
+			sprintf(Working_line_buf,"%d",Pulses_counter);  
 			SetTextValue(2,28,(uchar *)Working_line_buf);     //显示加工行数，需要向主机询问	
 			
 		}break;
@@ -581,36 +591,36 @@ void ProcessMessage( PCTRL_MSG msg, uint16 size )
 									case 15:Work_Page_Status=ControlPanel_Page;break;
 									case 42:                                           //X轴按钮触发
 									{	
-										SetButtonValue(0,42,1);     //X轴保持选中状态
-										SetButtonValue(2,22,1);     //X轴保持选中状态
+//										SetButtonValue(0,42,1);     //X轴保持选中状态
+//										SetButtonValue(2,22,1);     //X轴保持选中状态
 										TIM_Cmd(TIM4, ENABLE);      //启动TIM4定时器																		
 										control_panel_pram.Axis_press= CMD_X_AXIS;								
 									}break;
 									case 43:                                           //Y轴按钮触发
 									{
-										SetButtonValue(0,43,1);        //Y轴保持选中状态
-										SetButtonValue(2,23,1);        //Y轴保持选中状态
+//										SetButtonValue(0,43,1);        //Y轴保持选中状态
+//										SetButtonValue(2,23,1);        //Y轴保持选中状态
 										TIM_Cmd(TIM4, ENABLE);         //启动TIM4定时器										
 										control_panel_pram.Axis_press = CMD_Y_AXIS;						
 									}break;
 									case 44:                                              //Z轴按钮触发
 									{
-										SetButtonValue(0,44,1);         //Z轴保持选中状态
-										SetButtonValue(2,24,1);         //Z轴保持选中状态
+//										SetButtonValue(0,44,1);         //Z轴保持选中状态
+//										SetButtonValue(2,24,1);         //Z轴保持选中状态
 										TIM_Cmd(TIM4, ENABLE);          //启动TIM4定时器										
 										control_panel_pram.Axis_press = CMD_Z_AXIS;														
 									}break;
 									case 45:                                             //A轴按钮触发
 									{
-										SetButtonValue(0,45,1);         //A轴保持选中状态
-										SetButtonValue(2,25,1);         //A轴保持选中状态
+//										SetButtonValue(0,45,1);         //A轴保持选中状态
+//										SetButtonValue(2,25,1);         //A轴保持选中状态
 										TIM_Cmd(TIM4, ENABLE);          //启动TIM4定时器										
 										control_panel_pram.Axis_press = CMD_A_AXIS;															
 									}break;
 									case 46:                                           //B轴按钮触发
 									{
-										SetButtonValue(0,46,1);     //B轴保持选中状态
-										SetButtonValue(2,26,1);     //B轴保持选中状态
+//										SetButtonValue(0,46,1);     //B轴保持选中状态
+//										SetButtonValue(2,26,1);     //B轴保持选中状态
 										TIM_Cmd(TIM4, ENABLE);      //启动TIM4定时器										
 										control_panel_pram.Axis_press = CMD_B_AXIS;											
 									}break;								
@@ -620,7 +630,7 @@ void ProcessMessage( PCTRL_MSG msg, uint16 size )
 					case 1:                                       //画面1：设置页面
 					{
 							Work_Page_Status=Setting_page;
-						if(state.Work_state==Stop)    //停止加工状态
+						if(state.Work_state==Stop)             //停止加工状态
 						{
 							switch(get_control_id)                                
 							{
@@ -650,7 +660,7 @@ void ProcessMessage( PCTRL_MSG msg, uint16 size )
 										char buf[20];
 										pram_status.Safe_Z_num=NotifyText(msg->param);										
 										sprintf(buf,"Safe_Z:%.2f",pram_status.Safe_Z_num);
-		                Usart_SendString(USART2,(char *)buf);     
+//		                Usart_SendString(USART2,(char *)buf);     
 									}										
 									break;
 									case 7:                   //获取对刀高度
@@ -666,7 +676,7 @@ void ProcessMessage( PCTRL_MSG msg, uint16 size )
 										char buf[20];
 										pram_status.Knife_block_high_num=NotifyText(msg->param);										
 										sprintf(buf,"Knife_block_high:%.2f",pram_status.Knife_block_high_num);
-		                Usart_SendString(USART2,(char *)buf);     
+//		                Usart_SendString(USART2,(char *)buf);     
 									}										
 									break;
 									case 9:                  //获取对刀块X轴位置
@@ -674,7 +684,7 @@ void ProcessMessage( PCTRL_MSG msg, uint16 size )
 										char buf[20];
 										pram_status.Auto_Knife_block_X=NotifyText(msg->param);										
 										sprintf(buf,"Knife_block_X:%.2f",pram_status.Auto_Knife_block_X);
-		                Usart_SendString(USART2,(char *)buf);       
+//		                Usart_SendString(USART2,(char *)buf);       
 									}										
 									break;
 									case 10:                 //获取对刀块Y轴位置
@@ -682,7 +692,7 @@ void ProcessMessage( PCTRL_MSG msg, uint16 size )
 										char buf[20];
 										pram_status.Auto_Knife_block_Y=NotifyText(msg->param);										
 										sprintf(buf,"Knife_block_Y:%.2f",pram_status.Auto_Knife_block_Y);
-		                Usart_SendString(USART2,(char *)buf);       
+//		                Usart_SendString(USART2,(char *)buf);       
 									}										
 									break;
 									case 11:                 //获取对刀块Z 轴位置
@@ -690,7 +700,7 @@ void ProcessMessage( PCTRL_MSG msg, uint16 size )
 										char buf[20];
 										pram_status.Auto_Knife_block_Z=NotifyText(msg->param);										
 										sprintf(buf,"Knife_block_Z:%.2f",pram_status.Auto_Knife_block_Z);
-		                Usart_SendString(USART2,(char *)buf);      
+//		                Usart_SendString(USART2,(char *)buf);      
 									}										
 									break;
 									case 12:                  //获取软限位X轴位置
@@ -698,7 +708,7 @@ void ProcessMessage( PCTRL_MSG msg, uint16 size )
 										char buf[20];
 										pram_status.Soft_limit_X=NotifyText(msg->param);										
 										sprintf(buf,"Soft_limit_X:%.2f",pram_status.Soft_limit_X);
-		                Usart_SendString(USART2,(char *)buf);      
+//		                Usart_SendString(USART2,(char *)buf);      
 									}										
 									break;
 									case 13:                   //获取软限位Y轴位置
@@ -706,7 +716,7 @@ void ProcessMessage( PCTRL_MSG msg, uint16 size )
 										char buf[20];
 										pram_status.Soft_limit_Y=NotifyText(msg->param);										
 										sprintf(buf,"Soft_limit_Y:%.2f",pram_status.Soft_limit_Y);
-		                Usart_SendString(USART2,(char *)buf);      
+//		                Usart_SendString(USART2,(char *)buf);      
 									}										
 									break;
 									case 14:                 //获取软限位Z轴位置
@@ -714,7 +724,7 @@ void ProcessMessage( PCTRL_MSG msg, uint16 size )
 										char buf[20];
 										pram_status.Soft_limit_Z=NotifyText(msg->param);										
 										sprintf(buf,"Soft_limit_Z:%.2f",pram_status.Soft_limit_Z);
-		                Usart_SendString(USART2,(char *)buf);      
+//		                Usart_SendString(USART2,(char *)buf);      
 									}										
 									break;
 									case 15:                 //获取软限位A轴位置
@@ -722,7 +732,7 @@ void ProcessMessage( PCTRL_MSG msg, uint16 size )
 										char buf[20];
 										pram_status.Soft_limit_A=NotifyText(msg->param);										
 										sprintf(buf,"Soft_limit_A:%.2f",pram_status.Soft_limit_A);
-		                Usart_SendString(USART2,(char *)buf);     
+//		                Usart_SendString(USART2,(char *)buf);     
 									}										
 									break;
 									case 16:                  //获取软限位B轴位置
@@ -730,7 +740,7 @@ void ProcessMessage( PCTRL_MSG msg, uint16 size )
 										char buf[20];
 										pram_status.Soft_limit_B=NotifyText(msg->param);										
 										sprintf(buf,"Soft_limit_B:%.2f",pram_status.Soft_limit_B);
-		                Usart_SendString(USART2,(char *)buf);       
+//		                Usart_SendString(USART2,(char *)buf);       
 									}										
 									break;
 									case 27:                           //语音提示按钮触发 
@@ -945,31 +955,31 @@ void ProcessMessage( PCTRL_MSG msg, uint16 size )
 									break;
 									case 22:                                            //X轴按钮触发
 									{	
-										SetButtonValue(2,22,1);     //X轴保持选中状态
+//										SetButtonValue(2,22,1);     //X轴保持选中状态
 										TIM_Cmd(TIM4, ENABLE);      //启动TIM4定时器																		
 										control_panel_pram.Axis_press= CMD_X_AXIS;								
 									}break;
 									case 23:                                            //Y轴按钮触发
 									{
-										SetButtonValue(2,23,1);        //Y轴保持选中状态
+//										SetButtonValue(2,23,1);        //Y轴保持选中状态
 										TIM_Cmd(TIM4, ENABLE);         //启动TIM4定时器										
 										control_panel_pram.Axis_press = CMD_Y_AXIS;						
 									}break;
 									case 24:                                              //Z轴按钮触发
 									{
-										SetButtonValue(2,24,1);         //Z轴保持选中状态
+//										SetButtonValue(2,24,1);         //Z轴保持选中状态
 										TIM_Cmd(TIM4, ENABLE);          //启动TIM4定时器										
 										control_panel_pram.Axis_press = CMD_Z_AXIS;														
 									}break;
 									case 25:                                             //A轴按钮触发
 									{
-										SetButtonValue(2,25,1);         //A轴保持选中状态
+//										SetButtonValue(2,25,1);         //A轴保持选中状态
 										TIM_Cmd(TIM4, ENABLE);          //启动TIM4定时器										
 										control_panel_pram.Axis_press = CMD_A_AXIS;															
 									}break;
 									case 26:                                           //B轴按钮触发
 									{
-										SetButtonValue(2,26,1);     //B轴保持选中状态
+//										SetButtonValue(2,26,1);     //B轴保持选中状态
 										TIM_Cmd(TIM4, ENABLE);      //启动TIM4定时器										
 										control_panel_pram.Axis_press = CMD_B_AXIS;											
 									}break;
@@ -1208,7 +1218,7 @@ void ProcessMessage( PCTRL_MSG msg, uint16 size )
 					case 15: Work_Page_Status=Disconnect_Remind_Page;break;
 					case 16: Work_Page_Status=SignOut_Remind_Page;break;
 					case 20: Work_Page_Status=Leading_Out_Pgae;break;
-					case 21:                                                  //画面21
+					case 21:                                                  //画面21 保存参数设置提醒页面
 					{
 						Work_Page_Status=Save_Pram_Page;
 						if(state.Work_state==Stop)    //停止加工状态

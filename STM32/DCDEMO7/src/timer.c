@@ -148,18 +148,18 @@ void TIM3_IRQHandler(void) //TIM3 中断
 {
 	if (TIM_GetITStatus(TIM3, TIM_IT_Update) != RESET) //检查 TIM3 更新中断发生与否
 	{
-		TIME3_Counter++;
-		TIM_ClearITPendingBit(TIM3, TIM_IT_Update );                  //清除 TIM3 更新中断标志
-		if(TIME3_Counter)
-		{
-		  Usart_SendString(USART2,"{\"pos\":null}\\r\\n");              //向主机询问工件坐标
-		}
-		if(TIME3_Counter==2)
-		{
-	    Usart_SendString(USART2,"{\"mpo\":null}\\r\\n");		           //向主机询问机械坐标
-			TIME3_Counter=0;
-		}
-		
+//		TIME3_Counter++;
+//		TIM_ClearITPendingBit(TIM3, TIM_IT_Update );                  //清除 TIM3 更新中断标志
+//		if(TIME3_Counter)
+//		{
+//		  Usart_SendString(USART2,"{\"pos\":null}\\r\\n");              //向主机询问工件坐标
+//		}
+//		if(TIME3_Counter==2)
+//		{
+//	    Usart_SendString(USART2,"{\"mpo\":null}\\r\\n");		           //向主机询问机械坐标
+//			TIME3_Counter=0;
+//		}
+//		
 	}
 }
 

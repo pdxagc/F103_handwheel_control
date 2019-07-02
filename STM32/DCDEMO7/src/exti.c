@@ -3,8 +3,6 @@
 #include "hmi_user_uart.h"
 
 
-//extern uint16 Pulses_counter;
-
 
 void Counter_Init(void)
 {	
@@ -100,7 +98,6 @@ void EXTI0_IRQHandler(void)
 {
 	if(EXTI_GetITStatus(EXTI_Line0)!=RESET)              //判断某个线上的中断是否发生
 	{
-		//Pulses_counter++;	
 		EXTI_ClearITPendingBit(EXTI_Line0);                 //清除 LINE0 上的中断标志位
 	}
 
@@ -110,7 +107,6 @@ void EXTI1_IRQHandler(void)
 {
 	if(EXTI_GetITStatus(EXTI_Line1)!=RESET)              //判断某个线上的中断是否发生
 	{
-//		Pulses_counter++;	
 		EXTI_ClearITPendingBit(EXTI_Line1);                 //清除 LINE0 上的中断标志位
 	}
 

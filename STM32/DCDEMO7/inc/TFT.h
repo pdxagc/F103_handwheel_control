@@ -215,7 +215,7 @@ void Coordinate_Change_Process(void);
 void Override_Change_Process(void);
 
 //在加工页面和控制面板页面显示所有轴坐标
-void TFT_Show_coordanate_value(void);
+void TFT_Show_coordanate_value(uint8 state);
 
 
 //在回工件零页面显示所有轴坐标值

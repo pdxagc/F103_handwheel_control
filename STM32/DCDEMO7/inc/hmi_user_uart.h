@@ -45,7 +45,8 @@
 #define CMD_Safe_Z	20                   //安全Z
 #define CMD_Reset	21                     //复位
 
-#define CMD_ASK_SLAVE 26                 //主机请求数据
+#define CMD_ASK_SLAVE 29                 //主机请求数据
+#define CMD_RPY_HC_MPG1	36               //主机获取数据
 #define CMD_UPDATE_MACH3_NUMBER	41       //主机发送坐标
 
 // 串口1初始化
@@ -53,7 +54,7 @@ void Usart1_Init(uint32 Baudrate);
 
 
 //串口2，时钟初始化函数    A2,A3    
-void Usart2_Init(uint32 BaudRate);
+void Usart3_Init(uint32 BaudRate);
 
 //RS485 模式控制.en:0,接收;1,发送.
 void RS485_TX_Set(uint8 en);
@@ -72,6 +73,9 @@ void  SendChar(uchar t);
 
 // 发送的字符串
  void Usart_SendString( USART_TypeDef * pUSARTx, char *str);
+ 
+  //Usart3_send_Str 发送数组内容
+ void Usart3_send_Str(uint8 buf[]);
 
 // 发送数据前，生成一个校验参数	
 char SetXor	(char length, char start);
@@ -83,13 +87,22 @@ unsigned char CheckXor (char data, unsigned char len);
 uint8_t Check_Address (char data);
 
 //串口2中断执行函数  //place at ISR
-void Usart2_Recieve_ISR_Process (void);
+void Usart3_Recieve_ISR_Process (void);
 
 //串口2接收数据处理函数
-void Usart2_Data_handle (void);
+void Usart3_Data_handle (void);
 
 // 串口2发送数据函数
-void Usart2_Send_Data (uint8 length);
+void Usart3_Send_Data (uint8 length);
+
+//判断脉冲是否发生变化
+uint8 Check_Pulses_change(void);
+
+//判断按键是否发生变化
+uint8 Check_CMD_button_change(void);
+
+//判断倍率是否发生变化
+uint8 Check_Override_change(void);
 
 //创建指令和数据
 void Create_CMD_and_Date(void);

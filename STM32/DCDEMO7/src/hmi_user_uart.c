@@ -20,17 +20,18 @@ hmi_user_uart.c中的串口发送接收函数共3个函数：
 #include "ulitity.h"
 
 
-#define USART2_REC_LEN 2048
+#define USART3_REC_LEN 2048
 #define Mac_address 0
 #define PACKAGELEN 30
 #define CMD_Length 8
 #define PULSE_DIV 4
 
-extern int32 Pulses_counter;
+extern int16 Pulses_counter;
 extern uint8 Override_num;
 extern uint8  TX_Data [30]; //the sending package
 extern uint8  RX_Data [30]; //the receiving package
-extern uint8  USART2_RX_STA;
+extern uint8  USART3_RX_STA;
+extern uint8 first_time_into_ISR;        //第一次进入中断标志位 
 extern Control_Panel_Pram control_panel_pram;
 
 #define My_Address 2
@@ -38,18 +39,9 @@ uint8  RX_Busy=0;
 uint8  HC_Address, rxcounter, remaincounter; //this unit is this unit address, if change to master become 0000 
 uint8  ready2send; // bit is 1 while there is command to send
 uint8  ready2read;
-unsigned char multiplier_MSB=0;
-unsigned char multiplier_LSB=0;
-unsigned char controlling_mode=0;
-unsigned char mpg_counter_MSB=0;
-unsigned char mpg_counter_LSB=0;
-
-
-uint8  USART2_RX_BUF[USART2_REC_LEN];     //接收缓冲,最大USART2_REC_LEN个字节.
-uint8  USART2_Recdata_Len=0;              //接收字符个数            
-uint16 USART2_Rx_num=0;                   //带解析数据个数          
-
-
+int16  Pulses_number;    //记录脉冲变化
+uint8  Override_before;  //记录倍率变化
+uint8  CMD_button;       //记录按键变化
 
 
 /*******************************************************************************  
@@ -96,33 +88,33 @@ void Usart1_Init(uint32 BaudRate)
 
 
 /*******************************************************************************  
-* 函 数 名         : Usart2_Init(与主机通讯)
-* 函数功能         : IO端口及串口2，时钟初始化函数    A2,A3    
+* 函 数 名         : Usart3_Init(与主机通讯)
+* 函数功能         : IO端口及串口3，时钟初始化函数    PB10,PB11    
 * 输    入         : 无  
 * 输    出         : 无  
 *******************************************************************************/ 
 
-void Usart2_Init(uint32 BaudRate)
+void Usart3_Init(uint32 BaudRate)
 	{
 		
     GPIO_InitTypeDef GPIO_InitStructure;
 		USART_InitTypeDef USART_InitStructure;
 		NVIC_InitTypeDef NVIC_InitStructure;
  
-		RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOA|RCC_APB2Periph_AFIO, ENABLE);
-    RCC_APB1PeriphClockCmd(RCC_APB1Periph_USART2|RCC_APB2Periph_AFIO, ENABLE); 
+		RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOB|RCC_APB2Periph_AFIO, ENABLE);
+    RCC_APB1PeriphClockCmd(RCC_APB1Periph_USART3|RCC_APB2Periph_AFIO, ENABLE); 
 		
-		//USART2_TX   PA.2      //TX-485
-    GPIO_InitStructure.GPIO_Pin = GPIO_Pin_2; 
+		//USART3_TX   PB10      //TX-485
+    GPIO_InitStructure.GPIO_Pin = GPIO_Pin_10; 
     GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
     GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AF_PP;	
-    GPIO_Init(GPIOA, &GPIO_InitStructure);
+    GPIO_Init(GPIOB, &GPIO_InitStructure);
  
-    //USART2_RX	  PA.3      //RX-485  
-    GPIO_InitStructure.GPIO_Pin = GPIO_Pin_3;
+    //USART3_RX	  PB11      //RX-485  
+    GPIO_InitStructure.GPIO_Pin = GPIO_Pin_11;
     GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;    
     GPIO_InitStructure.GPIO_Mode = GPIO_Mode_IN_FLOATING;
-    GPIO_Init(GPIOA, &GPIO_InitStructure);
+    GPIO_Init(GPIOB, &GPIO_InitStructure);
 		
 		//初始化485发送或接收使能引脚 PA1
 		GPIO_InitStructure.GPIO_Pin = GPIO_Pin_1;
@@ -130,8 +122,8 @@ void Usart2_Init(uint32 BaudRate)
     GPIO_InitStructure.GPIO_Mode = GPIO_Mode_Out_PP;     //推挽输出
     GPIO_Init(GPIOA, &GPIO_InitStructure);
  
-   //Usart2 NVIC 配置
-    NVIC_InitStructure.NVIC_IRQChannel = USART2_IRQn;        //中断号；
+   //Usart3 NVIC 配置
+    NVIC_InitStructure.NVIC_IRQChannel = USART3_IRQn;        //中断号；
 		NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 1;//抢占优先级1
 		NVIC_InitStructure.NVIC_IRQChannelSubPriority = 0;		   //响应优先级0
 		NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;			     //开启中断
@@ -144,21 +136,29 @@ void Usart2_Init(uint32 BaudRate)
 		USART_InitStructure.USART_Parity = USART_Parity_No;                    //无奇偶校验位
 		USART_InitStructure.USART_HardwareFlowControl = USART_HardwareFlowControl_None;   //无硬件流控
 		USART_InitStructure.USART_Mode = USART_Mode_Rx | USART_Mode_Tx;	       //收发模式
-    USART_Init(USART2, &USART_InitStructure);       
+    USART_Init(USART3, &USART_InitStructure);       
 		
 
-    USART_ITConfig(USART2, USART_IT_RXNE, ENABLE);  //接收中断使能
-    USART_Cmd(USART2, ENABLE);    
+    USART_ITConfig(USART3, USART_IT_RXNE, ENABLE);  //接收中断使能
+    USART_Cmd(USART3, ENABLE);    
     
     RS485_TX_Set(0);		//使能485接收模式
 }
 
 
 
-void USART2_IRQHandler(void)
+void USART3_IRQHandler(void)
 {
-	Usart2_Recieve_ISR_Process();
-
+	if(USART3->SR &1<<3)
+	{
+		uint8_t i;
+		i=USART3->SR;
+		i=USART3->DR;
+		return;
+//		i=USART3->CR2;
+//		i=USART3->CR3;
+	}
+	Usart3_Recieve_ISR_Process();
 }
 
 
@@ -195,15 +195,15 @@ void  SendChar(uchar t)
     while (USART_GetFlagStatus(pUSARTx, USART_FLAG_TXE) == RESET); /* 等待发送数据寄存器为空 */
  }
  
- //Usart2_send_Str 发送数组内容
- void Usart2_send_Str(uint8 buf[])
+ //Usart3_send_Str 发送数组内容
+ void Usart3_send_Str(uint8 buf[])
  {
 	 uint8 i=0;
 	 while(i<10)
 	 {
-		 Usart_SendByte( USART2, buf[i] );
+		 Usart_SendByte( USART3, buf[i] );
 			i++;
-	    while (USART_GetFlagStatus(USART2,USART_FLAG_TC)==RESET); /* 等待发送完成 */	 
+	    while (USART_GetFlagStatus(USART3,USART_FLAG_TC)==RESET); /* 等待发送完成 */	 
 	 }
  
  }
@@ -260,20 +260,22 @@ uint8_t Check_Address (char data)
 		return	0;
 }
 
-
+   
 // 串口2接收中断执行函数  //place at ISR，接收主机发送的数据
-void Usart2_Recieve_ISR_Process (void)
+void Usart3_Recieve_ISR_Process (void)
 { 	
 	 //as master , because customer can easy to upgrade the master unit, 
 	 //if main board without a master for over 200ms, main board become master
 	 unsigned char RX_Buffer;
 	 short dat; //16 bit
-	 dat=USART2->DR;
-	 USART2->SR&=~(1<<5);  //SR寄存器的第五位清0
+	 uint16 Recdata1,Recdata2;
+	 dat=USART3->DR;
+	 USART3->SR&=~(1<<5);  //SR寄存器的第五位清0
+	 USART3->DR;
+	 USART3->SR;
 	 RX_Buffer=dat;
 	 if(dat&(1<<8))
 	 {
-
 		 if (Check_Address(RX_Buffer))
 	   {
 	  		rxcounter=0;
@@ -301,6 +303,29 @@ void Usart2_Recieve_ISR_Process (void)
 	  		if(CheckXor(RX_Data[rxcounter-1],RX_Data[0]))
 	  		{
 	  			ready2read=1; //校验通过
+					if(first_time_into_ISR<2)
+					{
+						Recdata1=RX_Data[18];
+						Recdata2=RX_Data[19];	
+						TIM4->CNT = (Recdata1<<8)+Recdata2;
+						first_time_into_ISR++;	
+					}
+					else
+						first_time_into_ISR=3;
+					if(RX_Data[1] == CMD_ASK_SLAVE)
+					{
+						 Usart3_Send_Data(10);
+					}
+					
+//					USART3->CR1 &=(~(1<<2));
+//					if(USART3->SR &1<<3)
+//					{
+//						uint8_t i;
+//						i=USART3->SR;
+//						i=USART3->DR;
+//					}
+//					Usart3_Data_handle();                                       //串口3接收数据后，对数据进行处理
+//					USART3->CR1|=1<<2;
 	  		}
 	 	   }
 	  }
@@ -309,18 +334,18 @@ void Usart2_Recieve_ISR_Process (void)
 
 
 //串口2接收数据处理函数
-void Usart2_Data_handle (void)
+void Usart3_Data_handle (void)
 {
+
 	uint8 command;
 	uint16 Recdata1,Recdata2;
 	if(ready2read)        //检验通过
 	{
 		command=RX_Data[1];
-		
 		switch(command)
 		{
 			case CMD_ASK_SLAVE:           //发送数据
-				Usart2_Send_Data(10);
+				//Usart3_Send_Data(10);
 			break;			
 			case CMD_UPDATE_MACH3_NUMBER: //接收到坐标  
 			{
@@ -335,7 +360,9 @@ void Usart2_Data_handle (void)
 				control_panel_pram.Z_value = (int16)(Recdata1<<8)+RX_Data[11]+((int16)((Recdata2<<8)+RX_Data[13]))*0.001;
 				Recdata1=RX_Data[14];
 				Recdata2=RX_Data[16];
-				control_panel_pram.A_value = (int16)(Recdata1<<8)+RX_Data[15]+((int16)((Recdata2<<8)+RX_Data[17]))*0.001;		
+				control_panel_pram.A_value = (int16)(Recdata1<<8)+RX_Data[15]+((int16)((Recdata2<<8)+RX_Data[17]))*0.001;
+				
+        				
 			}break;
 			
 		}
@@ -346,39 +373,83 @@ void Usart2_Data_handle (void)
 }
 
 // 串口2发送数据
-void Usart2_Send_Data (uint8 length)
+void Usart3_Send_Data (uint8 length)
 { 
-	
-	
-	uint8 i;
-	Create_CMD_and_Date();
-	RS485_TX_Set(1);
-	delay_ms(1);
-	for(i=0;i<length;i++)
+	uint8 i,x,y,z;
+	x = Check_Pulses_change();
+	y = Check_CMD_button_change();
+	z = Check_Override_change();
+	if(x || y || z)
 	{
-		//Send the next data byte at the buffer
-		if (i==0)
+		Create_CMD_and_Date();
+		RS485_TX_Set(1);
+		//delay_ms(1);
+		for(i=0;i<length;i++)
 		{
-			USART2->DR =(uint32_t)(1<<8)|TX_Data[0];
-		//	USART2->DR =0x0055;
-			while((USART2->SR&0X40)==0)
+			if (i==0)
 			{
-
-			};//循环发送,直到发送完毕  
-		}	
-		else
-		{
-			USART2->DR = TX_Data[i];
-			while((USART2->SR&0X40)==0)
+				USART3->DR =(uint32_t)(1<<8)|TX_Data[0];
+				while((USART3->SR&0X40)==0);
+			}
+			else
 			{
-
+				USART3->DR = TX_Data[i];
+				while((USART3->SR&0X40)==0);
 			};//循环发送,直到发送完毕   
-		}
+			}
+		RS485_TX_Set(0);
 	}
-	RS485_TX_Set(0);
-
 }
 
+
+//判断脉冲是否发生变化
+uint8 Check_Pulses_change(void)
+{
+	uint8 result;
+	if(Pulses_number==Pulses_counter)
+	{
+	  result = 0;
+	}
+	else 
+	{
+	  Pulses_number=Pulses_counter;
+		result = 1;	
+	}
+	return result;
+}
+
+//判断按键是否发生变化
+uint8 Check_CMD_button_change(void)
+{
+	uint8 result;
+	if(CMD_button==control_panel_pram.Press_button)
+	{
+		control_panel_pram.Press_button = 0XFF;
+	  result = 0;
+	}
+	else 
+	{
+	  CMD_button=control_panel_pram.Press_button;
+		result = 1;	
+	}
+	return result;
+}
+
+//判断倍率是否发生变化
+uint8 Check_Override_change(void)
+{
+	uint8 result;
+	if(Override_before==Override_num)
+	{
+	  result = 0;
+	}
+	else 
+	{
+	  Override_before=Override_num;
+		result = 1;	
+	}
+	return result;
+}
 
 //确定是哪个轴选中
 uint8 Axis_Gets()
@@ -397,8 +468,8 @@ uint8 Axis_Gets()
 }
 
 //创建发给主机的指令和数据
-//  address  length  null   mpgmsb  mpglsb  multiplierlsb   key   axis  div     xorcheck
-// bit 0     1       2      3       4       5                6    7      8       9
+//  address  length command   mpgmsb  mpglsb  multiplierlsb   key   axis  div     xorcheck
+// bit 0     1       2         3       4       5               6    7      8       9
 
 //倍率：x1 x2 x5 x10 x20 有效
 //0-16 按键 50-66（长按） 0xff无效
@@ -408,7 +479,7 @@ void Create_CMD_and_Date(void)
 	
 			TX_Data[0] = Mac_address;
 			TX_Data[1] = CMD_Length;
-			TX_Data[2] = 0;
+			TX_Data[2] = CMD_RPY_HC_MPG1;
 			TX_Data[3] = Pulses_counter>>8;
 			TX_Data[4] = Pulses_counter;
 			TX_Data[5] = Override_num;
