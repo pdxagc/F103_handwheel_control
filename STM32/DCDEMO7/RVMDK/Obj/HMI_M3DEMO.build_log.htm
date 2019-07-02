@@ -21,15 +21,24 @@ Target DLL:      STLink\ST-LINKIII-KEIL_SWO.dll V2.0.14.0_KEIL
 Dialog DLL:      TARMSTM.DLL V1.64.0.0
  
 <h2>Project:</h2>
-C:\Users\xiaopan\Desktop\新建文件夹\CNC_F103_control\STM32\DCDEMO7\RVMDK\DCDEMO7.uvprojx
-Project File Date:  07/01/2019
+C:\Users\xiaopan\Desktop\CNC_F103_control\STM32\DCDEMO7\RVMDK\DCDEMO7.uvprojx
+Project File Date:  07/02/2019
 
 <h2>Output:</h2>
 Build target 'DCDEMO'
-".\Obj\HMI_M3DEMO.axf" - 0 Error(s), 0 Warning(s).
+compiling hmi_user_uart.c...
+..\src\hmi_user_uart.c(154): warning:  #550-D: variable "i" was set but never used
+                uint8_t i;
+..\src\hmi_user_uart.c(267): warning:  #550-D: variable "i" was set but never used
+         uint16 Recdata1,Recdata2,i;
+..\src\hmi_user_uart.c: 2 warnings, 0 errors
+linking...
+Program Size: Code=18224 RO-data=332 RW-data=108 ZI-data=2916  
+FromELF: creating hex file...
+".\Obj\HMI_M3DEMO.axf" - 0 Error(s), 2 Warning(s).
 
 <h2>Collection of Component include folders:</h2>
-  C:\Users\xiaopan\Desktop\新建文件夹\CNC_F103_control\STM32\DCDEMO7\RVMDK\RTE
+  C:\Users\xiaopan\Desktop\CNC_F103_control\STM32\DCDEMO7\RVMDK\RTE
   C:\Keil_v5\ARM\PACK\Keil\STM32F1xx_DFP\1.0.5\Device\Include
 
 <h2>Collection of Component Files used:</h2>

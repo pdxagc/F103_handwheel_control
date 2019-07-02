@@ -39,7 +39,7 @@ int16 Pulses_counter;              // 手轮脉冲数量
 uint8 Override_num;                //倍率
 uint8 Send_cooddinate_status;      //发送坐标标记位,1:发送坐标，0：不发送
 uint8 first_time_re_workpiece;     //首次进入回工件零页面
-uint8 first_time_into_ISR=0;        //第一次进入中断标志位 
+uint8 first_time_into_ISR=1;        //第一次进入中断标志位 
 int32 Working_line;                //加工行数
 
 uint8 file_name[20]="精雕佛像";    //文件名
@@ -92,16 +92,16 @@ int main()
 		}
 		
 		Work_Page_Process();                                         //进入标记的工作页面，处理相关任务
-		USART3->CR1 &=(~(1<<2));
-		if(USART3->SR &1<<3)
-		{
-			uint8_t i;
-			i=USART3->SR;
-			i=USART3->DR;
-		}
+//		USART3->CR1 &=(~(1<<2));
+//		if(USART3->SR &1<<3)
+//		{
+//			uint8_t i;
+//			i=USART3->SR;
+//			i=USART3->DR;
+//		}
 		Usart3_Data_handle();                                       //串口3接收数据后，对数据进行处理
-		USART3->CR1|=1<<2;
-
+//		USART3->CR1|=1<<2;
+    Create_CMD_and_Date();
 	}  
 }
 
@@ -125,6 +125,7 @@ void Work_Page_Process(void)
 		{
 			WorkingStatus_Stoped();        //串口屏显示当前已经停止加工
 		}
+		last_time_work_state=state.Work_state;
 	}
 	
 	switch(Work_Page_Status)
@@ -772,110 +773,110 @@ void ProcessMessage( PCTRL_MSG msg, uint16 size )
 							{
                   case 1:                                           //清零按钮触发
 									{
-										if(state.Work_state == Start)    //开始加工
-										{									
-										}
-										else                          //停止加工
-										{
+//										if(state.Work_state == Start)    //开始加工
+//										{									
+//										}
+//										else                          //停止加工
+//										{
 											if(get_button_state)
 											{
 												control_panel_pram.Press_button = CMD_Clear;								
 										  }											
-										}
+//										}
 									}break;    
                   case 2:                                             //回机械零按钮触发	
                   {
-										if(state.Work_state == Start)    //开始加工
-										{									
-										}
-										else                           //停止加工
-										{
+//										if(state.Work_state == Start)    //开始加工
+//										{									
+//										}
+//										else                           //停止加工
+//										{
 											if(get_button_state)
 											{
 												control_panel_pram.Press_button = CMD_Return_Machine_Zero;
                           												
 											}
 											get_button_state=0;	
-										}
+//										}
 									}break;                                     									
 									case 3:								                              //倍率切换按钮触发
 									{
-										if(state.Work_state==Start)      //开始加工
-										{
-										}
-										else                             //停止加工
-										{
+//										if(state.Work_state==Start)      //开始加工
+//										{
+//										}
+//										else                             //停止加工
+//										{
 											if(get_button_state)
 											{
 													control_panel_pram.Override_Change_button=1;
-													Override_Change_Process();     //倍率切换控制											
+													Override_Change_Process();     //倍率切换控制
+                          control_panel_pram.Press_button = CMD_Override_Change;												
 											}
 											get_button_state=0;	
-										}											
+//										}											
 									}break;
 								  case 4:                                             //主轴开关按钮触发
 									{
-										if(state.Work_state==Start)    //开始加工
-										{									
-										}
-										else                           //停止加工
-										{
+//										if(state.Work_state==Start)    //开始加工
+//										{									
+//										}
+//										else                           //停止加工
+//										{
 											if(get_button_state)
 											{
 												control_panel_pram.Press_button = CMD_Spin_On_Off;						
 											}
 											get_button_state=0;	
-										}
+//										}
 									}break;
 			            case 5:                                              //全轴清零按钮触发
 									{
-                    if(state.Work_state==Start)     //开始加工
-										{
-										}
-										else                            //停止加工
+                    if(get_button_state)   
 										{										
 											control_panel_pram.All_Spindle_Clear_Button=1;
+											control_panel_pram.Press_button = CMD_All_Spin_Clear;
+											get_button_state=0;
 										}
 									}break;
 									case 6:                                            //回工件零按钮触发
 									{
-										if(state.Work_state==Start)    //开始加工
-										{									
-										}
-										else                           //停止加工
+										if(get_button_state)    
 										{
 											Work_Page_Status=Return_WorkPiece_Zero_Page;
 											first_time_re_workpiece=1;
+											control_panel_pram.Press_button = CMD_Return_WorkPiece_Zero;
+											get_button_state=0;
 										}
 									}break;
 									case 7:                                            //坐标切换按钮触发
 									{
-										if(state.Work_state==Start)     //开始加工
-										{
-										}
-										else                           //停止加工
-										{
+//										if(state.Work_state==Start)     //开始加工
+//										{
+//										}
+//										else                           //停止加工
+//										{
 											if(get_button_state)
 											{										
 												  Coordinate_Change_Process();//坐标切换控制
+												  control_panel_pram.Press_button = CMD_Coordinate_Change;
 												  get_button_state=0;
 											 }
-										}											
+//										}											
 									}break;
 									case 8:                                            //软限位开关按钮触发
 									{
-										if(state.Work_state==Start)    //开始加工
-										{									
-										}
-										else                           //停止加工
-										{
+//										if(state.Work_state==Start)    //开始加工
+//										{									
+//										}
+//										else                           //停止加工
+//										{
 											
 											if(get_button_state)
 											{
 												control_panel_pram.Press_button = CMD_Soft_Limit;						
 											}
 											get_button_state=0;	
-										}
+//										}
 									}break;
 									case 9:                                            // 
 									{
@@ -888,56 +889,56 @@ void ProcessMessage( PCTRL_MSG msg, uint16 size )
 									}break;
 									case 10:                                         //跳行加工按钮触发
 									{
-										if(state.Work_state==Start)    //开始加工
-										{									
-										}
-										else                           //停止加工
+										if(get_button_state)
 										{
 											jump_work_set.First_get_into = 1;
 											Work_Page_Status=Jump_Work_Page;
+											control_panel_pram.Press_button = CMD_Jump_Work;
+											get_button_state=0;
 										}
 									}break;
 									case 11:                                          //对刀按钮触发
 									{
-										if(state.Work_state==Start)    //开始加工
-										{									
-										}
-										else                           //停止加工
-										{											
+//										if(state.Work_state==Start)    //开始加工
+//										{									
+//										}
+//										else                           //停止加工
+//										{											
 											if(get_button_state)
 											{
 												control_panel_pram.Press_button = CMD_Auto_knife;								
 											}
 											get_button_state=0;	
-										}
+//										}
 									}break;
 									case 12:                                         //分中按钮触发
 									{
-										if(state.Work_state==Start)    //开始加工
-										{									
-										}
-										else                           //停止加工
-										{	
+//										if(state.Work_state==Start)    //开始加工
+//										{									
+//										}
+//										else                           //停止加工
+//										{	
 											if(get_button_state)
 											{
 												control_panel_pram.Press_button = CMD_Divided;								
 											}
 											get_button_state=0;	
-										}
+//										}
 									}break;
 									case 13:                                           //开始按钮触发
 									{
 										state.Work_state=Start;
+										control_panel_pram.Press_button = CMD_Start;
 										TIM_Cmd(TIM4, DISABLE);      //禁止 TIM4
-										SetButtonValue(2,14,0);     //停止按钮松开状态
-										SetButtonValue(2,13,1);     //开始按钮按下状态										
+//										SetButtonValue(2,14,0);     //停止按钮松开状态
+//										SetButtonValue(2,13,1);     //开始按钮按下状态										
 									}break;
 									case 14:                                           //停止按钮触发
 									{
 										state.Work_state=Stop;
 
-										SetButtonValue(2,13,0);     //开始按钮松开状态
-										SetButtonValue(2,14,1);     //停止按钮按下状态
+//										SetButtonValue(2,13,0);     //开始按钮松开状态
+//										SetButtonValue(2,14,1);     //停止按钮按下状态
                     
 									  TIM_Cmd(TIM4, ENABLE);      //使能 TIM4
 																	
@@ -945,8 +946,8 @@ void ProcessMessage( PCTRL_MSG msg, uint16 size )
 									case 15:                                            //复位按钮触发
 									{
 										state.Work_state=Stop;
-										SetButtonValue(2,13,0);      //开始按钮松开状态
-										SetButtonValue(2,14,1);      //停止按钮按下状态						
+//										SetButtonValue(2,13,0);      //开始按钮松开状态
+//										SetButtonValue(2,14,1);      //停止按钮按下状态						
 									}break;
 									case 16:                                          //退出控制面板按钮触发
 									{

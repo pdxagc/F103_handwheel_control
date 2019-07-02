@@ -155,8 +155,6 @@ void USART3_IRQHandler(void)
 		i=USART3->SR;
 		i=USART3->DR;
 		return;
-//		i=USART3->CR2;
-//		i=USART3->CR3;
 	}
 	Usart3_Recieve_ISR_Process();
 }
@@ -261,18 +259,16 @@ uint8_t Check_Address (char data)
 }
 
    
-// 串口2接收中断执行函数  //place at ISR，接收主机发送的数据
+// 串口3接收中断执行函数  //place at ISR，接收主机发送的数据
 void Usart3_Recieve_ISR_Process (void)
 { 	
-	 //as master , because customer can easy to upgrade the master unit, 
-	 //if main board without a master for over 200ms, main board become master
 	 unsigned char RX_Buffer;
 	 short dat; //16 bit
-	 uint16 Recdata1,Recdata2;
+	 uint16 Recdata1,Recdata2,i;
 	 dat=USART3->DR;
 	 USART3->SR&=~(1<<5);  //SR寄存器的第五位清0
-	 USART3->DR;
-	 USART3->SR;
+	 i=USART3->DR;
+	 i=USART3->SR;
 	 RX_Buffer=dat;
 	 if(dat&(1<<8))
 	 {
@@ -291,31 +287,32 @@ void Usart3_Recieve_ISR_Process (void)
 			}
 	  	RX_Data[rxcounter]=RX_Buffer;   //RX_Data[0]存储数据长度
 	  	rxcounter++;
-	  	 //it is package length
-	  	if(RX_Data[0]>PACKAGELEN)
+	  	if(RX_Data[0]>PACKAGELEN)  //数据闯到超过30个字节，接收异常
 	  	{ 
 	  	 	RX_Busy=0;//等待下一个起始指令
 	  	}
-	  	if(rxcounter>RX_Data[0])
+	  	if(rxcounter>RX_Data[0])    //接收完成了
 	  	{
 	  		//check package xor
 	  		RX_Busy=0;
 	  		if(CheckXor(RX_Data[rxcounter-1],RX_Data[0]))
 	  		{
-	  			ready2read=1; //校验通过
-					if(first_time_into_ISR<2)
+	  			ready2read=1; //校验通过				
+					if(RX_Data[1] == CMD_UPDATE_MACH3_NUMBER)
 					{
-						Recdata1=RX_Data[18];
-						Recdata2=RX_Data[19];	
-						TIM4->CNT = (Recdata1<<8)+Recdata2;
-						first_time_into_ISR++;	
+						if(first_time_into_ISR)
+						{
+							Recdata1=RX_Data[18];
+							Recdata2=RX_Data[19];	
+							TIM4->CNT = (Recdata1<<8)+Recdata2; //同步脉冲
+							first_time_into_ISR=0;	
+						}
 					}
-					else
-						first_time_into_ISR=3;
 					if(RX_Data[1] == CMD_ASK_SLAVE)
 					{
 						 Usart3_Send_Data(10);
 					}
+				  
 					
 //					USART3->CR1 &=(~(1<<2));
 //					if(USART3->SR &1<<3)
@@ -344,9 +341,9 @@ void Usart3_Data_handle (void)
 		command=RX_Data[1];
 		switch(command)
 		{
-			case CMD_ASK_SLAVE:           //发送数据
-				//Usart3_Send_Data(10);
-			break;			
+//			case CMD_ASK_SLAVE:           //发送数据
+//				//Usart3_Send_Data(10);
+//			break;			
 			case CMD_UPDATE_MACH3_NUMBER: //接收到坐标  
 			{
 				Recdata1=RX_Data[2];
