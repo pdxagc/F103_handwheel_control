@@ -176,11 +176,18 @@ void TIM4_IRQHandler(void)
 
 
 //计算脉冲数量
-int16 Get_Pulses_num(void)
+void Get_Pulses_num(void)
 {	
 	int16 temp_count;
 	temp_count=TIM_GetCounter(TIM4);
-	return temp_count;
+	if(temp_count%4==0)
+	{
+  	Pulses_counter= temp_count;
+	}
+	else
+	{
+	  Pulses_counter=temp_count+(4-temp_count%4);
+	}
 }
 
 //脉冲计数寄存器清零
@@ -188,6 +195,7 @@ void Puless_count_clear(void)
 {
 	TIM4->CNT = 0;
 	Pulses_counter = 0;
+	
 }
 
 //所有轴脉冲数量清零

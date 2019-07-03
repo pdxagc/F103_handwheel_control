@@ -96,8 +96,9 @@ void Power_On_Set(void)
 	SetTextValue(2,30,"G54");
 	SetTextValue(0,28,"关");         //设置手轮引导“关”
 	SetTextValue(2,31,"关");
-	SetTextValue(0,29,"X1");         //设置倍率：X1
-	SetTextValue(2,32,"X1");
+	SetTextValue(0,29,"X10");         //设置倍率：X1
+	SetTextValue(2,32,"X10");
+	Override_num=10;                   //开机默认倍率
 	
 	Speed.Initial_Spindle_Speed=20000;                     //主轴初始转速
 	Speed.Initial_Spindle_Speed_Percent=100;               //主轴初始速度百分比
@@ -120,7 +121,7 @@ void Power_On_Set(void)
 	
 	SetButtonValue(2,13,0);          //开始按钮是松开状态
 	SetButtonValue(2,14,1);          //停止按钮是按下状态
-	Override_num=1;                   //开机默认倍率
+	
 	Work_Page_Status=Working_Page;    //开机进入加工页面
 	control_panel_pram.Axis_press = CMD_X_AXIS;
 	SetButtonValue(0,42,1);           //X轴选中状态
@@ -313,37 +314,37 @@ void Override_Change_Process(void)
 	{
 		case 1:
 		{
-			SetTextValue(0,29,"X1");    //设置文本值
-			SetTextValue(2,32,"X1");
-			Override_num=1;
+			SetTextValue(0,29,"X10");    //设置文本值
+			SetTextValue(2,32,"X10");
+			Override_num=10;
 			break;  
 		}
 		case 2:
 		{
-			SetTextValue(0,29,"X2");                                                                                                                                 
-			SetTextValue(2,32,"X2");
-			Override_num=2;
+			SetTextValue(0,29,"X20");                                                                                                                                 
+			SetTextValue(2,32,"X20");
+			Override_num=20;
 			break;
 		}
 		case 3:
 		{
-			SetTextValue(0,29,"X5");
-			SetTextValue(2,32,"X5");
-			Override_num=5;
+			SetTextValue(0,29,"X1");
+			SetTextValue(2,32,"X1");
+			Override_num=1;
 			break;
 		}
 		case 4:
 		{
-			SetTextValue(0,29,"X10");
-			SetTextValue(2,32,"X10");
-			Override_num=10;
+			SetTextValue(0,29,"X2");
+			SetTextValue(2,32,"X2");
+			Override_num=2;
 			break;
 		}
 		case 5:
 		{
-			SetTextValue(0,29,"X20");
-			SetTextValue(2,32,"X20");
-			Override_num=20;
+			SetTextValue(0,29,"X5");
+			SetTextValue(2,32,"X5");
+			Override_num=5;
 			Override_Change_Counter=0;
 			break;
 		}	

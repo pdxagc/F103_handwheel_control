@@ -312,17 +312,7 @@ void Usart3_Recieve_ISR_Process (void)
 					{
 						 Usart3_Send_Data(10);
 					}
-				  
-					
-//					USART3->CR1 &=(~(1<<2));
-//					if(USART3->SR &1<<3)
-//					{
-//						uint8_t i;
-//						i=USART3->SR;
-//						i=USART3->DR;
-//					}
-//					Usart3_Data_handle();                                       //串口3接收数据后，对数据进行处理
-//					USART3->CR1|=1<<2;
+
 	  		}
 	 	   }
 	  }

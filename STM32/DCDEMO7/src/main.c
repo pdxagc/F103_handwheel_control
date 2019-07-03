@@ -132,7 +132,7 @@ void Work_Page_Process(void)
 	{	
 		case Working_Page: //*********************************************************加工页面***************************************************************************************************
 		{	
-			Pulses_counter=Get_Pulses_num();       //计算脉冲个数 
+			Get_Pulses_num();       //计算脉冲个数 
 			TFT_Show_coordanate_value(Work_Page_Status);		   //串口屏显示工件和机械坐标	
 			Spindle_and_Work_Speed_Key_Process();	           	//加工中心主轴速度和加工速度按钮处理
 			if(state.Work_state==Start)                        //机器处于加工状态中
@@ -175,7 +175,7 @@ void Work_Page_Process(void)
 		{			
 //			if(state.Work_state==Stop)	                        //停止加工
 //			{
-				Pulses_counter=Get_Pulses_num();       //计算脉冲个数 
+				Get_Pulses_num();       //计算脉冲个数 
         			
 //				switch (control_panel_pram.Axis_press)   			
 //				{
