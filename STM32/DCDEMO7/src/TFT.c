@@ -80,34 +80,16 @@ void Power_On_Set(void)
 	uint8 i=0;
 	char buf[6];
 	SetScreen(17);           //切换到开机画面
-	delay_ms(10); 
-	SetScreen(17);           //切换到开机画面
-	delay_ms(10);	
-	for(i=0;i<101;i++)
+	delay_ms(500); 
+		
+	for(i=0;i<50;i++)
 	{
-		SetProgressValue(17,3,i);     //设置进度条的值
+		SetProgressValue(17,3,i*2);     //设置进度条的值
 		delay_ms(5);                  //延时0.05秒
 	}
-	
+	delay_ms(100);
 	SetScreen(0);           //切换到加工页面
 	delay_ms(10);
-	
-	
-//	for(i=34;i<39;i++)
-//	{
-//		SetTextValue(0,i,"000000.00"); 	   //	机械坐标设置文本值
-//		delay_ms(5);
-//	}
-//	for(i=38;i<43;i++)
-//	{
-//		SetTextValue(2,i,"000000.00"); 	   //工件坐标设置文本值
-//		delay_ms(5);
-//	}
-//	for(i=22;i<27;i++)
-//	{
-//		SetButtonValue(2,i,0);            //XYZAB轴复位
-//		delay_ms(5);
-//	}
 	
 	SetTextValue(0,27,"G54");        //设置当前坐标值：G54
 	SetTextValue(2,30,"G54");
@@ -372,26 +354,15 @@ void Override_Change_Process(void)
 }
 
 // 在加工页面和控制面板页面显示所有轴坐标
-void TFT_Show_coordanate_value(uint8 state)
+void TFT_Show_coordanate_value(void)
 {
 	if(Send_cooddinate_status)  //定时满100ms
-	{
-		if(state==Working_Page)
-		{
-			Show_X_Coordinata(0,16);
-			Show_Y_Coordinata(0,17);
-			Show_Z_Coordinata(0,18);
-			Show_A_Coordinata(0,19);
-			Show_B_Coordinata(0,20);		
-		}
-		else if(state==ControlPanel_Page)
-		{
-			Show_X_Coordinata(2,17);
-			Show_Y_Coordinata(2,18);
-			Show_Z_Coordinata(2,19);
-			Show_A_Coordinata(2,20);
-			Show_B_Coordinata(2,21);				
-		}
+	{		
+		Show_X_Coordinata();
+		Show_Y_Coordinata();
+		Show_Z_Coordinata();
+		Show_A_Coordinata();
+		Show_B_Coordinata();			
 		Send_cooddinate_status=0;
  }
 //	sprintf((char *)buf1,"%09.2f",control_panel_pram.X_Mac_value); 
@@ -441,62 +412,67 @@ void Show_coordinate_on_return_workpiece_zero_page(void)
 
 
 //显示X轴坐标
-void Show_X_Coordinata(uint16 screen_id,uint16 control_id)
+void Show_X_Coordinata(void)
 {	
 	char buf1[20];
 	if(control_panel_pram.X_last_value!=control_panel_pram.X_value)
 	{
-		sprintf((char *)buf1,"%09.2f",control_panel_pram.X_value);      //显示X轴工件坐标
-		SetTextValue(screen_id,control_id,(uchar *)buf1);
+		sprintf((char *)buf1,"%09.2f",control_panel_pram.X_value);      //显示X轴工件坐标		
+		SetTextValue(0,16,(uchar *)buf1);
+		SetTextValue(2,17,(uchar *)buf1);
 		control_panel_pram.X_last_value=control_panel_pram.X_value;
 	}
 }
 
 
 //显示Y轴坐标
-void Show_Y_Coordinata(uint16 screen_id,uint16 control_id)
+void Show_Y_Coordinata(void)
 {
 	char buf1[20];
 	if(control_panel_pram.Y_last_value!=control_panel_pram.Y_value)
 	{
 		sprintf((char *)buf1,"%09.2f",control_panel_pram.Y_value);       //显示Y轴工件坐标
-		SetTextValue(screen_id,control_id,(uchar *)buf1);
+		SetTextValue(0,17,(uchar *)buf1);
+		SetTextValue(2,18,(uchar *)buf1);
 		control_panel_pram.Y_last_value=control_panel_pram.Y_value;
 	}
 }
 
 //显示Z轴坐标
-void Show_Z_Coordinata(uint16 screen_id,uint16 control_id)
+void Show_Z_Coordinata(void)
 {
 	char buf1[20];
 	if(control_panel_pram.Z_last_value!=control_panel_pram.Z_value)
 	{
 		sprintf((char *)buf1,"%09.2f",control_panel_pram.Z_value);      //显示Z轴工件坐标
-		SetTextValue(screen_id,control_id,(uchar *)buf1);
+		SetTextValue(0,18,(uchar *)buf1);
+		SetTextValue(2,19,(uchar *)buf1);
 		control_panel_pram.Z_last_value=control_panel_pram.Z_value;
 	}
 }
 
 //显示A轴坐标
-void Show_A_Coordinata(uint16 screen_id,uint16 control_id)
+void Show_A_Coordinata(void)
 {
 	char buf1[20];
 	if(control_panel_pram.A_last_value!=control_panel_pram.A_value)
 	{
 		sprintf((char *)buf1,"%09.2f",control_panel_pram.A_value);       //显示A轴工件坐标
-		SetTextValue(screen_id,control_id,(uchar *)buf1);
+		SetTextValue(0,19,(uchar *)buf1);
+		SetTextValue(2,20,(uchar *)buf1);
 		control_panel_pram.A_last_value=control_panel_pram.A_value;		
 	}
 }
 
 //显示B轴坐标
-void Show_B_Coordinata(uint16 screen_id,uint16 control_id)
+void Show_B_Coordinata(void)
 {
 	char buf1[20];
 	if(control_panel_pram.B_last_value!=control_panel_pram.B_value)
 	{
 		sprintf((char *)buf1,"%09.2f",control_panel_pram.B_value);        //显示B轴工件坐标
-		SetTextValue(screen_id,control_id,(uchar *)buf1);
+		SetTextValue(0,20,(uchar *)buf1);
+		SetTextValue(2,21,(uchar *)buf1);
 		control_panel_pram.B_last_value=control_panel_pram.B_value;
 	}
 }

@@ -217,7 +217,7 @@ void Coordinate_Change_Process(void);
 void Override_Change_Process(void);
 
 //在加工页面和控制面板页面显示所有轴坐标
-void TFT_Show_coordanate_value(uint8 state);
+void TFT_Show_coordanate_value(void);
 
 
 //在回工件零页面显示所有轴坐标值
@@ -228,19 +228,19 @@ void Show_coordinate_on_return_workpiece_zero_page(void);
 
 
 //显示X轴坐标
-void Show_X_Coordinata(uint16 screen_id,uint16 control_id);
+void Show_X_Coordinata(void);
 
 //显示X轴坐标
-void Show_Y_Coordinata(uint16 screen_id,uint16 control_id);
+void Show_Y_Coordinata(void);
 
 //显示X轴坐标
-void Show_Z_Coordinata(uint16 screen_id,uint16 control_id);
+void Show_Z_Coordinata(void);
 
 //显示A轴坐标
-void Show_A_Coordinata(uint16 screen_id,uint16 control_id);
+void Show_A_Coordinata(void);
 
 //显示B轴坐标
-void Show_B_Coordinata(uint16 screen_id,uint16 control_id);
+void Show_B_Coordinata(void);
 
 
 #endif

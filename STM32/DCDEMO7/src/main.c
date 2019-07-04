@@ -138,22 +138,20 @@ void LCD_command_handle(void)
 void Work_Page_Process(void)
 {
 	
-   Work_state_control();   //主机工作状态显示
+  Work_state_control();   //主机工作状态显示
 	
 	switch(Work_Page_Status)
 	{	
 		case Working_Page: //*********************************************************加工页面***************************************************************************************************
 		{	
-			Get_Pulses_num();       //计算脉冲个数 
-			TFT_Show_coordanate_value(Work_Page_Status);		   //串口屏显示工件和机械坐标	
+			Get_Pulses_num();                                 //计算脉冲个数 
+			TFT_Show_coordanate_value();		                  //串口屏显示工件和机械坐标	
 			Spindle_and_Work_Speed_Key_Process();	           	//加工中心主轴速度和加工速度按钮处理
 	
-			//SetTextValue(0,21,(uchar *)file_name);        //显示正在加载的文件名	
-//			if(Check_Pulses_change())
-//			{
-				sprintf(Working_line_buf,"%d",Pulses_counter);  
-				SetTextValue(0,22,(uchar *)Working_line_buf);     //显示加工行数，需要向主机询问
-//			}
+			//SetTextValue(0,21,(uchar *)file_name);          //显示正在加载的文件名	
+
+			sprintf(Working_line_buf,"%d",Pulses_counter);  
+			SetTextValue(0,22,(uchar *)Working_line_buf);     //显示加工行数，需要向主机询问
 			
 		}break;
 		case Setting_page:  //********************************************************设置页面*************************************************************************************************
@@ -185,8 +183,8 @@ void Work_Page_Process(void)
 		  break;	
 		case ControlPanel_Page:  //******************************************************控制面板页面*****************************************************************************************
 		{	
-			Get_Pulses_num();       //计算脉冲个数 
-		  TFT_Show_coordanate_value(ControlPanel_Page);		  //串口屏显示工件和机械坐标
+			Get_Pulses_num();                                   //计算脉冲个数 
+		  TFT_Show_coordanate_value();		                    //串口屏显示工件和机械坐标
 			
 			//SetTextValue(2,27,(uchar *)file_name);            //显示正在加载的文件名	         				
 			//sprintf(Working_line_buf,"%d",Pulses_counter);  
@@ -195,8 +193,8 @@ void Work_Page_Process(void)
 		}break;
 		case Return_WorkPiece_Zero_Page:   //*******************************************回工件零页面***************************************************************************************
 		{ 
-			TIM_Cmd(TIM4, DISABLE);         //禁止 TIM4，脉冲不计数
-			if(first_time_re_workpiece)     //首次进入这个页面
+			TIM_Cmd(TIM4, DISABLE);          //禁止 TIM4，脉冲不计数
+			if(first_time_re_workpiece)      //首次进入这个页面
 			{
 				SetButtonValue(3,1,0);         //所有轴显示为选中状态()
 				SetButtonValue(3,4,0);
@@ -222,11 +220,11 @@ void Work_Page_Process(void)
 			
 			if(return_workpiece_zero.X_clear_status==0 && return_workpiece_zero.Y_clear_status==0 && return_workpiece_zero.Z_clear_status==0 && return_workpiece_zero.A_clear_status==0 && return_workpiece_zero.B_clear_status==0)   //所有轴都选中
 			{
-				SetButtonValue(3,1,0);            //全轴按钮显示选中状态
+				SetButtonValue(3,1,0);              //全轴按钮显示选中状态
 			}
 			else
 			{
-				SetButtonValue(3,1,1);            //全轴按钮显示未选中状态
+				SetButtonValue(3,1,1);              //全轴按钮显示未选中状态
 			}
 			
 			if(return_workpiece_zero.Sure)        //确定按钮按下
