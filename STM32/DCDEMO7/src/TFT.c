@@ -16,33 +16,50 @@ extern Pram_Status pram_status;
 extern Control_Panel_Pram control_panel_pram;
 extern Return_Workpiece_Zero return_workpiece_zero;
 extern Devide_Set devide_set;  
+extern uint8 Send_cooddinate_status;
 
 uint8 Coordinate_Change_Counter=0;                                    //坐标切换按钮触发计数
 uint8 Override_Change_Counter=1;                                      //倍率切换按钮触发计数
 
 //显示机器已经停止加工
-void WorkingStatus_Stoped(void)
+void Show_Stop_Working(uint8 state)
 {
-	AnimationPlayFrame(0,11,0);
-	AnimationPlayFrame(1,28,0);
-	AnimationPlayFrame(2,43,0);
-	AnimationPlayFrame(6,33,0);
-	AnimationPlayFrame(10,5,0);
-	AnimationPlayFrame(11,13,0);
-	AnimationPlayFrame(13,9,0);
-	AnimationPlayFrame(14,12,0);
+	if(state==0)
+	  AnimationPlayFrame(0,11,0);
+	else if(state==1)
+	  AnimationPlayFrame(1,28,0);
+	else if(state==2)
+	  AnimationPlayFrame(2,43,0);
+	else if(state==6)
+	  AnimationPlayFrame(6,33,0);
+	else if(state==10)
+	  AnimationPlayFrame(10,5,0);
+	else if(state==11)
+	  AnimationPlayFrame(11,13,0);
+	else if(state==13)
+	  AnimationPlayFrame(13,9,0);
+	else if(state==14)
+	  AnimationPlayFrame(14,12,0);
 }
 //显示机器正在加工
-void WorkingStatus_Starting(void)
+void Show_Start_Working(uint8 state)
 {
-	AnimationPlayFrame(0,11,1);
-	AnimationPlayFrame(1,28,1);
-	AnimationPlayFrame(2,43,1);
-	AnimationPlayFrame(6,33,1);
-	AnimationPlayFrame(10,5,1);
-	AnimationPlayFrame(11,13,1);
-	AnimationPlayFrame(13,9,1);
-	AnimationPlayFrame(14,12,1);
+	if(state==0)
+		AnimationPlayFrame(0,11,1);
+	else if(state==1)
+		AnimationPlayFrame(1,28,1);
+	else if(state==2)
+		AnimationPlayFrame(2,43,1);
+	else if(state==6)
+		AnimationPlayFrame(6,33,1);
+	else if(state==10)
+		AnimationPlayFrame(10,5,1);
+	else if(state==11)
+		AnimationPlayFrame(11,13,1);
+	else if(state==13)
+		AnimationPlayFrame(13,9,1);
+	else if(state==14)
+		AnimationPlayFrame(14,12,1);
 	
 }
 
@@ -76,21 +93,21 @@ void Power_On_Set(void)
 	delay_ms(10);
 	
 	
-	for(i=34;i<39;i++)
-	{
-		SetTextValue(0,i,"000000.00"); 	   //	机械坐标设置文本值
-		delay_ms(5);
-	}
-	for(i=38;i<43;i++)
-	{
-		SetTextValue(2,i,"000000.00"); 	   //工件坐标设置文本值
-		delay_ms(5);
-	}
-	for(i=22;i<27;i++)
-	{
-		SetButtonValue(2,i,0);            //XYZAB轴复位
-		delay_ms(5);
-	}
+//	for(i=34;i<39;i++)
+//	{
+//		SetTextValue(0,i,"000000.00"); 	   //	机械坐标设置文本值
+//		delay_ms(5);
+//	}
+//	for(i=38;i<43;i++)
+//	{
+//		SetTextValue(2,i,"000000.00"); 	   //工件坐标设置文本值
+//		delay_ms(5);
+//	}
+//	for(i=22;i<27;i++)
+//	{
+//		SetButtonValue(2,i,0);            //XYZAB轴复位
+//		delay_ms(5);
+//	}
 	
 	SetTextValue(0,27,"G54");        //设置当前坐标值：G54
 	SetTextValue(2,30,"G54");
@@ -123,6 +140,7 @@ void Power_On_Set(void)
 	SetButtonValue(2,14,1);          //停止按钮是按下状态
 	
 	Work_Page_Status=Working_Page;    //开机进入加工页面
+	
 	control_panel_pram.Axis_press = CMD_X_AXIS;
 	SetButtonValue(0,42,1);           //X轴选中状态
 	SetButtonValue(2,22,1);
@@ -356,42 +374,26 @@ void Override_Change_Process(void)
 // 在加工页面和控制面板页面显示所有轴坐标
 void TFT_Show_coordanate_value(uint8 state)
 {
-	char buf1[20];
-	if(state==Working_Page)
+	if(Send_cooddinate_status)  //定时满100ms
 	{
-		sprintf((char *)buf1,"%09.2f",control_panel_pram.X_value);      //显示X轴工件坐标
-		SetTextValue(0,16,(uchar *)buf1);
-		
-		sprintf((char *)buf1,"%09.2f",control_panel_pram.Y_value);       //显示Y轴工件坐标
-		SetTextValue(0,17,(uchar *)buf1);
-		
-		sprintf((char *)buf1,"%09.2f",control_panel_pram.Z_value);      //显示Z轴工件坐标
-		SetTextValue(0,18,(uchar *)buf1);
-		
-		sprintf((char *)buf1,"%09.2f",control_panel_pram.A_value);       //显示A轴工件坐标
-		SetTextValue(0,19,(uchar *)buf1);
-		
-		sprintf((char *)buf1,"%09.2f",control_panel_pram.B_value);        //显示B轴工件坐标
-		SetTextValue(0,20,(uchar *)buf1);
-	}
-	else if(state==ControlPanel_Page)
-	{
-		sprintf((char *)buf1,"%09.2f",control_panel_pram.X_value); 
-	  SetTextValue(2,17,(uchar *)buf1);
-		
-		sprintf((char *)buf1,"%09.2f",control_panel_pram.Y_value);
-  	SetTextValue(2,18,(uchar *)buf1); 
-		
-		sprintf((char *)buf1,"%09.2f",control_panel_pram.Z_value);
-	  SetTextValue(2,19,(uchar *)buf1); 
-		
-		sprintf((char *)buf1,"%09.2f",control_panel_pram.A_value);
-		SetTextValue(2,20,(uchar *)buf1);
-		
-		sprintf((char *)buf1,"%09.2f",control_panel_pram.B_value);
-	  SetTextValue(2,21,(uchar *)buf1); 
-	
-	}
+		if(state==Working_Page)
+		{
+			Show_X_Coordinata(0,16);
+			Show_Y_Coordinata(0,17);
+			Show_Z_Coordinata(0,18);
+			Show_A_Coordinata(0,19);
+			Show_B_Coordinata(0,20);		
+		}
+		else if(state==ControlPanel_Page)
+		{
+			Show_X_Coordinata(2,17);
+			Show_Y_Coordinata(2,18);
+			Show_Z_Coordinata(2,19);
+			Show_A_Coordinata(2,20);
+			Show_B_Coordinata(2,21);				
+		}
+		Send_cooddinate_status=0;
+ }
 //	sprintf((char *)buf1,"%09.2f",control_panel_pram.X_Mac_value); 
 //	SetTextValue(2,38,(uchar *)buf1);	                               //显示X轴机械坐标
 //	SetTextValue(0,34,(uchar *)buf1);
@@ -414,7 +416,6 @@ void TFT_Show_coordanate_value(uint8 state)
 //	SetTextValue(0,38,(uchar *)buf1);
 
 }
-
 
 //显示回工件零页面所有轴坐标值
 void Show_coordinate_on_return_workpiece_zero_page(void)
@@ -440,49 +441,63 @@ void Show_coordinate_on_return_workpiece_zero_page(void)
 
 
 //显示X轴坐标
-void Show_X_Coordinata(void)
+void Show_X_Coordinata(uint16 screen_id,uint16 control_id)
 {	
-	char buf2[20];
-	sprintf((char *)buf2,"%09.2f",control_panel_pram.X_value);
-	SetTextValue(2,17,(uchar *)buf2);	        //在手轮上显示工件坐标
-	SetTextValue(0,16,(uchar *)buf2);         //在手轮上显示工件坐标	
+	char buf1[20];
+	if(control_panel_pram.X_last_value!=control_panel_pram.X_value)
+	{
+		sprintf((char *)buf1,"%09.2f",control_panel_pram.X_value);      //显示X轴工件坐标
+		SetTextValue(screen_id,control_id,(uchar *)buf1);
+		control_panel_pram.X_last_value=control_panel_pram.X_value;
+	}
 }
 
 
 //显示Y轴坐标
-void Show_Y_Coordinata(void)
+void Show_Y_Coordinata(uint16 screen_id,uint16 control_id)
 {
-	char buf2[20];
-	sprintf((char *)buf2,"%09.2f",control_panel_pram.Y_value);
-	SetTextValue(2,18,(uchar *)buf2);
-	SetTextValue(0,17,(uchar *)buf2);         //在手轮上显示工件坐标
-
+	char buf1[20];
+	if(control_panel_pram.Y_last_value!=control_panel_pram.Y_value)
+	{
+		sprintf((char *)buf1,"%09.2f",control_panel_pram.Y_value);       //显示Y轴工件坐标
+		SetTextValue(screen_id,control_id,(uchar *)buf1);
+		control_panel_pram.Y_last_value=control_panel_pram.Y_value;
+	}
 }
 
 //显示Z轴坐标
-void Show_Z_Coordinata(void)
+void Show_Z_Coordinata(uint16 screen_id,uint16 control_id)
 {
-	char buf2[20];
-	sprintf((char *)buf2,"%09.2f",control_panel_pram.Z_value);
-	SetTextValue(2,19,(uchar *)buf2);
-	SetTextValue(0,18,(uchar *)buf2);        //在手轮上显示工件坐标
+	char buf1[20];
+	if(control_panel_pram.Z_last_value!=control_panel_pram.Z_value)
+	{
+		sprintf((char *)buf1,"%09.2f",control_panel_pram.Z_value);      //显示Z轴工件坐标
+		SetTextValue(screen_id,control_id,(uchar *)buf1);
+		control_panel_pram.Z_last_value=control_panel_pram.Z_value;
+	}
 }
 
 //显示A轴坐标
-void Show_A_Coordinata(void)
+void Show_A_Coordinata(uint16 screen_id,uint16 control_id)
 {
-	char buf2[20];
-	sprintf((char *)buf2,"%09.2f",control_panel_pram.A_value);
-	SetTextValue(2,20,(uchar *)buf2);
-	SetTextValue(0,19,(uchar *)buf2);         //在手轮上显示工件坐标
+	char buf1[20];
+	if(control_panel_pram.A_last_value!=control_panel_pram.A_value)
+	{
+		sprintf((char *)buf1,"%09.2f",control_panel_pram.A_value);       //显示A轴工件坐标
+		SetTextValue(screen_id,control_id,(uchar *)buf1);
+		control_panel_pram.A_last_value=control_panel_pram.A_value;		
+	}
 }
 
 //显示B轴坐标
-void Show_B_Coordinata(void)
+void Show_B_Coordinata(uint16 screen_id,uint16 control_id)
 {
-	char buf2[20];
-	sprintf((char *)buf2,"%09.2f",control_panel_pram.B_value);
-	SetTextValue(2,21,(uchar *)buf2);
-	SetTextValue(0,20,(uchar *)buf2);         //在手轮上显示工件坐标
+	char buf1[20];
+	if(control_panel_pram.B_last_value!=control_panel_pram.B_value)
+	{
+		sprintf((char *)buf1,"%09.2f",control_panel_pram.B_value);        //显示B轴工件坐标
+		SetTextValue(screen_id,control_id,(uchar *)buf1);
+		control_panel_pram.B_last_value=control_panel_pram.B_value;
+	}
 }
 

@@ -79,12 +79,18 @@ void NOTIFYHandShake(void);
 void Work_Page_Process(void);
 
 
+//LCD屏数据处理
+void LCD_command_handle(void);
+
+//主机工作状态显示
+void Work_state_control(void);
+
 /*! 
 *  \brief  消息处理流程
 *  \param msg 待处理消息
 *  \param size 消息长度
 */
-void ProcessMessage( PCTRL_MSG msg, uint16 size );
+void Usart1_data_handle( PCTRL_MSG msg, uint16 size );
 /*! 
 *  \brief  画面切换通知
 *  \details  当前画面改变时(或调用GetScreen)，执行此函数

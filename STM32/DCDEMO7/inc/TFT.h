@@ -13,27 +13,24 @@
 #define START_ADDR3 0x0800d800
 #define START_ADDR4 0x0800dc00
 
-
-enum Page_Status
-{
-	Working_Page,                //加工页面
-	Setting_page,                //设置页面
-	ControlPanel_Page,           //控制面板页面
-	Return_WorkPiece_Zero_Page,  //回工件零页面
-	Jump_Work_Page,              //跳行加工
-	File_Manage_Page,            //文件管理页面
-	Leading_In_Page,             //导入页面
-	Leading_Out_Pgae,            //导出页面
-	Delete_Page,                 //删除页面
-	Storage_View_Page,           //内存空间预览页面
-	Net_Account_Manage_Page,     //连接网络与立即登录页面
-	Choose_WiFi_Page,            //选择WIFi页面
-	Disconnet_and_SignIn_Page,   //断开连接与立即登录页面
-	Disconnect_and_SignOut_Page, //断开连接与退出登录页面
-	Disconnect_Remind_Page,      //断开网络提醒页面
-	SignOut_Remind_Page,         //退出登录提醒页面
-	Save_Pram_Page               //保存参数设置提醒页面
-};
+#define	Working_Page  0                //加工页面
+#define	Setting_page  1                //设置页面
+#define	ControlPanel_Page  2           //控制面板页面
+#define	Return_WorkPiece_Zero_Page  3  //回工件零页面
+#define	Jump_Work_Page  5              //跳行加工
+#define	File_Manage_Page 6            //文件管理页面
+#define	Leading_In_Page 7             //导入页面
+#define	Leading_Out_Pgae 8            //导出页面
+#define	Delete_Page  9                 //删除页面
+#define	Storage_View_Page 10           //内存空间预览页面
+#define	Net_Account_Manage_Page 11     //网络账户管理
+#define	Choose_WiFi_Page  12           //选择WIFi页面
+#define	Disconnet_and_SignIn_Page  13   //断开连接与立即登录页面
+#define	Disconnect_and_SignOut_Page 14 //断开连接与退出登录页面
+#define	Disconnect_Remind_Page 15      //断开网络提醒页面
+#define	SignOut_Remind_Page 16         //退出登录提醒页面
+//#define Leading_Out_Pgae 20            //导出页面
+#define	Save_Pram_Page 21              //保存参数设置提醒页面
 
 
 
@@ -102,10 +99,15 @@ typedef struct Control_Panel_Pram
 	uint8  Auto_knife_button;             //自动对刀按钮
 	uint8  Start_Button;                  //开始按钮
 	float  X_value;                       //X轴工件坐标值
+	float  X_last_value; 
 	float  Y_value;                       //Y轴工件坐标值
+	float  Y_last_value; 
 	float  Z_value;                       //Z轴工件坐标值
+	float  Z_last_value; 
 	float  A_value;                       //A轴工件坐标值
+	float  A_last_value;
 	float  B_value;                       //B轴工件坐标值
+	float  B_last_value;
 	float  X_Mac_value;                   //X轴机械坐标值
 	float  Y_Mac_value;                   //Y轴机械坐标值
 	float  Z_Mac_value;                   //Z轴机械坐标值
@@ -173,10 +175,10 @@ typedef struct Jump_Work_Set
 
 
 //显示机器已经停止加工
-void WorkingStatus_Stoped(void);
+void Show_Stop_Working(uint8 state);
 
 //显示机器正在加工
-void WorkingStatus_Starting(void);
+void Show_Start_Working(uint8 state);
 
 //XYZAB坐标按钮复位
 void XYZAB_button_reset(void);
@@ -226,19 +228,19 @@ void Show_coordinate_on_return_workpiece_zero_page(void);
 
 
 //显示X轴坐标
-void Show_X_Coordinata(void);
+void Show_X_Coordinata(uint16 screen_id,uint16 control_id);
 
 //显示X轴坐标
-void Show_Y_Coordinata(void);
+void Show_Y_Coordinata(uint16 screen_id,uint16 control_id);
 
 //显示X轴坐标
-void Show_Z_Coordinata(void);
+void Show_Z_Coordinata(uint16 screen_id,uint16 control_id);
 
 //显示A轴坐标
-void Show_A_Coordinata(void);
+void Show_A_Coordinata(uint16 screen_id,uint16 control_id);
 
 //显示B轴坐标
-void Show_B_Coordinata(void);
+void Show_B_Coordinata(uint16 screen_id,uint16 control_id);
 
 
 #endif

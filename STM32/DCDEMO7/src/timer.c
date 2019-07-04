@@ -18,7 +18,7 @@ uint16 ABCD=1;
 
 /*******************************************************************************  
 * 函 数 名         : TIME2_Init  
-* 函数功能         :  TIME2初始化  ,//200ms向主机发送过一次坐标 
+* 函数功能         :  TIME2初始化  ,//100ms  刷新LCD屏数据
 * 输    入         : 无  
 * 输    出         : 无  
 *******************************************************************************/ 
@@ -30,7 +30,7 @@ void TIME2_Init(void)
 	RCC_APB1PeriphClockCmd(RCC_APB1Periph_TIM2, ENABLE);     //使能TIM2时钟 
 	
 	//配置定时器3
-	TIM_TimeBaseStructure.TIM_Period = 1999;                    //设置自动重装载寄存器周期的值
+	TIM_TimeBaseStructure.TIM_Period = 999;                    //设置自动重装载寄存器周期的值
 	TIM_TimeBaseStructure.TIM_Prescaler =7199;                  //设置时钟频率除数的预分频值
 	TIM_TimeBaseStructure.TIM_ClockDivision = TIM_CKD_DIV1;     //设置时钟分割
 	TIM_TimeBaseStructure.TIM_CounterMode = TIM_CounterMode_Up; //TIM 向上计数
@@ -45,12 +45,12 @@ void TIME2_Init(void)
 	NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;              //IRQ 通道被使能
 	NVIC_Init(&NVIC_InitStructure);                              //初始化 NVIC 寄存器
 	
-	//TIM_Cmd(TIM2, ENABLE);                                       //使能 TIM2
+	TIM_Cmd(TIM2, ENABLE);                                       //使能 TIM2
 }
 
 /*******************************************************************************  
 * 函 数 名         : TIME3_Init  
-* 函数功能         :  TIME3初始化   
+* 函数功能         :  TIME3初始化  ，(向主机询问坐标) 
 * 输    入         : 无  
 * 输    出         : 无  
 *******************************************************************************/ 
@@ -72,7 +72,7 @@ void TIME3_Init(void)
 	
 	//中断优先级 NVIC 设置
 	NVIC_InitStructure.NVIC_IRQChannel = TIM3_IRQn;              //TIM3 中断
-	NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 2;    //先占优先级 0 级
+	NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 1;    //先占优先级 0 级
 	NVIC_InitStructure.NVIC_IRQChannelSubPriority = 3;           //从优先级 3 级
 	NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;              //IRQ 通道被使能
 	NVIC_Init(&NVIC_InitStructure);                              //初始化 NVIC 寄存器
@@ -139,7 +139,7 @@ void TIM2_IRQHandler(void)
 	if (TIM_GetITStatus(TIM2, TIM_IT_Update) != RESET) //检查 TIM2 更新中断发生与否
 	{
 		TIM_ClearITPendingBit(TIM2, TIM_IT_Update ); //清除 TIM2 更新中断标志
-	  Send_cooddinate_status=1;	                   //200ms向主机发送过一次坐标
+	  Send_cooddinate_status=1;	                   //100ms 向LCD发送过一次坐标
 	}
 }
 

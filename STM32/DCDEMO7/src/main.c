@@ -34,12 +34,12 @@ uint16 get_screen_id;                    //获取画面ID
 uint16 get_control_id;                   //获取控件ID
 uint32 get_value;                        //获取数值
 uint8  input_buf[20];                    //键盘输入内容
-uint8 last_time_work_state;              //记录上一次机器工作状态
+uint8 last_time_work_state=0;            //记录上一次机器工作状态,默认是关机状态
 int16 Pulses_counter;              // 手轮脉冲数量
 uint8 Override_num;                //倍率
-uint8 Send_cooddinate_status;      //发送坐标标记位,1:发送坐标，0：不发送
+uint8 Send_cooddinate_status=0;      //发送坐标标记位,1:发送坐标，0：不发送
 uint8 first_time_re_workpiece;     //首次进入回工件零页面
-uint8 first_time_into_ISR=1;        //第一次进入中断标志位 
+uint8 Pulses_check=1;              //脉冲同步标志位 
 int32 Working_line;                //加工行数
 
 uint8 file_name[20]="精雕佛像";    //文件名
@@ -59,53 +59,75 @@ Jump_Work_Set jump_work_set;               //声明跳行加工相关参数的结构体变量
 */ 
 /*******************************************************************************************************/
 int main()                                                                          
- {  
-	qsize  size = 0;          //指令长度 
+ { 
+  uint16 time_conuter=0;	
+  uint16 Recdata1,Recdata2;	 
+	uint8  check_time=0;      //脉冲同步检查次数
 	Set_System();             //配置时钟                                                                                                                                                                                                                                                              
 	systicket_init();         //配置时钟节拍
   Interrupts_Config();      //配置串口中断	 
-	Usart1_Init(115200);      //串口1初始化(与串口屏通讯)
-  Usart3_Init(115200);      //串口3初始化(与雕刻机通讯)
+	Usart1_Init(115200);      //串口1初始化(与LCD屏通讯) 
 	queue_reset();            //清空串口接收缓冲区 
-	//TIME2_Init();             //定时器2初始化(向主机发送坐标)
+	TIME2_Init();             //定时器2初始化(刷新LCD屏数据)
 	//TIME3_Init();             //定时器3初始化(向主机询问坐标)
-  TIME4_Init();             //定时器4初始化(计算手轮脉冲)
-	//TIM_Cmd(TIM4, DISABLE);   //关闭TIM4定时器                                                                                               
+  TIME4_Init();             //定时器4初始化(计算手轮脉冲)                                                                                              
 	delay_ms(300);            //延时等待串口屏初始化完毕,必须等待300ms  
-	
+	Usart3_Init(115200);      //串口3初始化(与雕刻机通讯)
+	 
 	Power_On_Set();                 //串口屏开机动画和参数初始化设置	
 	Setting_page_pram_get();        //获取串口屏设置页面相关参数值（保存在flash）	
 	Return_last_status();           //恢复上一次串口屏设置页面相关参数值
 
-		//    特别注意
 		//    MCU不要频繁向串口屏发送数据，否则串口屏的内部缓存区会满，从而导致数据丢失(缓冲区大小：标准型8K，基本型4.7K)
 		//    1) 一般情况下，控制MCU向串口屏发送数据的周期大于100ms，就可以避免数据丢失的问题；
 		//    2) 如果仍然有数据丢失的问题，请判断串口屏的BUSY引脚，为高时不能发送数据给串口屏。
+		
+	while(Pulses_check)        //开机同步主机脉冲
+	{
+		if(RX_Data[1] == CMD_UPDATE_MACH3_NUMBER)
+		{
+			check_time++;
+			Recdata1=RX_Data[18];
+			Recdata2=RX_Data[19];	
+			TIM4->CNT = (Recdata1<<8)+Recdata2;  //同步脉冲
+      if(check_time>5)
+        Pulses_check=0;
+      sprintf(Working_line_buf,"%d",Pulses_counter);  
+			SetTextValue(0,22,(uchar *)Working_line_buf);     //显示加工行数，需要向主机询问			
+		}
+	}
 	
 	while(1)                                                                        
 	{
-  	size = queue_find_cmd(cmd_buffer,CMD_MAX_SIZE);              //接收到串口屏的数据，从USART1的指令缓冲区cmd_buffer中获取一条指令，得到指令长度       
-		if(size>0 && cmd_buffer[1]!=0x07)                            //接收到指令 ，及判断是否为开机提示
-		{                                                                           
-			ProcessMessage((PCTRL_MSG)cmd_buffer, size);               //指令分析处理 ，标记应该进入哪个Work_Page_Status，标记相应的操作位
-			memset(cmd_buffer, 0, CMD_MAX_SIZE);                       //对指令缓冲cmd_buffer清零
-		}
+		time_conuter++;
 		
-		Work_Page_Process();                                         //进入标记的工作页面，处理相关任务
-//		USART3->CR1 &=(~(1<<2));
-//		if(USART3->SR &1<<3)
-//		{
-//			uint8_t i;
-//			i=USART3->SR;
-//			i=USART3->DR;
-//		}
-		Usart3_Data_handle();                                       //串口3接收数据后，对数据进行处理
-//		USART3->CR1|=1<<2;
-    Create_CMD_and_Date();
+  	LCD_command_handle();                  //对来自LCD屏的命令进行分析
+		
+		Usart3_Data_handle();                  //串口3接收数据后，对数据进行处理
+		
+		Work_Page_Process();                   //进入标记的工作页面，处理相关任务
+    
+		
+		sprintf(Working_line_buf,"%d",time_conuter);  
+		SetTextValue(0,23,(uchar *)Working_line_buf);     //显示加工行数，需要向主机询问
 	}  
 }
 
 
+
+
+
+//对来自LCD屏的命令进行分析
+void LCD_command_handle(void)
+{
+	qsize  size = 0;                                             //指令长度 
+  size = queue_find_cmd(cmd_buffer,CMD_MAX_SIZE);              //接收到LCD屏的数据，从USART1的指令缓冲区cmd_buffer中获取一条指令，得到指令长度       
+	if(size>0 && cmd_buffer[1]!=0x07)                            //接收到指令 ，及判断是否为开机提示
+	{                                                                           
+		Usart1_data_handle((PCTRL_MSG)cmd_buffer, size);           //指令分析处理 ，标记应该进入哪个Work_Page_Status，标记相应的操作位
+		memset(cmd_buffer, 0, CMD_MAX_SIZE);                       //对指令缓冲cmd_buffer清零
+	}
+}
 
 
 /************************************************************
@@ -115,18 +137,8 @@ int main()
 *************************************************************/
 void Work_Page_Process(void)
 {
-	if(last_time_work_state!=state.Work_state)
-	{
-		if(state.Work_state==Start)         
-		{
-			WorkingStatus_Starting();      //串口屏显示当前处于加工状态
-		}
-		else                                 
-		{
-			WorkingStatus_Stoped();        //串口屏显示当前已经停止加工
-		}
-		last_time_work_state=state.Work_state;
-	}
+	
+   Work_state_control();   //主机工作状态显示
 	
 	switch(Work_Page_Status)
 	{	
@@ -135,13 +147,13 @@ void Work_Page_Process(void)
 			Get_Pulses_num();       //计算脉冲个数 
 			TFT_Show_coordanate_value(Work_Page_Status);		   //串口屏显示工件和机械坐标	
 			Spindle_and_Work_Speed_Key_Process();	           	//加工中心主轴速度和加工速度按钮处理
-			if(state.Work_state==Start)                        //机器处于加工状态中
-			{
-				
-			}		
-			SetTextValue(0,21,(uchar *)file_name);        //显示正在加载的文件名	
-			sprintf(Working_line_buf,"%d",Pulses_counter);  
-			SetTextValue(0,22,(uchar *)Working_line_buf);     //显示加工行数，需要向主机询问
+	
+			//SetTextValue(0,21,(uchar *)file_name);        //显示正在加载的文件名	
+//			if(Check_Pulses_change())
+//			{
+				sprintf(Working_line_buf,"%d",Pulses_counter);  
+				SetTextValue(0,22,(uchar *)Working_line_buf);     //显示加工行数，需要向主机询问
+//			}
 			
 		}break;
 		case Setting_page:  //********************************************************设置页面*************************************************************************************************
@@ -153,7 +165,7 @@ void Work_Page_Process(void)
 				Work_Page_Status=Working_Page;				 
 		 }		
 		}
-		break;
+	  	break;
 		case Save_Pram_Page:  //****************************************************提示是否保存参数设置****************************************************************************************
 		{
 			if(state.Work_state==Stop)                                   //停止加工
@@ -170,70 +182,15 @@ void Work_Page_Process(void)
 				}	
 			}				
 		}
-		break;	
+		  break;	
 		case ControlPanel_Page:  //******************************************************控制面板页面*****************************************************************************************
-		{			
-//			if(state.Work_state==Stop)	                        //停止加工
-//			{
-				Get_Pulses_num();       //计算脉冲个数 
-        			
-//				switch (control_panel_pram.Axis_press)   			
-//				{
-//					case CMD_X_AXIS:            //***************X轴选定状态**************	
-//					{				
-//							if( control_panel_pram.Clear_Button==0 && control_panel_pram.All_Spindle_Clear_Button)  //全轴清零触发
-//							{				
-//								control_panel_pram.All_Spindle_Clear_Button=0;
-//							}
-//							if(devide_set.Devide_contronl)         //分中设置
-//							{
-//								devide_set.Devide_contronl = 0;									
-//							}													
-//					}break;
-//					case CMD_Y_AXIS:                //****************Y轴选定状态*************
-//					{
-//	
-//						if( control_panel_pram.Clear_Button==0 && control_panel_pram.All_Spindle_Clear_Button)  //全轴清零触发
-//						{										
-//							control_panel_pram.All_Spindle_Clear_Button=0;
-//						}
-//						if(devide_set.Devide_contronl)         //分中设置
-//						{
-//							devide_set.Devide_contronl = 0;
-//							
-//						}
-//					
-//					}break;
-//					case CMD_Z_AXIS:                 //*****************Z轴选定状态********
-//					{
-//						if( control_panel_pram.Clear_Button==0 && control_panel_pram.All_Spindle_Clear_Button)  //全轴清零触发
-//						{						
-//							control_panel_pram.All_Spindle_Clear_Button=0;
-//						}
-//					
-//					}break;
-//					case CMD_A_AXIS:                //***************A轴选定状态*************
-//					{
-//						if( control_panel_pram.Clear_Button==0 && control_panel_pram.All_Spindle_Clear_Button)  //全轴清零触发
-//						{						
-//							control_panel_pram.All_Spindle_Clear_Button=0;
-//						}
-//						
-//					}break;
-//					case CMD_B_AXIS:                //****************B轴选定状态*************
-//					{
-//						if( control_panel_pram.Clear_Button==0 && control_panel_pram.All_Spindle_Clear_Button)  //全轴清零触发
-//						{							
-//							control_panel_pram.All_Spindle_Clear_Button=0;
-//						}	
-//					}break;
-										
-//				}					
-//			}
-			TFT_Show_coordanate_value(ControlPanel_Page);		  //串口屏显示工件和机械坐标
-			SetTextValue(2,27,(uchar *)file_name);            //显示正在加载的文件名	         				
-			sprintf(Working_line_buf,"%d",Pulses_counter);  
-			SetTextValue(2,28,(uchar *)Working_line_buf);     //显示加工行数，需要向主机询问	
+		{	
+			Get_Pulses_num();       //计算脉冲个数 
+		  TFT_Show_coordanate_value(ControlPanel_Page);		  //串口屏显示工件和机械坐标
+			
+			//SetTextValue(2,27,(uchar *)file_name);            //显示正在加载的文件名	         				
+			//sprintf(Working_line_buf,"%d",Pulses_counter);  
+			//SetTextValue(2,28,(uchar *)Working_line_buf);     //显示加工行数，需要向主机询问	
 			
 		}break;
 		case Return_WorkPiece_Zero_Page:   //*******************************************回工件零页面***************************************************************************************
@@ -407,7 +364,7 @@ void Work_Page_Process(void)
 			Show_coordinate_on_return_workpiece_zero_page();  //在回工件零页面显示所有轴坐标值				
 			
 		}
-		break;
+		  break;
 		case Jump_Work_Page:     //*****************************************************跳行加工页面****************************************************************************************
 		{
 			if(jump_work_set.First_get_into)
@@ -487,12 +444,30 @@ void Work_Page_Process(void)
 }
 	
 
+//主机工作状态显示
+void Work_state_control(void)
+{
+  if(last_time_work_state!=state.Work_state)     //判断工作状态是否发生变化，发生变化则进行处理
+	{
+		if(state.Work_state==Start)         
+		{
+			Show_Start_Working(Work_Page_Status);      //串口屏显示当前处于加工状态
+		}
+		else                                 
+		{
+			Show_Stop_Working(Work_Page_Status);        //串口屏显示当前已经停止加工
+		}
+		last_time_work_state=state.Work_state;
+	}
+
+}
+
 /****************************************************
 *  \brief  消息处理流程
 *  \param msg 待处理消息
 *  \param size 消息长度
 ******************************************************/
-void ProcessMessage( PCTRL_MSG msg, uint16 size )
+void Usart1_data_handle( PCTRL_MSG msg, uint16 size )
 {
     get_cmd_type = msg->cmd_type;                                         //获取指令类型
     get_ctrl_msg = msg->ctrl_msg;                                         //获取消息的类型	  
@@ -503,15 +478,12 @@ void ProcessMessage( PCTRL_MSG msg, uint16 size )
 	
 	  if(get_control_type==kCtrlButton)                                      //按钮控件
 			get_button_state= msg->param[1];                                     //获取按钮状态
-
-
-	  //sprintf((char *)input_buf,"%s",msg->param);
-	   
+   
     if(get_cmd_type==NOTIFY_CONTROL)                                      //控件更新通知
     {  
 				switch(get_screen_id)                                             //画面ID
 				{
-					case 0:                                       //画面0：加工页面
+					case Working_Page:                                       //画面0：加工页面
 					{
 							Work_Page_Status=Working_Page;
 							switch(get_control_id)
@@ -559,7 +531,7 @@ void ProcessMessage( PCTRL_MSG msg, uint16 size )
 												}
 												else if(100 < Speed.Initial_Work_Speed_Percent && Speed.Initial_Work_Speed_Percent <=300)
 												{
-													Speed.Initial_Work_Speed_Percent  -=25;						
+													Speed.Initial_Work_Speed_Percent-=25;						
 												}
 												Speed.Changed_Work_Speed=Speed.Initial_Work_Speed*Speed.Initial_Work_Speed_Percent/100;
 		                    get_button_state=0;
@@ -592,45 +564,35 @@ void ProcessMessage( PCTRL_MSG msg, uint16 size )
 									case 15:Work_Page_Status=ControlPanel_Page;break;
 									case 42:                                           //X轴按钮触发
 									{	
-//										SetButtonValue(0,42,1);     //X轴保持选中状态
-//										SetButtonValue(2,22,1);     //X轴保持选中状态
 										TIM_Cmd(TIM4, ENABLE);      //启动TIM4定时器																		
 										control_panel_pram.Axis_press= CMD_X_AXIS;								
 									}break;
 									case 43:                                           //Y轴按钮触发
 									{
-//										SetButtonValue(0,43,1);        //Y轴保持选中状态
-//										SetButtonValue(2,23,1);        //Y轴保持选中状态
 										TIM_Cmd(TIM4, ENABLE);         //启动TIM4定时器										
 										control_panel_pram.Axis_press = CMD_Y_AXIS;						
 									}break;
 									case 44:                                              //Z轴按钮触发
 									{
-//										SetButtonValue(0,44,1);         //Z轴保持选中状态
-//										SetButtonValue(2,24,1);         //Z轴保持选中状态
 										TIM_Cmd(TIM4, ENABLE);          //启动TIM4定时器										
 										control_panel_pram.Axis_press = CMD_Z_AXIS;														
 									}break;
 									case 45:                                             //A轴按钮触发
 									{
-//										SetButtonValue(0,45,1);         //A轴保持选中状态
-//										SetButtonValue(2,25,1);         //A轴保持选中状态
 										TIM_Cmd(TIM4, ENABLE);          //启动TIM4定时器										
 										control_panel_pram.Axis_press = CMD_A_AXIS;															
 									}break;
 									case 46:                                           //B轴按钮触发
 									{
-//										SetButtonValue(0,46,1);     //B轴保持选中状态
-//										SetButtonValue(2,26,1);     //B轴保持选中状态
 										TIM_Cmd(TIM4, ENABLE);      //启动TIM4定时器										
 										control_panel_pram.Axis_press = CMD_B_AXIS;											
 									}break;								
 									default:break;
 						  }
 					}break;
-					case 1:                                       //画面1：设置页面
+					case Setting_page:                                       //画面1：设置页面
 					{
-							Work_Page_Status=Setting_page;
+						Work_Page_Status=Setting_page;
 						if(state.Work_state==Stop)             //停止加工状态
 						{
 							switch(get_control_id)                                
@@ -660,8 +622,7 @@ void ProcessMessage( PCTRL_MSG msg, uint16 size )
 									{
 										char buf[20];
 										pram_status.Safe_Z_num=NotifyText(msg->param);										
-										sprintf(buf,"Safe_Z:%.2f",pram_status.Safe_Z_num);
-//		                Usart_SendString(USART2,(char *)buf);     
+										sprintf(buf,"Safe_Z:%.2f",pram_status.Safe_Z_num);    
 									}										
 									break;
 									case 7:                   //获取对刀高度
@@ -669,7 +630,7 @@ void ProcessMessage( PCTRL_MSG msg, uint16 size )
 										char buf[20];
 										pram_status.Knife_high_num=NotifyText(msg->param);										
 										sprintf(buf,"Knife_high:%.2f",pram_status.Knife_high_num);
-		                Usart_SendString(USART2,(char *)buf);       
+//		                Usart_SendString(USART2,(char *)buf);       
 									}										
 									break;
 									case 8:                     //获取对刀块高度
@@ -766,68 +727,44 @@ void ProcessMessage( PCTRL_MSG msg, uint16 size )
                  }									
 						}					
 					}break;   
-					case 2:                                       //画面2：控制面板
+					case ControlPanel_Page:                                       //画面2：控制面板
 					{
 							Work_Page_Status=ControlPanel_Page;
 							switch(get_control_id)
 							{
                   case 1:                                           //清零按钮触发
 									{
-//										if(state.Work_state == Start)    //开始加工
-//										{									
-//										}
-//										else                          //停止加工
-//										{
-											if(get_button_state)
-											{
-												control_panel_pram.Press_button = CMD_Clear;								
-										  }											
-//										}
+										if(get_button_state)
+										{
+											control_panel_pram.Press_button = CMD_Clear;								
+										}																					
 									}break;    
                   case 2:                                             //回机械零按钮触发	
                   {
-//										if(state.Work_state == Start)    //开始加工
-//										{									
-//										}
-//										else                           //停止加工
-//										{
-											if(get_button_state)
-											{
-												control_panel_pram.Press_button = CMD_Return_Machine_Zero;
-                          												
-											}
-											get_button_state=0;	
-//										}
+										if(get_button_state)
+										{
+											control_panel_pram.Press_button = CMD_Return_Machine_Zero;
+																								
+										}
+										get_button_state=0;	
 									}break;                                     									
 									case 3:								                              //倍率切换按钮触发
 									{
-//										if(state.Work_state==Start)      //开始加工
-//										{
-//										}
-//										else                             //停止加工
-//										{
-											if(get_button_state)
-											{
-													control_panel_pram.Override_Change_button=1;
-													Override_Change_Process();     //倍率切换控制
-                          control_panel_pram.Press_button = CMD_Override_Change;												
-											}
-											get_button_state=0;	
-//										}											
+										if(get_button_state)
+										{
+												control_panel_pram.Override_Change_button=1;
+												Override_Change_Process();                    //倍率切换控制
+												control_panel_pram.Press_button = CMD_Override_Change;												
+										}
+										get_button_state=0;										
 									}break;
 								  case 4:                                             //主轴开关按钮触发
 									{
-//										if(state.Work_state==Start)    //开始加工
-//										{									
-//										}
-//										else                           //停止加工
-//										{
-											if(get_button_state)
-											{
-												control_panel_pram.Press_button = CMD_Spin_On_Off;						
-											}
-											get_button_state=0;	
-//										}
+										if(get_button_state)
+										{
+											control_panel_pram.Press_button = CMD_Spin_On_Off;						
+										}
+										get_button_state=0;	
 									}break;
 			            case 5:                                              //全轴清零按钮触发
 									{
@@ -931,14 +868,14 @@ void ProcessMessage( PCTRL_MSG msg, uint16 size )
 										control_panel_pram.Press_button = CMD_Start;
 										TIM_Cmd(TIM4, DISABLE);      //禁止 TIM4
 //										SetButtonValue(2,14,0);     //停止按钮松开状态
-//										SetButtonValue(2,13,1);     //开始按钮按下状态										
+										SetButtonValue(2,13,1);     //开始按钮按下状态										
 									}break;
 									case 14:                                           //停止按钮触发
 									{
 										state.Work_state=Stop;
 
 //										SetButtonValue(2,13,0);     //开始按钮松开状态
-//										SetButtonValue(2,14,1);     //停止按钮按下状态
+										SetButtonValue(2,14,1);     //停止按钮按下状态
                     
 									  TIM_Cmd(TIM4, ENABLE);      //使能 TIM4
 																	
@@ -987,7 +924,7 @@ void ProcessMessage( PCTRL_MSG msg, uint16 size )
 									default:break;				
 							}
 					}break;
-					case 3:                                        //画面3：回工件零页面
+					case Return_WorkPiece_Zero_Page:                                        //画面3：回工件零页面
 					{
 						Work_Page_Status=Return_WorkPiece_Zero_Page;
 						if(state.Work_state==Stop)    //停止加工状态
@@ -1160,7 +1097,7 @@ void ProcessMessage( PCTRL_MSG msg, uint16 size )
 						
 						}
 					}break; 
-					case 5:                                         //画面5:跳行加工页面
+					case Jump_Work_Page:                                         //画面5:跳行加工页面
 					{
 						switch(get_control_id)
 						{
@@ -1184,7 +1121,7 @@ void ProcessMessage( PCTRL_MSG msg, uint16 size )
 						}
 						
 					}break;              
-					case 6:                                                     //画面6
+					case File_Manage_Page:                                               //画面6:文件管理
 					{
 						Work_Page_Status=File_Manage_Page;
 						switch(get_control_id)
@@ -1199,10 +1136,11 @@ void ProcessMessage( PCTRL_MSG msg, uint16 size )
 							default:break;
 						}
 					}break;
-					case 7: Work_Page_Status=Leading_In_Page;break;            //画面7
-					case 9: Work_Page_Status=Delete_Page;break;                //画面8
-					case 10: Work_Page_Status=Storage_View_Page;break;         //画面10
-					case 11:                                                   //画面10
+					case Leading_In_Page: Work_Page_Status=Leading_In_Page;break;            //画面7：导入页面
+					case Leading_Out_Pgae: Work_Page_Status=Leading_Out_Pgae;break;            //画面8：导出页面
+					case Delete_Page: Work_Page_Status=Delete_Page;break;                    //画面9：删除页面
+					case Storage_View_Page: Work_Page_Status=Storage_View_Page;break;         //画面10：内存空间预览页面
+					case Net_Account_Manage_Page:                                              //画面11：网络账户管理
 					{
 						Work_Page_Status=Net_Account_Manage_Page;
 						switch(get_control_id)
@@ -1213,13 +1151,13 @@ void ProcessMessage( PCTRL_MSG msg, uint16 size )
 							default:break;
 						}
 					}break;
-					case 12: Work_Page_Status=Choose_WiFi_Page;break;
-					case 13: Work_Page_Status=Disconnet_and_SignIn_Page;break;
-					case 14: Work_Page_Status=Disconnect_and_SignOut_Page;break;
-					case 15: Work_Page_Status=Disconnect_Remind_Page;break;
-					case 16: Work_Page_Status=SignOut_Remind_Page;break;
-					case 20: Work_Page_Status=Leading_Out_Pgae;break;
-					case 21:                                                  //画面21 保存参数设置提醒页面
+					case Choose_WiFi_Page: Work_Page_Status=Choose_WiFi_Page;break;           //画面12：选择WiFi
+					case Disconnet_and_SignIn_Page: Work_Page_Status=Disconnet_and_SignIn_Page;break;   //画面13：断开连接与立即登录页面
+					case Disconnect_and_SignOut_Page: Work_Page_Status=Disconnect_and_SignOut_Page;break; //画面14：断开连接与退出登录页面
+					case Disconnect_Remind_Page: Work_Page_Status=Disconnect_Remind_Page;break;     //画面15：断开网络提醒页面
+					case SignOut_Remind_Page: Work_Page_Status=SignOut_Remind_Page;break;         //画面16：退出登录提醒页面
+					
+					case Save_Pram_Page:                                                    //画面21 保存参数设置提醒页面
 					{
 						Work_Page_Status=Save_Pram_Page;
 						if(state.Work_state==Stop)    //停止加工状态

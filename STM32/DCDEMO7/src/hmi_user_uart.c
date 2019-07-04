@@ -31,7 +31,6 @@ extern uint8 Override_num;
 extern uint8  TX_Data [30]; //the sending package
 extern uint8  RX_Data [30]; //the receiving package
 extern uint8  USART3_RX_STA;
-extern uint8 first_time_into_ISR;        //第一次进入中断标志位 
 extern Control_Panel_Pram control_panel_pram;
 
 #define My_Address 2
@@ -39,9 +38,9 @@ uint8  RX_Busy=0;
 uint8  HC_Address, rxcounter, remaincounter; //this unit is this unit address, if change to master become 0000 
 uint8  ready2send; // bit is 1 while there is command to send
 uint8  ready2read;
-int16  Pulses_number;    //记录脉冲变化
-uint8  Override_before;  //记录倍率变化
-uint8  CMD_button;       //记录按键变化
+int16  last_time_Pulses_number;    //记录上一次脉冲
+uint8  last_Override;  //记录倍率变化
+uint8  CMD_last_button;       //记录按键变化
 
 
 /*******************************************************************************  
@@ -264,11 +263,11 @@ void Usart3_Recieve_ISR_Process (void)
 { 	
 	 unsigned char RX_Buffer;
 	 short dat; //16 bit
-	 uint16 Recdata1,Recdata2,i;
+	 
 	 dat=USART3->DR;
 	 USART3->SR&=~(1<<5);  //SR寄存器的第五位清0
-	 i=USART3->DR;
-	 i=USART3->SR;
+//	 i=USART3->DR;
+//	 i=USART3->SR;
 	 RX_Buffer=dat;
 	 if(dat&(1<<8))
 	 {
@@ -297,21 +296,11 @@ void Usart3_Recieve_ISR_Process (void)
 	  		RX_Busy=0;
 	  		if(CheckXor(RX_Data[rxcounter-1],RX_Data[0]))
 	  		{
-	  			ready2read=1; //校验通过				
-					if(RX_Data[1] == CMD_UPDATE_MACH3_NUMBER)
-					{
-						if(first_time_into_ISR)
-						{
-							Recdata1=RX_Data[18];
-							Recdata2=RX_Data[19];	
-							TIM4->CNT = (Recdata1<<8)+Recdata2; //同步脉冲
-							first_time_into_ISR=0;	
-						}
-					}
-					if(RX_Data[1] == CMD_ASK_SLAVE)
-					{
-						 Usart3_Send_Data(10);
-					}
+	  			ready2read=1; //校验通过									
+//					if(RX_Data[1] == CMD_ASK_SLAVE)
+//					{
+//						 Usart3_Send_Data(10);
+//					}
 
 	  		}
 	 	   }
@@ -331,9 +320,9 @@ void Usart3_Data_handle (void)
 		command=RX_Data[1];
 		switch(command)
 		{
-//			case CMD_ASK_SLAVE:           //发送数据
-//				//Usart3_Send_Data(10);
-//			break;			
+			case CMD_ASK_SLAVE:           //发送数据
+				Usart3_Send_Data(10);
+			break;			
 			case CMD_UPDATE_MACH3_NUMBER: //接收到坐标  
 			{
 				Recdata1=RX_Data[2];
@@ -368,7 +357,7 @@ void Usart3_Send_Data (uint8 length)
 	z = Check_Override_change();
 	if(x || y || z)
 	{
-		Create_CMD_and_Date();
+		Create_CMD_and_Date();  //创建发给主机的指令和数据
 		RS485_TX_Set(1);
 		//delay_ms(1);
 		for(i=0;i<length;i++)
@@ -393,13 +382,13 @@ void Usart3_Send_Data (uint8 length)
 uint8 Check_Pulses_change(void)
 {
 	uint8 result;
-	if(Pulses_number==Pulses_counter)
+	if(last_time_Pulses_number==Pulses_counter)
 	{
 	  result = 0;
 	}
 	else 
 	{
-	  Pulses_number=Pulses_counter;
+	  last_time_Pulses_number=Pulses_counter;
 		result = 1;	
 	}
 	return result;
@@ -409,14 +398,14 @@ uint8 Check_Pulses_change(void)
 uint8 Check_CMD_button_change(void)
 {
 	uint8 result;
-	if(CMD_button==control_panel_pram.Press_button)
+	if(CMD_last_button==control_panel_pram.Press_button)
 	{
 		control_panel_pram.Press_button = 0XFF;
 	  result = 0;
 	}
 	else 
 	{
-	  CMD_button=control_panel_pram.Press_button;
+	  CMD_last_button=control_panel_pram.Press_button;
 		result = 1;	
 	}
 	return result;
@@ -426,13 +415,13 @@ uint8 Check_CMD_button_change(void)
 uint8 Check_Override_change(void)
 {
 	uint8 result;
-	if(Override_before==Override_num)
+	if(last_Override==Override_num)
 	{
 	  result = 0;
 	}
 	else 
 	{
-	  Override_before=Override_num;
+	  last_Override=Override_num;
 		result = 1;	
 	}
 	return result;
