@@ -267,7 +267,7 @@
       <FileNumber>1</FileNumber>
       <FileType>1</FileType>
       <tvExp>0</tvExp>
-      <Focus>1</Focus>
+      <Focus>0</Focus>
       <tvExpOptDlg>0</tvExpOptDlg>
       <bDave2>0</bDave2>
       <PathWithFileName>..\src\hw_config.c</PathWithFileName>
@@ -280,7 +280,7 @@
       <FileNumber>2</FileNumber>
       <FileType>1</FileType>
       <tvExp>0</tvExp>
-      <Focus>1</Focus>
+      <Focus>0</Focus>
       <tvExpOptDlg>0</tvExpOptDlg>
       <bDave2>0</bDave2>
       <PathWithFileName>..\src\stm32f10x_it.c</PathWithFileName>
@@ -293,7 +293,7 @@
       <FileNumber>3</FileNumber>
       <FileType>1</FileType>
       <tvExp>0</tvExp>
-      <Focus>1</Focus>
+      <Focus>0</Focus>
       <tvExpOptDlg>0</tvExpOptDlg>
       <bDave2>0</bDave2>
       <PathWithFileName>..\src\main.c</PathWithFileName>
@@ -306,7 +306,7 @@
       <FileNumber>4</FileNumber>
       <FileType>1</FileType>
       <tvExp>0</tvExp>
-      <Focus>1</Focus>
+      <Focus>0</Focus>
       <tvExpOptDlg>0</tvExpOptDlg>
       <bDave2>0</bDave2>
       <PathWithFileName>..\src\ulitity.c</PathWithFileName>
@@ -327,7 +327,7 @@
       <FileNumber>5</FileNumber>
       <FileType>1</FileType>
       <tvExp>0</tvExp>
-      <Focus>1</Focus>
+      <Focus>0</Focus>
       <tvExpOptDlg>0</tvExpOptDlg>
       <bDave2>0</bDave2>
       <PathWithFileName>..\..\..\Libraries\STM32F10x_StdPeriph_Driver\src\stm32f10x_usart.c</PathWithFileName>
@@ -340,7 +340,7 @@
       <FileNumber>6</FileNumber>
       <FileType>1</FileType>
       <tvExp>0</tvExp>
-      <Focus>1</Focus>
+      <Focus>0</Focus>
       <tvExpOptDlg>0</tvExpOptDlg>
       <bDave2>0</bDave2>
       <PathWithFileName>..\..\..\Libraries\STM32F10x_StdPeriph_Driver\src\misc.c</PathWithFileName>
@@ -353,7 +353,7 @@
       <FileNumber>7</FileNumber>
       <FileType>1</FileType>
       <tvExp>0</tvExp>
-      <Focus>1</Focus>
+      <Focus>0</Focus>
       <tvExpOptDlg>0</tvExpOptDlg>
       <bDave2>0</bDave2>
       <PathWithFileName>..\..\..\Libraries\STM32F10x_StdPeriph_Driver\src\stm32f10x_gpio.c</PathWithFileName>
@@ -366,7 +366,7 @@
       <FileNumber>8</FileNumber>
       <FileType>1</FileType>
       <tvExp>0</tvExp>
-      <Focus>1</Focus>
+      <Focus>0</Focus>
       <tvExpOptDlg>0</tvExpOptDlg>
       <bDave2>0</bDave2>
       <PathWithFileName>..\..\..\Libraries\STM32F10x_StdPeriph_Driver\src\stm32f10x_rcc.c</PathWithFileName>
@@ -379,7 +379,7 @@
       <FileNumber>9</FileNumber>
       <FileType>1</FileType>
       <tvExp>0</tvExp>
-      <Focus>1</Focus>
+      <Focus>0</Focus>
       <tvExpOptDlg>0</tvExpOptDlg>
       <bDave2>0</bDave2>
       <PathWithFileName>..\..\..\Libraries\STM32F10x_StdPeriph_Driver\src\stm32f10x_flash.c</PathWithFileName>
@@ -392,7 +392,7 @@
       <FileNumber>10</FileNumber>
       <FileType>1</FileType>
       <tvExp>0</tvExp>
-      <Focus>1</Focus>
+      <Focus>0</Focus>
       <tvExpOptDlg>0</tvExpOptDlg>
       <bDave2>0</bDave2>
       <PathWithFileName>..\..\..\Libraries\STM32F10x_StdPeriph_Driver\src\stm32f10x_exti.c</PathWithFileName>
@@ -405,7 +405,7 @@
       <FileNumber>11</FileNumber>
       <FileType>1</FileType>
       <tvExp>0</tvExp>
-      <Focus>1</Focus>
+      <Focus>0</Focus>
       <tvExpOptDlg>0</tvExpOptDlg>
       <bDave2>0</bDave2>
       <PathWithFileName>..\..\..\Libraries\STM32F10x_StdPeriph_Driver\src\stm32f10x_tim.c</PathWithFileName>
@@ -426,7 +426,7 @@
       <FileNumber>12</FileNumber>
       <FileType>2</FileType>
       <tvExp>0</tvExp>
-      <Focus>1</Focus>
+      <Focus>0</Focus>
       <tvExpOptDlg>0</tvExpOptDlg>
       <bDave2>0</bDave2>
       <PathWithFileName>..\..\..\Libraries\CMSIS\Core\CM3\startup\arm\startup_stm32f10x_md.s</PathWithFileName>
@@ -447,7 +447,7 @@
       <FileNumber>13</FileNumber>
       <FileType>1</FileType>
       <tvExp>0</tvExp>
-      <Focus>1</Focus>
+      <Focus>0</Focus>
       <tvExpOptDlg>0</tvExpOptDlg>
       <bDave2>0</bDave2>
       <PathWithFileName>..\..\..\Libraries\CMSIS\Core\CM3\system_stm32f10x.c</PathWithFileName>
@@ -460,7 +460,7 @@
       <FileNumber>14</FileNumber>
       <FileType>1</FileType>
       <tvExp>0</tvExp>
-      <Focus>1</Focus>
+      <Focus>0</Focus>
       <tvExpOptDlg>0</tvExpOptDlg>
       <bDave2>0</bDave2>
       <PathWithFileName>..\..\..\Libraries\CMSIS\Core\CM3\core_cm3.c</PathWithFileName>
@@ -481,7 +481,7 @@
       <FileNumber>15</FileNumber>
       <FileType>5</FileType>
       <tvExp>0</tvExp>
-      <Focus>1</Focus>
+      <Focus>0</Focus>
       <tvExpOptDlg>0</tvExpOptDlg>
       <bDave2>0</bDave2>
       <PathWithFileName>..\readme.txt</PathWithFileName>
@@ -493,7 +493,7 @@
 
   <Group>
     <GroupName>HMI_DRIVE</GroupName>
-    <tvExp>0</tvExp>
+    <tvExp>1</tvExp>
     <tvExpOptDlg>0</tvExpOptDlg>
     <cbSel>0</cbSel>
     <RteFlg>0</RteFlg>
@@ -502,7 +502,7 @@
       <FileNumber>16</FileNumber>
       <FileType>1</FileType>
       <tvExp>0</tvExp>
-      <Focus>1</Focus>
+      <Focus>0</Focus>
       <tvExpOptDlg>0</tvExpOptDlg>
       <bDave2>0</bDave2>
       <PathWithFileName>..\src\hmi_user_uart.c</PathWithFileName>
@@ -515,7 +515,7 @@
       <FileNumber>17</FileNumber>
       <FileType>1</FileType>
       <tvExp>0</tvExp>
-      <Focus>1</Focus>
+      <Focus>0</Focus>
       <tvExpOptDlg>0</tvExpOptDlg>
       <bDave2>0</bDave2>
       <PathWithFileName>..\src\cmd_queue.c</PathWithFileName>
@@ -528,7 +528,7 @@
       <FileNumber>18</FileNumber>
       <FileType>1</FileType>
       <tvExp>0</tvExp>
-      <Focus>1</Focus>
+      <Focus>0</Focus>
       <tvExpOptDlg>0</tvExpOptDlg>
       <bDave2>0</bDave2>
       <PathWithFileName>..\src\hmi_driver.c</PathWithFileName>
@@ -541,7 +541,7 @@
       <FileNumber>19</FileNumber>
       <FileType>1</FileType>
       <tvExp>0</tvExp>
-      <Focus>1</Focus>
+      <Focus>0</Focus>
       <tvExpOptDlg>0</tvExpOptDlg>
       <bDave2>0</bDave2>
       <PathWithFileName>..\src\flash.c</PathWithFileName>
@@ -554,7 +554,7 @@
       <FileNumber>20</FileNumber>
       <FileType>1</FileType>
       <tvExp>0</tvExp>
-      <Focus>1</Focus>
+      <Focus>0</Focus>
       <tvExpOptDlg>0</tvExpOptDlg>
       <bDave2>0</bDave2>
       <PathWithFileName>..\src\malloc.c</PathWithFileName>
@@ -567,7 +567,7 @@
       <FileNumber>21</FileNumber>
       <FileType>1</FileType>
       <tvExp>0</tvExp>
-      <Focus>1</Focus>
+      <Focus>0</Focus>
       <tvExpOptDlg>0</tvExpOptDlg>
       <bDave2>0</bDave2>
       <PathWithFileName>..\src\TFT.c</PathWithFileName>
@@ -580,7 +580,7 @@
       <FileNumber>22</FileNumber>
       <FileType>1</FileType>
       <tvExp>0</tvExp>
-      <Focus>1</Focus>
+      <Focus>0</Focus>
       <tvExpOptDlg>0</tvExpOptDlg>
       <bDave2>0</bDave2>
       <PathWithFileName>..\src\cJSON.c</PathWithFileName>
@@ -593,7 +593,7 @@
       <FileNumber>23</FileNumber>
       <FileType>1</FileType>
       <tvExp>0</tvExp>
-      <Focus>1</Focus>
+      <Focus>0</Focus>
       <tvExpOptDlg>0</tvExpOptDlg>
       <bDave2>0</bDave2>
       <PathWithFileName>..\src\timer.c</PathWithFileName>
@@ -606,7 +606,7 @@
       <FileNumber>24</FileNumber>
       <FileType>1</FileType>
       <tvExp>0</tvExp>
-      <Focus>1</Focus>
+      <Focus>0</Focus>
       <tvExpOptDlg>0</tvExpOptDlg>
       <bDave2>0</bDave2>
       <PathWithFileName>..\src\exti.c</PathWithFileName>

@@ -16,7 +16,7 @@ extern Pram_Status pram_status;
 extern Control_Panel_Pram control_panel_pram;
 extern Return_Workpiece_Zero return_workpiece_zero;
 extern Devide_Set devide_set;  
-extern uint8 Send_cooddinate_status;
+extern uint8 Mark_100ms;
 
 uint8 Coordinate_Change_Counter=0;                                    //坐标切换按钮触发计数
 uint8 Override_Change_Counter=1;                                      //倍率切换按钮触发计数
@@ -356,14 +356,14 @@ void Override_Change_Process(void)
 // 在加工页面和控制面板页面显示所有轴坐标
 void TFT_Show_coordanate_value(void)
 {
-	if(Send_cooddinate_status)  //定时满100ms
+	if(Mark_100ms)  //定时满100ms
 	{		
 		Show_X_Coordinata();
 		Show_Y_Coordinata();
 		Show_Z_Coordinata();
 		Show_A_Coordinata();
 		Show_B_Coordinata();			
-		Send_cooddinate_status=0;
+		Mark_100ms=0;
  }
 //	sprintf((char *)buf1,"%09.2f",control_panel_pram.X_Mac_value); 
 //	SetTextValue(2,38,(uchar *)buf1);	                               //显示X轴机械坐标

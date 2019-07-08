@@ -9,8 +9,12 @@
 extern int16 Pulses_counter;
 extern Control_Panel_Pram control_panel_pram;
 extern Return_Workpiece_Zero return_workpiece_zero;
-extern uint8 Send_cooddinate_status; 
-extern Devide_Set devide_set;  
+extern Devide_Set devide_set; 
+extern uint8 Mark_10ms;                 //20ms¼ÆÊ±±ê¼ÇÎ»
+extern uint8 Mark_10ms_Count;
+extern uint8 Mark_20ms;                 //20ms¼ÆÊ±±ê¼ÇÎ»
+extern uint8 Mark_20ms_Count;           //20ms¼ÆÊ±Òç³öÍ³¼ÆÎ»
+extern uint8 Mark_100ms;                //100ms¼ÆÊ±±ê¼ÇÎ
 //uint8 Counter_Dir=0;          //¼ÆÊý·½Ïò,0:Õý×ª£¬1£º·´×ª
 uint8 TIME3_Counter=0;         //¶¨Ê±Æ÷3Òç³ö¼ÆÊý
 uint16 ABCD=1;
@@ -18,7 +22,7 @@ uint16 ABCD=1;
 
 /*******************************************************************************  
 * º¯ Êý Ãû         : TIME2_Init  
-* º¯Êý¹¦ÄÜ         :  TIME2³õÊ¼»¯  ,//100ms  Ë¢ÐÂLCDÆÁÊý¾Ý
+* º¯Êý¹¦ÄÜ         :  TIME2³õÊ¼»¯  ,//20ms  Ë¢ÐÂLCDÆÁÊý¾Ý
 * Êä    Èë         : ÎÞ  
 * Êä    ³ö         : ÎÞ  
 *******************************************************************************/ 
@@ -30,7 +34,7 @@ void TIME2_Init(void)
 	RCC_APB1PeriphClockCmd(RCC_APB1Periph_TIM2, ENABLE);     //Ê¹ÄÜTIM2Ê±ÖÓ 
 	
 	//ÅäÖÃ¶¨Ê±Æ÷3
-	TIM_TimeBaseStructure.TIM_Period = 999;                    //ÉèÖÃ×Ô¶¯ÖØ×°ÔØ¼Ä´æÆ÷ÖÜÆÚµÄÖµ
+	TIM_TimeBaseStructure.TIM_Period = 199;                    //ÉèÖÃ×Ô¶¯ÖØ×°ÔØ¼Ä´æÆ÷ÖÜÆÚµÄÖµ
 	TIM_TimeBaseStructure.TIM_Prescaler =7199;                  //ÉèÖÃÊ±ÖÓÆµÂÊ³ýÊýµÄÔ¤·ÖÆµÖµ
 	TIM_TimeBaseStructure.TIM_ClockDivision = TIM_CKD_DIV1;     //ÉèÖÃÊ±ÖÓ·Ö¸î
 	TIM_TimeBaseStructure.TIM_CounterMode = TIM_CounterMode_Up; //TIM ÏòÉÏ¼ÆÊý
@@ -40,8 +44,8 @@ void TIME2_Init(void)
 	
 	//ÖÐ¶ÏÓÅÏÈ¼¶ NVIC ÉèÖÃ
 	NVIC_InitStructure.NVIC_IRQChannel = TIM2_IRQn;              //TIM2 ÖÐ¶Ï
-	NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 2;    //ÏÈÕ¼ÓÅÏÈ¼¶ 0 ¼¶
-	NVIC_InitStructure.NVIC_IRQChannelSubPriority = 3;           //´ÓÓÅÏÈ¼¶ 3 ¼¶
+	NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 1;    //ÏÈÕ¼ÓÅÏÈ¼¶  ¼¶
+	NVIC_InitStructure.NVIC_IRQChannelSubPriority = 2;           //´ÓÓÅÏÈ¼¶ 3 ¼¶
 	NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;              //IRQ Í¨µÀ±»Ê¹ÄÜ
 	NVIC_Init(&NVIC_InitStructure);                              //³õÊ¼»¯ NVIC ¼Ä´æÆ÷
 	
@@ -54,31 +58,31 @@ void TIME2_Init(void)
 * Êä    Èë         : ÎÞ  
 * Êä    ³ö         : ÎÞ  
 *******************************************************************************/ 
-void TIME3_Init(void)
-{
-	TIM_TimeBaseInitTypeDef TIM_TimeBaseStructure;
-	NVIC_InitTypeDef NVIC_InitStructure;
-	
-	RCC_APB1PeriphClockCmd(RCC_APB1Periph_TIM3, ENABLE);     //Ê¹ÄÜTIM3Ê±ÖÓ 
-	
-	//ÅäÖÃ¶¨Ê±Æ÷3
-	TIM_TimeBaseStructure.TIM_Period = 1999;                     //ÉèÖÃ×Ô¶¯ÖØ×°ÔØ¼Ä´æÆ÷ÖÜÆÚµÄÖµ
-	TIM_TimeBaseStructure.TIM_Prescaler =7199;                  //ÉèÖÃÊ±ÖÓÆµÂÊ³ýÊýµÄÔ¤·ÖÆµÖµ
-	TIM_TimeBaseStructure.TIM_ClockDivision = TIM_CKD_DIV1;     //ÉèÖÃÊ±ÖÓ·Ö¸î
-	TIM_TimeBaseStructure.TIM_CounterMode = TIM_CounterMode_Up; //TIM ÏòÉÏ¼ÆÊý
-	TIM_TimeBaseInit(TIM3, &TIM_TimeBaseStructure);             //¢Ú³õÊ¼»¯ TIM3ALIENTEK MiniSTM32 V3.0 ¿ª·¢°å½Ì³Ì
+//void TIME3_Init(void)
+//{
+//	TIM_TimeBaseInitTypeDef TIM_TimeBaseStructure;
+//	NVIC_InitTypeDef NVIC_InitStructure;
+//	
+//	RCC_APB1PeriphClockCmd(RCC_APB1Periph_TIM3, ENABLE);     //Ê¹ÄÜTIM3Ê±ÖÓ 
+//	
+//	//ÅäÖÃ¶¨Ê±Æ÷3
+//	TIM_TimeBaseStructure.TIM_Period = 1999;                     //ÉèÖÃ×Ô¶¯ÖØ×°ÔØ¼Ä´æÆ÷ÖÜÆÚµÄÖµ
+//	TIM_TimeBaseStructure.TIM_Prescaler =7199;                  //ÉèÖÃÊ±ÖÓÆµÂÊ³ýÊýµÄÔ¤·ÖÆµÖµ
+//	TIM_TimeBaseStructure.TIM_ClockDivision = TIM_CKD_DIV1;     //ÉèÖÃÊ±ÖÓ·Ö¸î
+//	TIM_TimeBaseStructure.TIM_CounterMode = TIM_CounterMode_Up; //TIM ÏòÉÏ¼ÆÊý
+//	TIM_TimeBaseInit(TIM3, &TIM_TimeBaseStructure);             //¢Ú³õÊ¼»¯ TIM3ALIENTEK MiniSTM32 V3.0 ¿ª·¢°å½Ì³Ì
 
-	TIM_ITConfig(TIM3,TIM_IT_Update,ENABLE ); //¢ÛÔÊÐí¸üÐÂÖÐ¶Ï
-	
-	//ÖÐ¶ÏÓÅÏÈ¼¶ NVIC ÉèÖÃ
-	NVIC_InitStructure.NVIC_IRQChannel = TIM3_IRQn;              //TIM3 ÖÐ¶Ï
-	NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 1;    //ÏÈÕ¼ÓÅÏÈ¼¶ 0 ¼¶
-	NVIC_InitStructure.NVIC_IRQChannelSubPriority = 3;           //´ÓÓÅÏÈ¼¶ 3 ¼¶
-	NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;              //IRQ Í¨µÀ±»Ê¹ÄÜ
-	NVIC_Init(&NVIC_InitStructure);                              //³õÊ¼»¯ NVIC ¼Ä´æÆ÷
-	
-	//TIM_Cmd(TIM3, ENABLE);                                       //Ê¹ÄÜ TIM3
-}
+//	TIM_ITConfig(TIM3,TIM_IT_Update,ENABLE ); //¢ÛÔÊÐí¸üÐÂÖÐ¶Ï
+//	
+//	//ÖÐ¶ÏÓÅÏÈ¼¶ NVIC ÉèÖÃ
+//	NVIC_InitStructure.NVIC_IRQChannel = TIM3_IRQn;              //TIM3 ÖÐ¶Ï
+//	NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 1;    //ÏÈÕ¼ÓÅÏÈ¼¶ 0 ¼¶
+//	NVIC_InitStructure.NVIC_IRQChannelSubPriority = 3;           //´ÓÓÅÏÈ¼¶ 3 ¼¶
+//	NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;              //IRQ Í¨µÀ±»Ê¹ÄÜ
+//	NVIC_Init(&NVIC_InitStructure);                              //³õÊ¼»¯ NVIC ¼Ä´æÆ÷
+//	
+//	//TIM_Cmd(TIM3, ENABLE);                                       //Ê¹ÄÜ TIM3
+//}
 
 
 
@@ -139,15 +143,27 @@ void TIM2_IRQHandler(void)
 	if (TIM_GetITStatus(TIM2, TIM_IT_Update) != RESET) //¼ì²é TIM2 ¸üÐÂÖÐ¶Ï·¢ÉúÓë·ñ
 	{
 		TIM_ClearITPendingBit(TIM2, TIM_IT_Update ); //Çå³ý TIM2 ¸üÐÂÖÐ¶Ï±êÖ¾
-	  Send_cooddinate_status=1;	                   //100ms ÏòLCD·¢ËÍ¹ýÒ»´Î×ø±ê
+	  Mark_10ms=1;
+    Mark_10ms_Count++;		//10ms£¬²éÑ¯LCDÃüÁî
+		if(Mark_10ms_Count == 2)
+		{
+		  Mark_20ms = 1;
+			Mark_10ms_Count = 0;
+			Mark_20ms_Count++;
+			if(Mark_10ms_Count == 5)
+			{
+				Mark_10ms_Count=0;
+				Mark_10ms = 1;
+			}
+		}
 	}
 }
 
 //¶¨Ê±Æ÷ 3 ÖÐ¶Ï·þÎñ³ÌÐò
-void TIM3_IRQHandler(void) //TIM3 ÖÐ¶Ï
-{
-	if (TIM_GetITStatus(TIM3, TIM_IT_Update) != RESET) //¼ì²é TIM3 ¸üÐÂÖÐ¶Ï·¢ÉúÓë·ñ
-	{
+//void TIM3_IRQHandler(void) //TIM3 ÖÐ¶Ï
+//{
+//	if (TIM_GetITStatus(TIM3, TIM_IT_Update) != RESET) //¼ì²é TIM3 ¸üÐÂÖÐ¶Ï·¢ÉúÓë·ñ
+//	{
 //		TIME3_Counter++;
 //		TIM_ClearITPendingBit(TIM3, TIM_IT_Update );                  //Çå³ý TIM3 ¸üÐÂÖÐ¶Ï±êÖ¾
 //		if(TIME3_Counter)
@@ -160,18 +176,18 @@ void TIM3_IRQHandler(void) //TIM3 ÖÐ¶Ï
 //			TIME3_Counter=0;
 //		}
 //		
-	}
-}
+//	}
+//}
 
-//¶¨Ê±Æ÷ 4 ÖÐ¶Ï·þÎñ³ÌÐò
-void TIM4_IRQHandler(void)
-{   
-    if(TIM4->SR&0x0001)         //Òç³öÖÐ¶Ï
-    {
-		    
-    }   
-    TIM4->SR&=~(1<<0);//Çå³ýÖÐ¶Ï±êÖ¾Î»     
-}
+////¶¨Ê±Æ÷ 4 ÖÐ¶Ï·þÎñ³ÌÐò
+//void TIM4_IRQHandler(void)
+//{   
+//    if(TIM4->SR&0x0001)         //Òç³öÖÐ¶Ï
+//    {
+//		    
+//    }   
+//    TIM4->SR&=~(1<<0);//Çå³ýÖÐ¶Ï±êÖ¾Î»     
+//}
 
 
 

@@ -1,8 +1,4 @@
-/******************** (C) COPYRIGHT 2010 STMicroelectronics ********************
-* File Name          : stm32f10x_it.c
-* Author             : MCD Application Team
-* Version            : V3.1.1
-* Date               : 04/07/2010
+/*
 * Description        : Main Interrupt Service Routines.
 *                      This file provides template for all exceptions handler
 *                      and peripherals interrupt service routine.

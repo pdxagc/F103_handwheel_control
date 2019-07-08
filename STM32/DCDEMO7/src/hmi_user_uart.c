@@ -1,4 +1,4 @@
-/************************************版权申明********************************************
+/*
 --------------------------------------------------------------------------------------
 使用必读
 hmi_user_uart.c中的串口发送接收函数共3个函数：
@@ -18,6 +18,7 @@ hmi_user_uart.c中的串口发送接收函数共3个函数：
 #include "string.h"
 #include "stm32f10x_gpio.h"
 #include "ulitity.h"
+#include "hw_config.h"
 
 
 #define USART3_REC_LEN 2048
@@ -30,7 +31,6 @@ extern int16 Pulses_counter;
 extern uint8 Override_num;
 extern uint8  TX_Data [30]; //the sending package
 extern uint8  RX_Data [30]; //the receiving package
-extern uint8  USART3_RX_STA;
 extern Control_Panel_Pram control_panel_pram;
 
 #define My_Address 2
@@ -44,7 +44,7 @@ uint8  CMD_last_button;       //记录按键变化
 
 
 /*******************************************************************************  
-* 函 数 名         : Usart1_Init(与TFT屏通讯)  
+* 函 数 名         : Usart1_Init(与LCD屏通讯)  
 * 函数功能         : IO端口及串口1，时钟初始化函数    A9,A10    
 * 输    入         : 无  
 * 输    出         : 无  
@@ -53,6 +53,7 @@ void Usart1_Init(uint32 BaudRate)
 {
     GPIO_InitTypeDef GPIO_InitStructure;      //声明一个结构体变量，用来初始化GPIO   
     USART_InitTypeDef USART_InitStructure;    //声明一个结构体变量，用来初始化串口
+	  NVIC_InitTypeDef NVIC_InitStructure;
     /* Enable GPIO clock */
     RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOA | RCC_APB2Periph_AFIO, ENABLE);
     RCC_APB2PeriphClockCmd(RCC_APB2Periph_USART1, ENABLE);
@@ -76,7 +77,14 @@ void Usart1_Init(uint32 BaudRate)
     USART_InitStructure.USART_Parity = USART_Parity_No;            //无奇偶校验位
     USART_InitStructure.USART_HardwareFlowControl = USART_HardwareFlowControl_None; //无硬件数据流控制
     USART_InitStructure.USART_Mode =   USART_Mode_Tx|USART_Mode_Rx; //收发模式 
-    USART_Init(USART1, &USART_InitStructure);                      //初始化串口         
+    USART_Init(USART1, &USART_InitStructure);                      //初始化串口    
+
+    NVIC_InitStructure.NVIC_IRQChannel = USART1_IRQn;        //中断号；
+		NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 1;//抢占优先级1
+		NVIC_InitStructure.NVIC_IRQChannelSubPriority = 1;		   //响应优先级0
+		NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;			     //开启中断
+		NVIC_Init(&NVIC_InitStructure);	
+    //Interrupts_Config();      //配置串口中断 
 		
 		
     USART_ITConfig(USART1, USART_IT_RXNE, ENABLE);                  //接收中断使能
@@ -261,13 +269,10 @@ uint8_t Check_Address (char data)
 // 串口3接收中断执行函数  //place at ISR，接收主机发送的数据
 void Usart3_Recieve_ISR_Process (void)
 { 	
-	 unsigned char RX_Buffer;
-	 short dat; //16 bit
-	 
+	 uchar RX_Buffer;
+	 short dat; //16 bit	 
 	 dat=USART3->DR;
 	 USART3->SR&=~(1<<5);  //SR寄存器的第五位清0
-//	 i=USART3->DR;
-//	 i=USART3->SR;
 	 RX_Buffer=dat;
 	 if(dat&(1<<8))
 	 {
@@ -297,10 +302,6 @@ void Usart3_Recieve_ISR_Process (void)
 	  		if(CheckXor(RX_Data[rxcounter-1],RX_Data[0]))
 	  		{
 	  			ready2read=1; //校验通过									
-//					if(RX_Data[1] == CMD_ASK_SLAVE)
-//					{
-//						 Usart3_Send_Data(10);
-//					}
 
 	  		}
 	 	   }

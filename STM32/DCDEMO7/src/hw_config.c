@@ -1,9 +1,4 @@
-/******************** (C) COPYRIGHT 2018 STMicroelectronics ********************
-* File Name          : hw_config.c
-* Author             : MCD Application Team
-* Version            : V3.1.1
-* Date               : 21/08/2018
-* Description        : Hardware Configuration & Setup
+/* Description        : Hardware Configuration & Setup
 ********************************************************************************
 * THE PRESENT FIRMWARE WHICH IS FOR GUIDANCE ONLY AIMS AT PROVIDING CUSTOMERS
 * WITH CODING INFORMATION REGARDING THEIR PRODUCTS IN ORDER FOR THEM TO SAVE TIME.

@@ -76,11 +76,13 @@ void NOTIFYHandShake(void);
 
 
 //程序进入标记的工作页面，处理相关任务
-void Work_Page_Process(void);
+void LCD_handle(void);
 
+//计算首轮脉冲个数
+void Pulses_Count(void);
 
 //LCD屏数据处理
-void LCD_command_handle(void);
+void LCD_command_analyse(void);
 
 //主机工作状态显示
 void Work_state_control(void);
@@ -90,7 +92,7 @@ void Work_state_control(void);
 *  \param msg 待处理消息
 *  \param size 消息长度
 */
-void Usart1_data_handle( PCTRL_MSG msg, uint16 size );
+void Usart1_Receive_data_handle( PCTRL_MSG msg, uint16 size );
 /*! 
 *  \brief  画面切换通知
 *  \details  当前画面改变时(或调用GetScreen)，执行此函数

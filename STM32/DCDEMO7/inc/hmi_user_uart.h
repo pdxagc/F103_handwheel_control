@@ -1,9 +1,7 @@
 /*! 
 *  \file hmi_driver.h
 *  \brief 串口初始化
-*  \version 1.0
-*  \date 2012-2018
-*  \copyright 广州大彩光电科技有限公司
+*  
 */
 #ifndef _USER_UART__
 #define _USER_UART__
@@ -11,7 +9,7 @@
 #include "stm32f10x_it.h"     //根据用户MCU进行修改
 
 
-#define uchar    unsigned char
+#define uchar      unsigned char
 #define uint8    unsigned char
 #define uint16   unsigned short int
 #define uint32   unsigned long
@@ -21,14 +19,16 @@
 
 
 //////COMMAND TABLE//////////
+
+//控制面板
 #define CMD_X_AXIS	0                  //X轴选中
 #define CMD_Y_AXIS	1                  //Y轴选中
-#define CMD_Z_AXIS 2                   //Z轴选中
-#define CMD_A_AXIS 3                   //A轴选中
-#define CMD_B_AXIS 100                 //B轴选中
-#define CMD_Clear 4                     //清零
+#define CMD_Z_AXIS  2                   //Z轴选中
+#define CMD_A_AXIS  3                   //A轴选中
+#define CMD_B_AXIS  100                 //B轴选中
+#define CMD_Clear   4                     //清零
 #define CMD_Return_WorkPiece_Zero 5     //回工件零
-#define CMD_Divided	6                   //分中
+#define CMD_Divided	 6                   //分中
 #define CMD_Override_Change	7           //倍率切换
 #define CMD_Spin_On_Off	8               //主轴开关
 #define CMD_Auto_knife	9               //自动对刀
@@ -38,12 +38,28 @@
 #define CMD_1	13
 #define CMD_2	14
 #define CMD_EStop	15                    //紧急停止
-#define CMD_All_Spin_Clear	16          //全轴清零
-#define CMD_Coordinate_Change 17        //坐标切换
-#define CMD_Soft_Limit	18              //软限位
-#define CMD_Jump_Work	19                //跳行加工
-#define CMD_Safe_Z	20                   //安全Z
-#define CMD_Reset	21                     //复位
+//#define CMD_Stop  16
+#define CMD_All_Spin_Clear	17          //全轴清零
+#define CMD_Coordinate_Change 18        //坐标切换
+#define CMD_Soft_Limit	19              //软限位
+#define CMD_Jump_Work	20                //跳行加工
+#define CMD_Safe_Z	21                   //安全Z
+#define CMD_Reset	22                     //复位
+#define CMD_Stop  23                     //停止加工
+
+//加工页面
+#define CMD_Spindle_Speed_Add  24        //主轴速度加
+#define CMD_Spindle_Speed_Subtract 25    //主轴速度减
+#define CMD_Work_Speed_add  26            //加工速度加
+#define CMD_Work_Speed_Suttract  27      //加工速度减
+
+//设置页面
+#define CMD_Safe_Z_Mode  28             //安全Z模式
+#define CMD_Auto_Knife_Mode  29          //自动对刀模式
+#define CMD_Uint_Mode  30               //单位模式
+#define CMD_Voice_Switch  31            //语音开关
+#define CMD_Sure   32                   //确定
+#define CMD_Cancel 33                   //取消
 
 #define CMD_ASK_SLAVE 29                 //主机请求数据
 #define CMD_RPY_HC_MPG1	36               //主机获取数据
