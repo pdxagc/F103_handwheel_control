@@ -154,8 +154,6 @@ void Spindle_and_Work_Speed_Key_Process(void)
 		SetTextValue(0,24,(uchar *)buf);                                 //修改主轴速度文本框数值		               
 		SetProgressValue(0,1,Speed.Initial_Spindle_Speed_Percent);       //修改主轴速度进度条数值
 		
-//		sprintf(buf,"$xvm:%d",Speed.Changed_Spindle_Speed);              
-//		Usart_SendString(USART2,(char *)buf);                            //通过USART2向主机发送主轴速度
 	}
 	if(Speed.Work_Speed_Changed==Changed)
 	{
@@ -164,10 +162,7 @@ void Spindle_and_Work_Speed_Key_Process(void)
 		SetTextValue(0,25,(uchar *)buf);                                   //修改加工速度文本框数值
 		SetProgressValue(0,2,Speed.Initial_Work_Speed_Percent);            //修改加工速度进度条数值	
 		sprintf(buf,"%d",Speed.Initial_Work_Speed_Percent);
-		SetTextValue(0,39,(uchar *)buf);
-		
-//		sprintf(buf,"$xfr:%d",Speed.Changed_Work_Speed);
-//		Usart_SendString(USART2,(char *)buf);                             //通过USART2向主机发送加工速度           
+		SetTextValue(0,39,(uchar *)buf);  
 		
 	}
 }

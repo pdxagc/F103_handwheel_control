@@ -109,18 +109,13 @@ int main()
 		
 		Pulses_Count();                        //计算手轮脉冲
 		Usart3_Receive_Data_handle();          //与雕刻机通讯，处理相关数据 
-		
-//		if(Mark_10ms)
-//		{
-//  	   			
-//			Mark_10ms=0;
-//		}	
+	
 		if(Mark_20ms) 
 		{
 		  LCD_command_analyse();                 //分析LCD屏的命令 			  
 			Mark_20ms=0;
 		}
-		if(Mark_60ms)                         //定时满100ms
+		if(Mark_60ms)                         //定时满60ms
 		{
 			LCD_Show_coordanate_value();        //显示工件坐标
 			Mark_60ms=0;
@@ -204,8 +199,7 @@ void LCD_handle(void)
 				pram_status.Screen_ID1_Setting_concel=0;
 				Work_Page_Status=Working_Page;				 
 		 }		
-		}
-	  	break;
+		}break;
 		case Save_Pram_Page:  //****************************************************提示是否保存参数设置****************************************************************************************
 		{
 			if(state.Work_state==Stop)                                   //停止加工
@@ -221,8 +215,7 @@ void LCD_handle(void)
 					Work_Page_Status=Working_Page;					
 				}	
 			}				
-		}
-		  break;	
+		} break;	
 		case ControlPanel_Page:  //******************************************************控制面板页面*****************************************************************************************
 		{	
 			//Get_Pulses_num();                                   //计算脉冲个数 

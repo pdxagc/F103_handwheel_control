@@ -257,7 +257,7 @@ I (..\..\..\Libraries\STM32F10x_StdPeriph_Driver\inc\stm32f10x_gpio.h)(0x5D1AEB2
 I (..\..\..\Libraries\STM32F10x_StdPeriph_Driver\inc\stm32f10x_rcc.h)(0x5D1AEB20)
 I (..\..\..\Libraries\STM32F10x_StdPeriph_Driver\inc\stm32f10x_usart.h)(0x5D1AEB20)
 I (..\..\..\Libraries\STM32F10x_StdPeriph_Driver\inc\misc.h)(0x5D1AEB20)
-F (..\src\TFT.c)(0x5D245745)(-c --cpu Cortex-M3 -D__MICROLIB -g -O0 --apcs=interwork --split_sections -I..\..\..\Libraries\CMSIS\Core\CM3 -I..\..\..\Libraries\STM32_USB-FS-Device_Driver\inc -I..\..\..\Libraries\STM32F10x_StdPeriph_Driver\inc -I..\..\..\Utilities\STM32_EVAL -I..\..\..\Utilities\STM32_EVAL\STM3210B_EVAL -I..\inc -I..\inc-I C:\Users\xiaopan\Desktop\CNC_F103_control\STM32\DCDEMO7\RVMDK\RTE-I C:\Keil_v5\ARM\PACK\Keil\STM32F1xx_DFP\1.0.5\Device\Include-I C:\Keil_v5\ARM\CMSIS\Include-D__UVISION_VERSION="514" -DSTM32F10X_MD -DUSE_STDPERIPH_DRIVER -DSTM32F10X_MD-o .\obj\tft.o --omf_browse .\obj\tft.crf --depend .\obj\tft.d)
+F (..\src\TFT.c)(0x5D247CC7)(-c --cpu Cortex-M3 -D__MICROLIB -g -O0 --apcs=interwork --split_sections -I..\..\..\Libraries\CMSIS\Core\CM3 -I..\..\..\Libraries\STM32_USB-FS-Device_Driver\inc -I..\..\..\Libraries\STM32F10x_StdPeriph_Driver\inc -I..\..\..\Utilities\STM32_EVAL -I..\..\..\Utilities\STM32_EVAL\STM3210B_EVAL -I..\inc -I..\inc-I C:\Users\xiaopan\Desktop\CNC_F103_control\STM32\DCDEMO7\RVMDK\RTE-I C:\Keil_v5\ARM\PACK\Keil\STM32F1xx_DFP\1.0.5\Device\Include-I C:\Keil_v5\ARM\CMSIS\Include-D__UVISION_VERSION="514" -DSTM32F10X_MD -DUSE_STDPERIPH_DRIVER -DSTM32F10X_MD-o .\obj\tft.o --omf_browse .\obj\tft.crf --depend .\obj\tft.d)
 I (..\inc\tft.h)(0x5D2424D4)
 I (..\inc\hmi_user_uart.h)(0x5D23414A)
 I (..\inc\stm32f10x_it.h)(0x5D1AEB20)
