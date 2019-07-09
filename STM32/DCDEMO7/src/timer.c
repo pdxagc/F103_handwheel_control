@@ -6,7 +6,7 @@
 #include "hmi_driver.h"
 #include "stdio.h"
 
-extern int16 Pulses_counter;
+extern uint16 Pulses_counter;
 extern Control_Panel_Pram control_panel_pram;
 extern Return_Workpiece_Zero return_workpiece_zero;
 extern Devide_Set devide_set; 
@@ -14,7 +14,7 @@ extern uint8 Mark_10ms;                 //20ms¼ÆÊ±±ê¼ÇÎ»
 extern uint8 Mark_10ms_Count;
 extern uint8 Mark_20ms;                 //20ms¼ÆÊ±±ê¼ÇÎ»
 extern uint8 Mark_20ms_Count;           //20ms¼ÆÊ±Òç³öÍ³¼ÆÎ»
-extern uint8 Mark_100ms;                //100ms¼ÆÊ±±ê¼ÇÎ
+extern uint8 Mark_60ms;                //100ms¼ÆÊ±±ê¼ÇÎ
 //uint8 Counter_Dir=0;          //¼ÆÊı·½Ïò,0:Õı×ª£¬1£º·´×ª
 uint8 TIME3_Counter=0;         //¶¨Ê±Æ÷3Òç³ö¼ÆÊı
 uint16 ABCD=1;
@@ -123,7 +123,7 @@ void TIME4_Init(void)
 	//ÅäÖÃ¶ÔÓ¦¼Ä´æÆ÷Îª±àÂëÆ÷½Ó¿ÚÄ£Ê½,ÅäÖÃÏà¹ØµÄÊäÈë²¶»ñÅäÖÃ
 	TIM_EncoderInterfaceConfig(TIM4, TIM_EncoderMode_TI12, TIM_ICPolarity_Rising ,TIM_ICPolarity_Rising);//Ê¹ÓÃ±àÂëÆ÷Ä£Ê½4£¬ÉÏÉıÏÂ½µ¶¼¼ÆÊı
 	TIM_ICStructInit(&TIM_ICInitStructure);    //½«½á¹¹ÌåÖĞµÄÄÚÈİÈ±Ê¡ÊäÈë
-	TIM_ICInitStructure.TIM_ICFilter = 6;      //Ñ¡ÔñÊäÈë±È½ÏÂË²¨Æ÷ 
+	TIM_ICInitStructure.TIM_ICFilter = 4;      //Ñ¡ÔñÊäÈë±È½ÏÂË²¨Æ÷ 
 	TIM_ICInit(TIM4, &TIM_ICInitStructure);    //½«TIM_ICInitStructureÖĞµÄÖ¸¶¨²ÎÊı³õÊ¼»¯TIM4
 	
 	
@@ -143,19 +143,19 @@ void TIM2_IRQHandler(void)
 	if (TIM_GetITStatus(TIM2, TIM_IT_Update) != RESET) //¼ì²é TIM2 ¸üĞÂÖĞ¶Ï·¢ÉúÓë·ñ
 	{
 		TIM_ClearITPendingBit(TIM2, TIM_IT_Update ); //Çå³ı TIM2 ¸üĞÂÖĞ¶Ï±êÖ¾
-	  Mark_10ms=1;
-    Mark_10ms_Count++;		//10ms£¬²éÑ¯LCDÃüÁî
-		if(Mark_10ms_Count == 2)
-		{
+//	  Mark_10ms=1;
+//    Mark_10ms_Count++;		//10ms£¬²éÑ¯LCDÃüÁî
+//		if(Mark_10ms_Count == 2)
+//		{
 		  Mark_20ms = 1;
 			Mark_10ms_Count = 0;
 			Mark_20ms_Count++;
-			if(Mark_10ms_Count == 5)
+			if(Mark_20ms_Count == 3)
 			{
-				Mark_10ms_Count=0;
-				Mark_10ms = 1;
+				Mark_60ms = 1;
+				Mark_20ms_Count=0;			
 			}
-		}
+		
 	}
 }
 
@@ -194,7 +194,7 @@ void TIM2_IRQHandler(void)
 //¼ÆËãÂö³åÊıÁ¿
 void Get_Pulses_num(void)
 {	
-	int16 temp_count;
+	uint16 temp_count;
 	temp_count=TIM_GetCounter(TIM4);
 	if(temp_count%4==0)
 	{

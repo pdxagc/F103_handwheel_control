@@ -192,12 +192,27 @@
         <Ww>
           <count>3</count>
           <WinNumber>1</WinNumber>
-          <ItemText>rxcounter</ItemText>
+          <ItemText>control_panel_pram.X_value</ItemText>
         </Ww>
         <Ww>
           <count>4</count>
           <WinNumber>1</WinNumber>
-          <ItemText>first_time_into_ISR</ItemText>
+          <ItemText>control_panel_pram.X_last_value</ItemText>
+        </Ww>
+        <Ww>
+          <count>5</count>
+          <WinNumber>1</WinNumber>
+          <ItemText>Pulses_counter</ItemText>
+        </Ww>
+        <Ww>
+          <count>6</count>
+          <WinNumber>1</WinNumber>
+          <ItemText>\\HMI_M3DEMO\../src/main.c\RX_Data</ItemText>
+        </Ww>
+        <Ww>
+          <count>7</count>
+          <WinNumber>1</WinNumber>
+          <ItemText>Working_line_buf</ItemText>
         </Ww>
       </WatchWindow1>
       <MemoryWindow1>

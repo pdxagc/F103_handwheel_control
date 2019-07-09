@@ -106,7 +106,10 @@ uint8_t Check_Address (char data);
 void Usart3_Recieve_ISR_Process (void);
 
 //串口2接收数据处理函数
-void Usart3_Data_handle (void);
+void Usart3_Receive_Data_handle (void);
+
+//给主机发送数据
+void Send_data_to_Master(void);
 
 // 串口2发送数据函数
 void Usart3_Send_Data (uint8 length);

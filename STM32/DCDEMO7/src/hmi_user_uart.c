@@ -19,6 +19,8 @@ hmi_user_uart.c中的串口发送接收函数共3个函数：
 #include "stm32f10x_gpio.h"
 #include "ulitity.h"
 #include "hw_config.h"
+#include "stdio.h"
+#include "hmi_driver.h"
 
 
 #define USART3_REC_LEN 2048
@@ -27,7 +29,7 @@ hmi_user_uart.c中的串口发送接收函数共3个函数：
 #define CMD_Length 8
 #define PULSE_DIV 4
 
-extern int16 Pulses_counter;
+extern uint16 Pulses_counter;
 extern uint8 Override_num;
 extern uint8  TX_Data [30]; //the sending package
 extern uint8  RX_Data [30]; //the receiving package
@@ -38,9 +40,9 @@ uint8  RX_Busy=0;
 uint8  HC_Address, rxcounter, remaincounter; //this unit is this unit address, if change to master become 0000 
 uint8  ready2send; // bit is 1 while there is command to send
 uint8  ready2read;
-int16  last_time_Pulses_number;    //记录上一次脉冲
-uint8  last_Override;  //记录倍率变化
-uint8  CMD_last_button;       //记录按键变化
+uint16  last_time_Pulses_number=0;    //记录上一次脉冲
+uint8  last_time_Override=0;  //记录倍率变化
+uint8  last_time_button=0;       //记录按键变化
 
 
 /*******************************************************************************  
@@ -308,10 +310,22 @@ void Usart3_Recieve_ISR_Process (void)
 	  }
 
 }
+//给主机发送数据
+void Send_data_to_Master(void)
+{
+	if(USART3->SR &1<<3)
+	{
+		uint8_t i;
+		i=USART3->SR;
+		i=USART3->DR;
+		return;
+	}
+   Usart3_Send_Data(10);
+}
 
 
 //串口2接收数据处理函数
-void Usart3_Data_handle (void)
+void Usart3_Receive_Data_handle (void)
 {
 
 	uint8 command;
@@ -349,10 +363,12 @@ void Usart3_Data_handle (void)
 
 }
 
-// 串口2发送数据
+// 串口3发送数据
 void Usart3_Send_Data (uint8 length)
 { 
 	uint8 i,x,y,z;
+	uint16 temp_pulses;
+	char buf3[10];
 	x = Check_Pulses_change();
 	y = Check_CMD_button_change();
 	z = Check_Override_change();
@@ -360,7 +376,6 @@ void Usart3_Send_Data (uint8 length)
 	{
 		Create_CMD_and_Date();  //创建发给主机的指令和数据
 		RS485_TX_Set(1);
-		//delay_ms(1);
 		for(i=0;i<length;i++)
 		{
 			if (i==0)
@@ -372,8 +387,11 @@ void Usart3_Send_Data (uint8 length)
 			{
 				USART3->DR = TX_Data[i];
 				while((USART3->SR&0X40)==0);
-			};//循环发送,直到发送完毕   
-			}
+			};//循环发送,直到发送完毕   		
+		}
+		temp_pulses=(TX_Data[3]<<8)+TX_Data[4];
+		sprintf(buf3,"%u",temp_pulses);	
+		SetTextValue(0,21,(uchar *)buf3);  
 		RS485_TX_Set(0);
 	}
 }
@@ -382,50 +400,50 @@ void Usart3_Send_Data (uint8 length)
 //判断脉冲是否发生变化
 uint8 Check_Pulses_change(void)
 {
-	uint8 result;
-	if(last_time_Pulses_number==Pulses_counter)
+	uint8 result1;
+	if(last_time_Pulses_number != Pulses_counter)
 	{
-	  result = 0;
+		last_time_Pulses_number = Pulses_counter;
+	  result1 = 1;
 	}
 	else 
-	{
-	  last_time_Pulses_number=Pulses_counter;
-		result = 1;	
+	{  
+		result1 = 0;	
 	}
-	return result;
+	return result1;
 }
 
 //判断按键是否发生变化
 uint8 Check_CMD_button_change(void)
 {
-	uint8 result;
-	if(CMD_last_button==control_panel_pram.Press_button)
+	uint8 result2;
+	if(last_time_button==control_panel_pram.Press_button)
 	{
 		control_panel_pram.Press_button = 0XFF;
-	  result = 0;
+	  result2 = 0;
 	}
 	else 
 	{
-	  CMD_last_button=control_panel_pram.Press_button;
-		result = 1;	
+	  last_time_button=control_panel_pram.Press_button;
+		result2 = 1;	
 	}
-	return result;
+	return result2;
 }
 
 //判断倍率是否发生变化
 uint8 Check_Override_change(void)
 {
-	uint8 result;
-	if(last_Override==Override_num)
+	uint8 result3;
+	if(last_time_Override==Override_num)
 	{
-	  result = 0;
+	  result3 = 0;
 	}
 	else 
 	{
-	  last_Override=Override_num;
-		result = 1;	
+	  last_time_Override=Override_num;
+		result3 = 1;	
 	}
-	return result;
+	return result3;
 }
 
 //确定是哪个轴选中

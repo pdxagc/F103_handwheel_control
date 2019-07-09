@@ -35,19 +35,20 @@ uint32 get_value;                        //获取数值
 uint8  input_buf[20];                    //键盘输入内容
 
 uint8 last_time_work_state=0;      //记录上一次机器工作状态,默认是关机状态
-int16 Pulses_counter;              // 手轮脉冲数量
+uint16 Pulses_counter;              // 手轮脉冲数量
 uint8 Override_num;                //倍率
 uint8 first_time_re_workpiece;     //首次进入回工件零页面
-uint8 Pulses_check=1;              //脉冲同步标志位 
+uint8 Pulses_check=1;              //脉冲同步标志位
+uint8 Pulses_count_mark=1;           //脉冲计数是能标记位
 int32 Working_line;                //加工行数
 uint8 Mark_10ms=0;                 //10ms计时标记位
 uint8 Mark_10ms_Count;             //10ms计时溢出统计位
 uint8 Mark_20ms=0;                 //20ms计时标记位
 uint8 Mark_20ms_Count=0;           //20ms计时
-uint8 Mark_100ms=0;                //100ms计时标记位
+uint8 Mark_60ms=0;                //100ms计时标记位
 
 uint8 file_name[20]="精雕佛像";    //文件名
-char  Working_line_buf[10];        //保存加工行数
+char  Working_line_buf[20];        //保存加工行数
 
 State state;                               //申明工作状态结构体变量
 Speed_Control Speed;                       //声明主轴速度相关的结构体变量
@@ -96,33 +97,39 @@ int main()
 			TIM4->CNT = (Recdata1<<8)+Recdata2;  //同步脉冲
       if(check_time>5)
         Pulses_check=0;
-      sprintf(Working_line_buf,"%d",Pulses_counter);  
+			
+      sprintf(Working_line_buf,"%u",Pulses_counter);	
 			SetTextValue(0,22,(uchar *)Working_line_buf);     //显示加工行数，需要向主机询问			
 		}
 	}
 	
 	while(1)                                                                        
 	{
-		time_conuter++;
+		//time_conuter++;
 		
 		Pulses_Count();                        //计算手轮脉冲
-	
-		if(Mark_10ms)
+		Usart3_Receive_Data_handle();          //与雕刻机通讯，处理相关数据 
+		
+//		if(Mark_10ms)
+//		{
+//  	   			
+//			Mark_10ms=0;
+//		}	
+		if(Mark_20ms) 
 		{
-  	  LCD_command_analyse();                 //分析LCD屏的命令			
-			Mark_10ms=0;
-		}
-		if(Mark_20ms)
-		{
-		  Usart3_Data_handle();                  //与雕刻机通讯，处理相关数据
+		  LCD_command_analyse();                 //分析LCD屏的命令 			  
 			Mark_20ms=0;
 		}
-		
+		if(Mark_60ms)                         //定时满100ms
+		{
+			LCD_Show_coordanate_value();        //显示工件坐标
+			Mark_60ms=0;
+		}
 		LCD_handle();                          //处理LCD屏数据
 			
     	
-		sprintf(Working_line_buf,"%d",time_conuter);  
-		SetTextValue(0,23,(uchar *)Working_line_buf);     //显示加工行数，需要向主机询问
+//		sprintf(Working_line_buf,"%d",Pulses_counter);  
+//		SetTextValue(0,23,(uchar *)Working_line_buf);     //显示加工行数，需要向主机询问
 	}  
 }
 
@@ -135,7 +142,7 @@ void LCD_command_analyse(void)
 {
 	qsize  size = 0;                                             //指令长度 
   size = queue_find_cmd(cmd_buffer,CMD_MAX_SIZE);              //接收到LCD屏的数据，从USART1的指令缓冲区cmd_buffer中获取一条指令，得到指令长度       
-	if(size>0 && cmd_buffer[1]!=0x07)                            //接收到指令 ，及判断是否为开机提示
+	if(size>0 && cmd_buffer[1]!=0x07)  //接收到指令 ，及判断是否为开机提示
 	{                                                                           
 		Usart1_Receive_data_handle((PCTRL_MSG)cmd_buffer, size);           //指令分析处理 ，标记应该进入哪个Work_Page_Status，标记相应的操作位
 		memset(cmd_buffer, 0, CMD_MAX_SIZE);                       //对指令缓冲cmd_buffer清零
@@ -148,14 +155,19 @@ void Pulses_Count(void)
 {
 	if( Work_Page_Status == Working_Page || Work_Page_Status == ControlPanel_Page )
 	{
-		TIM_Cmd(TIM4, ENABLE);
+		if(Pulses_count_mark)
+		{
+		  TIM_Cmd(TIM4, ENABLE);
+			Pulses_count_mark=0;
+		}
 		Get_Pulses_num();   
-		sprintf(Working_line_buf,"%d",Pulses_counter);  
+		sprintf(Working_line_buf,"%u",Pulses_counter);  
 		SetTextValue(0,22,(uchar *)Working_line_buf);     //显示脉冲个数 
 	}
 	else
 	{
 	  TIM_Cmd(TIM4, DISABLE);          //禁止 TIM4，脉冲不计数
+		Pulses_count_mark=1;
 	}
 	
 
@@ -175,7 +187,7 @@ void LCD_handle(void)
 		case Working_Page: //*********************************************************加工页面***************************************************************************************************
 		{	
 			
-			TFT_Show_coordanate_value();		                  //串口屏显示工件和机械坐标	
+			//LCD_Show_coordanate_value();		                  //串口屏显示工件和机械坐标	
 			Spindle_and_Work_Speed_Key_Process();	           	//加工中心主轴速度和加工速度按钮处理
 	
 			//SetTextValue(0,21,(uchar *)file_name);          //显示正在加载的文件名	
@@ -214,7 +226,7 @@ void LCD_handle(void)
 		case ControlPanel_Page:  //******************************************************控制面板页面*****************************************************************************************
 		{	
 			//Get_Pulses_num();                                   //计算脉冲个数 
-		  TFT_Show_coordanate_value();		                    //串口屏显示工件和机械坐标
+		  //LCD_Show_coordanate_value();		                    //串口屏显示工件和机械坐标
 			
 			//SetTextValue(2,27,(uchar *)file_name);            //显示正在加载的文件名	         				
 			//sprintf(Working_line_buf,"%d",Pulses_counter);  
