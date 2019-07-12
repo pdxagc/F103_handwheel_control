@@ -933,6 +933,21 @@ void SetTextValue(uint16 screen_id,uint16 control_id,uchar *str)
     END_CMD();
 }
 
+/*! 
+*  \brief  清除文本内容
+*  \param  screen_id 画面ID
+*  \param  control_id 控件ID
+*/
+void ClearTextValue(uint16 screen_id,uint16 control_id)
+{
+    BEGIN_CMD();
+    TX_8(0xB1);
+    TX_8(0x10);
+    TX_16(screen_id);
+    TX_16(control_id);
+    END_CMD();
+}
+
 #if FIRMWARE_VER>=908
 /*! 
 *  \brief  设置文本为整数值，要求FIRMWARE_VER>=908
@@ -2006,3 +2021,21 @@ void SpeakerControl(uint8 value)
     TX_8(value);
     END_CMD();
 }
+
+/*! 
+*  \brief   禁止/使能控件
+*  \param  screen_id 画面ID
+*  \param  control_id 控件ID
+*  \param  state 控件状态，0：禁止，1：使能
+*/
+void SetControState(uint16 screen_id,uint16 control_id,uchar state)
+{
+    BEGIN_CMD();
+    TX_8(0xB1);
+    TX_8(0x04);
+    TX_16(screen_id);
+    TX_16(control_id);
+    TX_8(state);
+    END_CMD();
+}
+

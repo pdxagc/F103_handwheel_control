@@ -34,6 +34,7 @@ uint16 get_control_id;                   //获取控件ID
 uint32 get_value;                        //获取数值
 uint8  input_buf[20];                    //键盘输入内容
 
+uint8  Press_button=0XFF;          //记录哪个按钮触发
 uint8 last_time_work_state=0;      //记录上一次机器工作状态,默认是关机状态
 uint16 Pulses_counter;              // 手轮脉冲数量
 uint8 Override_num;                //倍率
@@ -46,6 +47,11 @@ uint8 Mark_10ms_Count;             //10ms计时溢出统计位
 uint8 Mark_20ms=0;                 //20ms计时标记位
 uint8 Mark_20ms_Count=0;           //20ms计时
 uint8 Mark_60ms=0;                //100ms计时标记位
+
+uint8 Cloud_File_Button=0;        //云空间文件选中按钮
+uint8 SD_File_Button=0;           //SD卡文件选中按钮
+uint8 Download_Per=0;             //已经下载百分比
+uint8 Start_Download=0;           //开始下载标志位，0：没下载，1：正在下载
 
 uint8 file_name[20]="精雕佛像";    //文件名
 char  Working_line_buf[20];        //保存加工行数
@@ -119,6 +125,15 @@ int main()
 		{
 			LCD_Show_coordanate_value();        //显示工件坐标
 			Mark_60ms=0;
+			if(Start_Download)
+			{
+				time_conuter++;
+				if(time_conuter==10)
+				{
+					time_conuter=0;
+					Download_Per++;
+				}
+		 }
 		}
 		LCD_handle();                          //处理LCD屏数据
 			
@@ -411,6 +426,25 @@ void LCD_handle(void)
 		}
 			break;
 		case File_Manage_Page:    //*****************************************************文件管理页面****************************************************************************************
+		{
+		  char buf[20];
+		  if(Press_button==CMD_Download)   //下载按钮触发
+				Start_Download=1;               //下载标志位置1
+			if(Start_Download)
+			{
+			   SetControState(6,6,0);		 //禁止控件						
+			   sprintf(buf,"已下载%d%",Download_Per);
+				 SetTextValue(6,38,(uchar *)buf);     //显示上次加工行数
+				 if(Download_Per==100)
+				 {
+					 Download_Per=0;
+					 ClearTextValue(6,38);
+					 SetControState(6,6,0);		 //禁止控件	
+					 SetButtonValue(6,1,0);
+				 }
+			}
+		
+		}
 			break;
 		case Leading_In_Page:    //***************************************************** 导入页面****************************************************************************************
 			break;
@@ -1125,11 +1159,53 @@ void Usart1_Receive_data_handle( PCTRL_MSG msg, uint16 size )
 						Work_Page_Status=File_Manage_Page;
 						switch(get_control_id)
 						{
-							case 1: Work_Page_Status=Leading_In_Page;break;
-							case 2: Work_Page_Status=Leading_Out_Pgae;break;
-							case 3: Work_Page_Status=Delete_Page;break;
-							case 4: Work_Page_Status=Storage_View_Page;break;
-							case 5: Work_Page_Status=Working_Page;break;
+							case 1:
+							{
+							  if(get_button_state)
+								{
+									Press_button = CMD_Download;								
+								}
+							}
+							break;
+							case 2: 
+							{
+							  if(get_button_state)
+								{
+									Press_button = CMD_Cancel_Download;								
+								}
+							}
+							break;
+							case 3: 
+								{
+							  if(get_button_state)
+								{
+									Press_button = CMD_Cancel_Download;								
+								}
+							}
+							break;
+							case 4:
+              {
+								Work_Page_Status=Storage_View_Page;
+							  if(get_button_state)
+								{
+									Press_button = CMD_Storage_View;								
+								}
+							}								
+							break;
+							case 5: Work_Page_Status=ControlPanel_Page;break;
+							case 6: Press_button=CMD_Clode_File_last_page;break;
+							case 7: Press_button=CMD_Clode_Flie_next_page;break;
+							case 8: Press_button=CMD_SD_File_last_page;break;
+							case 9: Press_button=CMD_SD_File_next_page;break;
+							case 10:Cloud_File_Button=0X01;break;
+							case 11:Cloud_File_Button=0X02;break;
+							case 12:Cloud_File_Button=0X03;break;
+							case 13:Cloud_File_Button=0X04;break;
+							case 14:SD_File_Button=0X01;break;
+							case 15:SD_File_Button=0X02;break;
+							case 16:SD_File_Button=0X03;break;
+							case 17:SD_File_Button=0X04;break;
+							
 							case 18:Work_Page_Status=Working_Page;break;
 							case 19:Work_Page_Status=Net_Account_Manage_Page;break;
 							default:break;

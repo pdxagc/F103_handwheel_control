@@ -55,11 +55,26 @@
 
 //设置页面
 #define CMD_Safe_Z_Mode  28             //安全Z模式
-#define CMD_Auto_Knife_Mode  29          //自动对刀模式
-#define CMD_Uint_Mode  30               //单位模式
-#define CMD_Voice_Switch  31            //语音开关
-#define CMD_Sure   32                   //确定
-#define CMD_Cancel 33                   //取消
+#define CMD_Auto_Knife_Mode  30          //自动对刀模式
+#define CMD_Uint_Mode  31               //单位模式
+#define CMD_Voice_Switch  32            //语音开关
+#define CMD_Sure   33                   //确定
+#define CMD_Cancel 34                   //取消
+
+//文件管理
+#define CMD_Download 37                   //下载
+#define CMD_Cancel_Download  38          //取消下载
+#define CMD_Delete    39                //删除
+#define CMD_Storage_View 40             //内存预览
+#define CMD_Open_Loading 42             //打开加载
+#define CMD_Clode_File_last_page 43     //云空间文件上一页
+#define CMD_Clode_Flie_next_page 44     //云空间文件下一页
+#define CMD_SD_File_last_page   45      //SD卡文件下一页
+#define CMD_SD_File_next_page   46      //SD卡文件下一页
+
+//网络连接与账户登录
+#define CMD_Connect_WIFI        47     //连接WiFi
+#define CMD_Sign_In             48     //登录账户
 
 #define CMD_ASK_SLAVE 29                 //主机请求数据
 #define CMD_RPY_HC_MPG1	36               //主机获取数据
