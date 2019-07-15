@@ -52,6 +52,17 @@ uint8 Cloud_File_Button=0;        //云空间文件选中按钮
 uint8 SD_File_Button=0;           //SD卡文件选中按钮
 uint8 Download_Per=0;             //已经下载百分比
 uint8 Start_Download=0;           //开始下载标志位，0：没下载，1：正在下载
+uint8 Cloud_Page=1;               //云空间页面
+uint8 Last_time_Cloud_Page=0;
+uint8 SD_Page=1;                  //SD卡页面
+uint8 Last_time_SD_Page=0;
+uint8 WiFi_Page=1;
+uint8 Last_time_WiFi_Page=0;
+
+uint8 Network_Control=4;   //0:无效，1：显示连接网络控件，2：隐藏连接网络控件，3：显示断开连接控件，4：隐藏断开连接控件
+uint8 Sign_Control=4;      //0:无效，1：显示立即登录控件，2：隐藏立即登录控件，3：显示退出登录控件，4：隐藏退出登录控件
+uint8 WiFi_Password_Right=0;  //网络密码正确
+uint8 Account_Password_Right=0;//账户密码正确
 
 uint8 file_name[20]="精雕佛像";    //文件名
 char  Working_line_buf[20];        //保存加工行数
@@ -93,22 +104,23 @@ int main()
 		//    1) 一般情况下，控制MCU向串口屏发送数据的周期大于100ms，就可以避免数据丢失的问题；
 		//    2) 如果仍然有数据丢失的问题，请判断串口屏的BUSY引脚，为高时不能发送数据给串口屏。
 		
-	while(Pulses_check)        //开机同步主机脉冲
-	{
-		if(RX_Data[1] == CMD_UPDATE_MACH3_NUMBER)
-		{
-			check_time++;
-			Recdata1=RX_Data[18];
-			Recdata2=RX_Data[19];	
-			TIM4->CNT = (Recdata1<<8)+Recdata2;  //同步脉冲
-      if(check_time>5)
-        Pulses_check=0;
-			
-      sprintf(Working_line_buf,"%u",Pulses_counter);	
-			SetTextValue(0,22,(uchar *)Working_line_buf);     //显示加工行数，需要向主机询问			
-		}
-	}
-	
+//	while(Pulses_check)        //开机同步主机脉冲
+//	{
+//		if(RX_Data[1] == CMD_UPDATE_MACH3_NUMBER)
+//		{
+//			check_time++;
+//			Recdata1=RX_Data[18];
+//			Recdata2=RX_Data[19];	
+//			TIM4->CNT = (Recdata1<<8)+Recdata2;  //同步脉冲
+//      if(check_time>5)
+//        Pulses_check=0;
+//			
+//      sprintf(Working_line_buf,"%u",Pulses_counter);	
+//			SetTextValue(0,22,(uchar *)Working_line_buf);     //显示加工行数，需要向主机询问			
+//		}
+//	}
+	  
+		
 	while(1)                                                                        
 	{
 		//time_conuter++;
@@ -125,10 +137,11 @@ int main()
 		{
 			LCD_Show_coordanate_value();        //显示工件坐标
 			Mark_60ms=0;
+			
 			if(Start_Download)
 			{
 				time_conuter++;
-				if(time_conuter==10)
+				if(time_conuter==1)
 				{
 					time_conuter=0;
 					Download_Per++;
@@ -429,80 +442,127 @@ void LCD_handle(void)
 		{
 		  char buf[20];
 		  if(Press_button==CMD_Download)   //下载按钮触发
+			{
 				Start_Download=1;               //下载标志位置1
+				SetButtonValue(6,1,1);    //设值按钮为下载状态
+			  SetControState(6,1,0);		 //禁止控件	
+				Press_button=0xFF;
+			}		
 			if(Start_Download)
 			{
-			   SetControState(6,6,0);		 //禁止控件						
-			   sprintf(buf,"已下载%d%",Download_Per);
-				 SetTextValue(6,38,(uchar *)buf);     //显示上次加工行数
+			   sprintf(buf,"已下载%d%%",Download_Per);
+				 SetTextValue(6,38,(uchar *)buf);     //显示下载百分比
 				 if(Download_Per==100)
 				 {
 					 Download_Per=0;
-					 ClearTextValue(6,38);
-					 SetControState(6,6,0);		 //禁止控件	
-					 SetButtonValue(6,1,0);
+					 Start_Download=0;
+					 ClearTextValue(6,38);     //清除文本
+					 SetControState(6,1,1);		 //使能控件	
+					 SetButtonValue(6,1,0);    //设置值按钮位初始状态
 				 }
+			}
+			if(Press_button==CMD_Cancel_Download)  //发取消下载按钮
+			{
+				Start_Download=0;
+				Download_Per=0;
+				ClearTextValue(6,38);     //清除文本
+				SetControState(6,1,1);		 //使能控件	
+				SetButtonValue(6,1,0);    //设置按钮为初始状态
+				Press_button=0xFF;
+			
+			}
+			if(Last_time_Cloud_Page!=Cloud_Page)
+			{
+			  sprintf(buf,"%u",Cloud_Page);
+				SetTextValue(6,20,(uchar *)buf);     //显示第几页
+				Last_time_Cloud_Page=Cloud_Page;
+			}
+			if(Last_time_SD_Page!=SD_Page)
+			{
+			  sprintf(buf,"%u",SD_Page);
+				SetTextValue(6,21,(uchar *)buf);     //显示第几页
+				Last_time_SD_Page=SD_Page;
+			}
+			if(Press_button==CMD_Delete)
+			{
+			  //sprintf(buf,"%u",SD_Page);
+			  SetTextValue(9,3,(uchar *)file_name);     //显示文件名呢
+				Press_button=0xFF;
+			}
+			if(Press_button==CMD_File_Delete_Sure)
+			{
+			
 			}
 		
 		}
 			break;
-		case Leading_In_Page:    //***************************************************** 导入页面****************************************************************************************
+		case Same_file_Error_Page:    //**************************************************同名文件报错页面****************************************************************************************
+			break;
+		case Download_Fail_Pgae:    //***************************************************下载失败提醒页面
 			break;
 		case Delete_Page:         //*****************************************************删除页面****************************************************************************************
-			break;
+		{		}	
+		break;
 		case Storage_View_Page:    //*****************************************************内存预览页面****************************************************************************************
 			break;	
 		case Net_Account_Manage_Page:  //**************************************************网络与账户登录管理**********************************************************************************
 			{
-				switch(get_control_type)                              //控件类型判断
+				if(WiFi_Password_Right==5)
 				{
-					case kCtrlButton:                                   //按钮控件
-					{							
-												
-						
-					}break;						
-					case kCtrlText:                                     //文本控件
-					{
-						switch(get_control_id)
-						{
-							case 7:
-							{
-								SetTextValue(11,8,(uchar *)input_buf);
-							
-							}
-							case 8:
-							{
-							
-							}
-							case 9:
-							{
-							
-							}
-						
-						
-						}
-						 
-					
-					}break;						                    
-																																																																																																
-					default:
-							 break;
+				  Network_Control=3;
+					WiFi_Password_Right=0;
 				}
-			
-			
+				if(Account_Password_Right==5)
+				{
+					Sign_Control=3;
+					Account_Password_Right=0;
+				}
+				switch(Network_Control)     //网络连接控件显示、隐藏控制
+				{
+					case 0: break;
+					case Show_Disconnect_Network_Control: 
+					{
+						ShowControl(11,18,1);
+						Network_Control=0;
+					}break;
+					case Hide_Disconnect_Network_Control: 
+					{
+						ShowControl(11,18,0);
+						Network_Control=0;
+					}break;				
+				}
+				//ShowControl(11,4,1);
+				switch(Sign_Control)     //账户登录退出控件显示、隐藏控制
+				{
+					case 0: break;
+					case Show_Sign_Out_Control: 
+					{
+						ShowControl(11,19,1);
+						Network_Control=0;
+					}break;
+					case Hide_Sign_Out_Control: 
+					{
+						ShowControl(11,19,0);
+						Network_Control=0;
+					}break;					
+				}									
 			}
 			break;
 		case Choose_WiFi_Page:        //*****************************************************选择WiFi页面****************************************************************************************
-			break;
-		case Disconnet_and_SignIn_Page: 
-			break;
-		case Disconnect_and_SignOut_Page: 
-			break;
+		{
+		  char buf[20];
+			if(Last_time_WiFi_Page!=WiFi_Page)
+			{
+			  sprintf(buf,"%u",WiFi_Page);
+				SetTextValue(12,11,(uchar *)buf);     //显示第几页
+				Last_time_WiFi_Page=WiFi_Page;
+			}	
+		}break;
 		case Disconnect_Remind_Page: 
 			break;
 		case SignOut_Remind_Page: 
 			break;
-			case Leading_Out_Pgae:
+		case Cancel_Download_Pgae:
 			break;
 		default:
 			break;
@@ -550,7 +610,7 @@ void Usart1_Receive_data_handle( PCTRL_MSG msg, uint16 size )
     {  
 				switch(get_screen_id)                                             //画面ID
 				{
-					case Working_Page:                                       //画面0：加工页面
+					case Working_Page:                                              //画面0：加工页面
 					{
 							Work_Page_Status=Working_Page;
 							switch(get_control_id)
@@ -656,8 +716,9 @@ void Usart1_Receive_data_handle( PCTRL_MSG msg, uint16 size )
 									default:break;
 						  }
 					}break;
-					case Setting_page:                                       //画面1：设置页面
+					case Setting_page:                                              //画面1：设置页面
 					{
+						char buf[20];
 						Work_Page_Status=Setting_page;
 						if(state.Work_state==Stop)             //停止加工状态
 						{
@@ -686,88 +747,88 @@ void Usart1_Receive_data_handle( PCTRL_MSG msg, uint16 size )
 									}break;
 									case 6:                          //获取安全Z高度
 									{
-										char buf[20];
+										
 										pram_status.Safe_Z_num=NotifyText(msg->param);										
-										sprintf(buf,"Safe_Z:%.2f",pram_status.Safe_Z_num);    
+//										sprintf(buf,"Safe_Z:%.2f",pram_status.Safe_Z_num);    
 									}										
 									break;
 									case 7:                   //获取对刀高度
 									{
-										char buf[20];
+										
 										pram_status.Knife_high_num=NotifyText(msg->param);										
-										sprintf(buf,"Knife_high:%.2f",pram_status.Knife_high_num);
+//										sprintf(buf,"Knife_high:%.2f",pram_status.Knife_high_num);
 //		                Usart_SendString(USART2,(char *)buf);       
 									}										
 									break;
 									case 8:                     //获取对刀块高度
 									{
-										char buf[20];
+										
 										pram_status.Knife_block_high_num=NotifyText(msg->param);										
-										sprintf(buf,"Knife_block_high:%.2f",pram_status.Knife_block_high_num);
+//										sprintf(buf,"Knife_block_high:%.2f",pram_status.Knife_block_high_num);
 //		                Usart_SendString(USART2,(char *)buf);     
 									}										
 									break;
 									case 9:                  //获取对刀块X轴位置
 									{
-										char buf[20];
+										
 										pram_status.Auto_Knife_block_X=NotifyText(msg->param);										
-										sprintf(buf,"Knife_block_X:%.2f",pram_status.Auto_Knife_block_X);
+//										sprintf(buf,"Knife_block_X:%.2f",pram_status.Auto_Knife_block_X);
 //		                Usart_SendString(USART2,(char *)buf);       
 									}										
 									break;
 									case 10:                 //获取对刀块Y轴位置
 									{
-										char buf[20];
+										
 										pram_status.Auto_Knife_block_Y=NotifyText(msg->param);										
-										sprintf(buf,"Knife_block_Y:%.2f",pram_status.Auto_Knife_block_Y);
+//										sprintf(buf,"Knife_block_Y:%.2f",pram_status.Auto_Knife_block_Y);
 //		                Usart_SendString(USART2,(char *)buf);       
 									}										
 									break;
 									case 11:                 //获取对刀块Z 轴位置
 									{
-										char buf[20];
+										
 										pram_status.Auto_Knife_block_Z=NotifyText(msg->param);										
-										sprintf(buf,"Knife_block_Z:%.2f",pram_status.Auto_Knife_block_Z);
+//										sprintf(buf,"Knife_block_Z:%.2f",pram_status.Auto_Knife_block_Z);
 //		                Usart_SendString(USART2,(char *)buf);      
 									}										
 									break;
 									case 12:                  //获取软限位X轴位置
 									{
-										char buf[20];
+										
 										pram_status.Soft_limit_X=NotifyText(msg->param);										
-										sprintf(buf,"Soft_limit_X:%.2f",pram_status.Soft_limit_X);
+//										sprintf(buf,"Soft_limit_X:%.2f",pram_status.Soft_limit_X);
 //		                Usart_SendString(USART2,(char *)buf);      
 									}										
 									break;
 									case 13:                   //获取软限位Y轴位置
 									{
-										char buf[20];
+										
 										pram_status.Soft_limit_Y=NotifyText(msg->param);										
-										sprintf(buf,"Soft_limit_Y:%.2f",pram_status.Soft_limit_Y);
+//										sprintf(buf,"Soft_limit_Y:%.2f",pram_status.Soft_limit_Y);
 //		                Usart_SendString(USART2,(char *)buf);      
 									}										
 									break;
 									case 14:                 //获取软限位Z轴位置
 									{
-										char buf[20];
+										
 										pram_status.Soft_limit_Z=NotifyText(msg->param);										
-										sprintf(buf,"Soft_limit_Z:%.2f",pram_status.Soft_limit_Z);
+//										sprintf(buf,"Soft_limit_Z:%.2f",pram_status.Soft_limit_Z);
 //		                Usart_SendString(USART2,(char *)buf);      
 									}										
 									break;
 									case 15:                 //获取软限位A轴位置
 									{ 
-										char buf[20];
+										
 										pram_status.Soft_limit_A=NotifyText(msg->param);										
-										sprintf(buf,"Soft_limit_A:%.2f",pram_status.Soft_limit_A);
+//										sprintf(buf,"Soft_limit_A:%.2f",pram_status.Soft_limit_A);
 //		                Usart_SendString(USART2,(char *)buf);     
 									}										
 									break;
 									case 16:                  //获取软限位B轴位置
 									{
-										char buf[20];
+										
 										pram_status.Soft_limit_B=NotifyText(msg->param);										
-										sprintf(buf,"Soft_limit_B:%.2f",pram_status.Soft_limit_B);
+//										sprintf(buf,"Soft_limit_B:%.2f",pram_status.Soft_limit_B);
 //		                Usart_SendString(USART2,(char *)buf);       
 									}										
 									break;
@@ -793,7 +854,7 @@ void Usart1_Receive_data_handle( PCTRL_MSG msg, uint16 size )
                  }									
 						}					
 					}break;   
-					case ControlPanel_Page:                                       //画面2：控制面板
+					case ControlPanel_Page:                                         //画面2：控制面板
 					{
 							Work_Page_Status=ControlPanel_Page;
 							switch(get_control_id)
@@ -908,7 +969,7 @@ void Usart1_Receive_data_handle( PCTRL_MSG msg, uint16 size )
 										control_panel_pram.Press_button = CMD_Start;
 										TIM_Cmd(TIM4, DISABLE);      //禁止 TIM4
 //										SetButtonValue(2,14,0);     //停止按钮松开状态
-										SetButtonValue(2,13,1);     //开始按钮按下状态										
+										SetButtonValue(2,13,1);       //开始按钮按下状态										
 									}break;
 									case 14:                                           //停止按钮触发
 									{
@@ -957,7 +1018,7 @@ void Usart1_Receive_data_handle( PCTRL_MSG msg, uint16 size )
 									default:break;				
 							}
 					}break;
-					case Return_WorkPiece_Zero_Page:                                        //画面3：回工件零页面
+					case Return_WorkPiece_Zero_Page:                                //画面3：回工件零页面
 					{
 						Work_Page_Status=Return_WorkPiece_Zero_Page;
 						if(state.Work_state==Stop)    //停止加工状态
@@ -1130,7 +1191,7 @@ void Usart1_Receive_data_handle( PCTRL_MSG msg, uint16 size )
 						
 						}
 					}break; 
-					case Jump_Work_Page:                                         //画面5:跳行加工页面
+					case Jump_Work_Page:                                            //画面5:跳行加工页面
 					{
 						switch(get_control_id)
 						{
@@ -1154,7 +1215,7 @@ void Usart1_Receive_data_handle( PCTRL_MSG msg, uint16 size )
 						}
 						
 					}break;              
-					case File_Manage_Page:                                               //画面6:文件管理
+					case File_Manage_Page:                                           //画面6:文件管理
 					{
 						Work_Page_Status=File_Manage_Page;
 						switch(get_control_id)
@@ -1167,19 +1228,16 @@ void Usart1_Receive_data_handle( PCTRL_MSG msg, uint16 size )
 								}
 							}
 							break;
-							case 2: 
+							case 2:  //取消下载按钮触发
 							{
-							  if(get_button_state)
-								{
-									Press_button = CMD_Cancel_Download;								
-								}
+							  
 							}
 							break;
 							case 3: 
 								{
 							  if(get_button_state)
 								{
-									Press_button = CMD_Cancel_Download;								
+									Press_button = CMD_Delete;								
 								}
 							}
 							break;
@@ -1193,10 +1251,40 @@ void Usart1_Receive_data_handle( PCTRL_MSG msg, uint16 size )
 							}								
 							break;
 							case 5: Work_Page_Status=ControlPanel_Page;break;
-							case 6: Press_button=CMD_Clode_File_last_page;break;
-							case 7: Press_button=CMD_Clode_Flie_next_page;break;
-							case 8: Press_button=CMD_SD_File_last_page;break;
-							case 9: Press_button=CMD_SD_File_next_page;break;
+							case 6: 
+							{
+							  if(get_button_state)
+								{
+									if(Cloud_Page>1)
+								    Cloud_Page--;
+								}
+							}	
+							break;
+							case 7: 
+							{
+							  if(get_button_state)
+								{
+								  Cloud_Page++;
+								}
+							}
+								break;
+							case 8: 
+							{
+							  if(get_button_state)
+								{
+								  if(SD_Page>1)
+								    SD_Page--;
+								}
+							}
+								break;
+							case 9: 
+							{
+							  if(get_button_state)
+								{
+								  SD_Page++;
+								}
+							}
+								break;
 							case 10:Cloud_File_Button=0X01;break;
 							case 11:Cloud_File_Button=0X02;break;
 							case 12:Cloud_File_Button=0X03;break;
@@ -1211,11 +1299,30 @@ void Usart1_Receive_data_handle( PCTRL_MSG msg, uint16 size )
 							default:break;
 						}
 					}break;
-					case Leading_In_Page: Work_Page_Status=Leading_In_Page;break;            //画面7：导入页面
-					case Leading_Out_Pgae: Work_Page_Status=Leading_Out_Pgae;break;            //画面8：导出页面
-					case Delete_Page: Work_Page_Status=Delete_Page;break;                    //画面9：删除页面
-					case Storage_View_Page: Work_Page_Status=Storage_View_Page;break;         //画面10：内存空间预览页面
-					case Net_Account_Manage_Page:                                              //画面11：网络账户管理
+					case Same_file_Error_Page: Work_Page_Status=Same_file_Error_Page;break;//画面7：同名文件报错页面
+					case Download_Fail_Pgae: Work_Page_Status=Download_Fail_Pgae;break;    //画面8：下载失败页面
+					case Delete_Page: Work_Page_Status=Delete_Page;                    //画面9：删除页面
+					{
+						switch(get_control_id)
+						{
+					    case 1:
+							{
+							  if(get_button_state)
+								{
+									Press_button = CMD_File_Delete_Sure;								
+								}
+							}
+							break;
+							case 2:  //取消下载按钮触发
+							{
+							  
+							}
+							break;
+						}
+					}
+					break;
+					case Storage_View_Page: Work_Page_Status=Storage_View_Page;break;   //画面10：内存空间预览页面
+					case Net_Account_Manage_Page:                                       //画面11：网络账户管理
 					{
 						Work_Page_Status=Net_Account_Manage_Page;
 						switch(get_control_id)
@@ -1223,15 +1330,101 @@ void Usart1_Receive_data_handle( PCTRL_MSG msg, uint16 size )
 							case 1: Work_Page_Status=Working_Page;break;
 							case 2: Work_Page_Status=File_Manage_Page;break;
 							case 3: Work_Page_Status=Choose_WiFi_Page;break;
+							case 4: 
+							{
+							  if(get_button_state)
+								{
+									WiFi_Password_Right++;								
+								}
+							
+							}break;
+							case 5:
+							{
+							  if(get_button_state)
+								{
+									Account_Password_Right++;								
+								}
+							
+							}
 							default:break;
 						}
 					}break;
-					case Choose_WiFi_Page: Work_Page_Status=Choose_WiFi_Page;break;           //画面12：选择WiFi
-					case Disconnet_and_SignIn_Page: Work_Page_Status=Disconnet_and_SignIn_Page;break;   //画面13：断开连接与立即登录页面
-					case Disconnect_and_SignOut_Page: Work_Page_Status=Disconnect_and_SignOut_Page;break; //画面14：断开连接与退出登录页面
-					case Disconnect_Remind_Page: Work_Page_Status=Disconnect_Remind_Page;break;     //画面15：断开网络提醒页面
-					case SignOut_Remind_Page: Work_Page_Status=SignOut_Remind_Page;break;         //画面16：退出登录提醒页面
-					
+					case Choose_WiFi_Page:                                                 //画面12：选择WiFi
+   				{
+						Work_Page_Status=Choose_WiFi_Page;
+						switch(get_control_id)
+						{
+							case 1: 
+							{
+							  Work_Page_Status=Net_Account_Manage_Page;
+							}break;
+							case 2: 
+							{
+							  Work_Page_Status=Net_Account_Manage_Page;
+							}break;
+							case 3: 
+							{
+							  Work_Page_Status=Net_Account_Manage_Page;
+							}break;
+							case 4: 
+							{
+								Work_Page_Status=Net_Account_Manage_Page;
+							}break;
+							case 5:
+							{
+							  if(get_button_state)
+								{
+								    WiFi_Page++;
+								}
+							}break;
+							case 6: 
+							{
+								if(get_button_state)
+								{
+									if(WiFi_Page>1)
+								    WiFi_Page--;
+								}
+							}break;
+							default:break;
+						}
+					}break;          
+					case Disconnect_Remind_Page:                                            //画面15：断开网络提醒页面
+					{
+						switch(get_control_id)
+						{
+							case 1: Network_Control=4;
+						}
+					}break;     
+					case SignOut_Remind_Page:                                                //画面16：退出登录提醒页面
+					{
+					  switch(get_control_id)
+						{
+							case 1: Sign_Control=4;
+						}
+					}	
+					break;         
+					case Cancel_Download_Pgae:                                                //取消下载提醒
+					{
+            switch(get_control_id)
+						{
+							case 1:
+							{
+							  if(get_button_state)
+								{
+									Press_button = CMD_Cancel_Download;								
+								}
+							}
+							break;
+							case 2: 
+							{
+							  if(get_button_state)
+								{
+									Press_button = 0xFF;								
+								}
+							}
+							break;
+					  }
+					}break;
 					case Save_Pram_Page:                                                    //画面21 保存参数设置提醒页面
 					{
 						Work_Page_Status=Save_Pram_Page;

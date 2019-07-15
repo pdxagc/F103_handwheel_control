@@ -19,17 +19,17 @@
 #define	Return_WorkPiece_Zero_Page  3  //回工件零页面
 #define	Jump_Work_Page  5              //跳行加工
 #define	File_Manage_Page 6            //文件管理页面
-#define	Leading_In_Page 7             //导入页面
-#define	Leading_Out_Pgae 8            //导出页面
+#define	Same_file_Error_Page 7         //同名文件报错页面
+#define	Download_Fail_Pgae 8            //下载失败页面
 #define	Delete_Page  9                 //删除页面
 #define	Storage_View_Page 10           //内存空间预览页面
 #define	Net_Account_Manage_Page 11     //网络账户管理
 #define	Choose_WiFi_Page  12           //选择WIFi页面
-#define	Disconnet_and_SignIn_Page  13   //断开连接与立即登录页面
-#define	Disconnect_and_SignOut_Page 14 //断开连接与退出登录页面
+//#define	Disconnet_and_SignIn_Page  13   //断开连接与立即登录页面
+//#define	Disconnect_and_SignOut_Page 14 //断开连接与退出登录页面
 #define	Disconnect_Remind_Page 15      //断开网络提醒页面
 #define	SignOut_Remind_Page 16         //退出登录提醒页面
-//#define Leading_Out_Pgae 20            //导出页面
+#define Cancel_Download_Pgae 20        //取消下载页面
 #define	Save_Pram_Page 21              //保存参数设置提醒页面
 
 

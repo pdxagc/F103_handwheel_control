@@ -2039,3 +2039,20 @@ void SetControState(uint16 screen_id,uint16 control_id,uchar state)
     END_CMD();
 }
 
+
+/*! 
+*  \brief  显示/隐藏控件
+*  \param  screen_id 画面ID
+*  \param  control_id 控件ID
+*  \param  value 0:隐藏，1：显示
+*/
+void ShowControl(uint16 screen_id,uint16 control_id,uint8 value)
+{
+    BEGIN_CMD();
+    TX_8(0xB1);
+    TX_8(0x03);
+    TX_16(screen_id);
+    TX_16(control_id);
+    TX_8(value);
+    END_CMD();
+}

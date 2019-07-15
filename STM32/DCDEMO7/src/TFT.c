@@ -35,10 +35,6 @@ void Show_Stop_Working(uint8 state)
 	  AnimationPlayFrame(10,5,0);
 	else if(state==11)
 	  AnimationPlayFrame(11,13,0);
-	else if(state==13)
-	  AnimationPlayFrame(13,9,0);
-	else if(state==14)
-	  AnimationPlayFrame(14,12,0);
 }
 //显示机器正在加工
 void Show_Start_Working(uint8 state)
@@ -55,10 +51,6 @@ void Show_Start_Working(uint8 state)
 		AnimationPlayFrame(10,5,1);
 	else if(state==11)
 		AnimationPlayFrame(11,13,1);
-	else if(state==13)
-		AnimationPlayFrame(13,9,1);
-	else if(state==14)
-		AnimationPlayFrame(14,12,1);
 	
 }
 

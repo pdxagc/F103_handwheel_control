@@ -5,6 +5,11 @@
 #include "stm32f10x.h"
 
 
+#define Show_Disconnect_Network_Control 3
+#define Hide_Disconnect_Network_Control 4
+#define Show_Sign_Out_Control 3
+#define Hide_Sign_Out_Control 4
+
 #define Start 1
 #define Stop  0
 
@@ -126,7 +131,7 @@ void NotifyButton(uint16 screen_id, uint16 control_id, uint8 state);
 */
 
 float NotifyText(uint8 *str);
-//void NotifyText(uint16 screen_id, uint16 control_id, uint32 str);
+//void NotifyText(uint16 screen_id, uint16 control_id, uint32 str)
 /*!                                                                              
 *  \brief  进度条控件通知                                                       
 *  \details  调用GetControlValue时，执行此函数                                  

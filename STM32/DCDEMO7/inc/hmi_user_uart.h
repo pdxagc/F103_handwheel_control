@@ -9,7 +9,7 @@
 #include "stm32f10x_it.h"     //根据用户MCU进行修改
 
 
-#define uchar      unsigned char
+#define uchar    unsigned char
 #define uint8    unsigned char
 #define uint16   unsigned short int
 #define uint32   unsigned long
@@ -62,19 +62,21 @@
 #define CMD_Cancel 34                   //取消
 
 //文件管理
-#define CMD_Download 37                   //下载
-#define CMD_Cancel_Download  38          //取消下载
+#define CMD_Download 37                 //下载
+#define CMD_Cancel_Download  38         //取消下载
 #define CMD_Delete    39                //删除
 #define CMD_Storage_View 40             //内存预览
 #define CMD_Open_Loading 42             //打开加载
-#define CMD_Clode_File_last_page 43     //云空间文件上一页
-#define CMD_Clode_Flie_next_page 44     //云空间文件下一页
-#define CMD_SD_File_last_page   45      //SD卡文件下一页
-#define CMD_SD_File_next_page   46      //SD卡文件下一页
+#define CMD_File_Delete_Sure 43         //文件删除
+//#define CMD_Clode_Flie_next_page 44     //云空间文件下一页
+//#define CMD_SD_File_last_page   45      //SD卡文件下一页
+
 
 //网络连接与账户登录
-#define CMD_Connect_WIFI        47     //连接WiFi
-#define CMD_Sign_In             48     //登录账户
+//#define CMD_WiFi_page   46        //WiFi页码
+#define CMD_Connect_WIFI   47     //连接WiFi
+#define CMD_Sign_In       48     //登录账户
+
 
 #define CMD_ASK_SLAVE 29                 //主机请求数据
 #define CMD_RPY_HC_MPG1	36               //主机获取数据
