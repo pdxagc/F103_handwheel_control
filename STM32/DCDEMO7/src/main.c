@@ -507,12 +507,12 @@ void LCD_handle(void)
 			break;	
 		case Net_Account_Manage_Page:  //**************************************************网络与账户登录管理**********************************************************************************
 			{
-				if(WiFi_Password_Right==5)
+				if(WiFi_Password_Right==5)   //WiFi账号和密码正确
 				{
 				  Network_Control=3;
 					WiFi_Password_Right=0;
 				}
-				if(Account_Password_Right==5)
+				if(Account_Password_Right==5) //用户账户和密码正确
 				{
 					Sign_Control=3;
 					Account_Password_Right=0;
@@ -1312,12 +1312,6 @@ void Usart1_Receive_data_handle( PCTRL_MSG msg, uint16 size )
 									Press_button = CMD_File_Delete_Sure;								
 								}
 							}
-							break;
-							case 2:  //取消下载按钮触发
-							{
-							  
-							}
-							break;
 						}
 					}
 					break;
@@ -1466,6 +1460,6 @@ float NotifyText(uint8 *str)
 {                                                                          
 		float value=0;                                                            
 		sscanf((char *)str,"%f",&value);            
-     return  value;                                                                      
+    return  value;                                                                      
 }                                                                                
 

@@ -26,7 +26,20 @@ Project File Date:  07/12/2019
 
 <h2>Output:</h2>
 Build target 'DCDEMO'
-".\Obj\HMI_M3DEMO.axf" - 0 Error(s), 0 Warning(s).
+compiling main.c...
+..\src\main.c(86): warning:  #177-D: variable "Recdata1" was declared but never referenced
+    uint16 Recdata1,Recdata2;    
+..\src\main.c(86): warning:  #177-D: variable "Recdata2" was declared but never referenced
+    uint16 Recdata1,Recdata2;    
+..\src\main.c(87): warning:  #177-D: variable "check_time" was declared but never referenced
+        uint8  check_time=0;      //脉冲同步检查次数
+..\src\main.c(721): warning:  #177-D: variable "buf" was declared but never referenced
+                                                char buf[20];
+..\src\main.c: 4 warnings, 0 errors
+linking...
+Program Size: Code=19024 RO-data=332 RW-data=128 ZI-data=2944  
+FromELF: creating hex file...
+".\Obj\HMI_M3DEMO.axf" - 0 Error(s), 4 Warning(s).
 
 <h2>Collection of Component include folders:</h2>
   C:\Users\xiaopan\Desktop\CNC_F103_control\STM32\DCDEMO7\RVMDK\RTE
