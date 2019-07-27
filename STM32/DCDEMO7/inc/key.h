@@ -7,7 +7,7 @@
 #define key_Z  GPIO_ReadInputDataBit(GPIOA,GPIO_Pin_6)   //读取按键3 
 #define key_A  GPIO_ReadInputDataBit(GPIOB,GPIO_Pin_0)   //读取按键4
 #define key_B  GPIO_ReadInputDataBit(GPIOB,GPIO_Pin_1)   //读取按键5
-#define key_Estop   GPIO_ReadInputDataBit(GPIOB,GPIO_Pin_12)//读取按键6 
+
 
 
 //按键初始化函数

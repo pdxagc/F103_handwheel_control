@@ -14,3 +14,4 @@
 .\obj\exti.o: ..\..\..\Libraries\STM32F10x_StdPeriph_Driver\inc\misc.h
 .\obj\exti.o: ..\inc\hmi_user_uart.h
 .\obj\exti.o: ..\inc\stm32f10x_it.h
+.\obj\exti.o: ..\inc\ulitity.h

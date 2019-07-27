@@ -2,11 +2,13 @@
 #define _EXTI_H
 
 
+#define key_Estop   GPIO_ReadInputDataBit(GPIOB,GPIO_Pin_12)  //读取按键6 
 
-void Counter_Init(void);
+
+//紧急停止按键初始化
+void Estop_Init(void);
 void EXTIX_Init(void);
-void EXTI0_disable(void);
-void EXTI0_IRQHandler(void);
+void EXTI15_10_IRQHandler(void);
 
 
 

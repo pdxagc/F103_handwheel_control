@@ -53,6 +53,7 @@ int main()
 	queue_reset();            //清空串口接收缓冲区 
 	TIME2_Init();             //定时器2初始化
 	Key_Init();               //按键初始化	
+	EXTIX_Init();             //紧急停止中断初始化
 	//TIME3_Init();             //定时器3初始化(向主机询问坐标)
   TIME4_Init();             //定时器4初始化(计算手轮脉冲)
    
@@ -69,25 +70,25 @@ int main()
 		//    1) 一般情况下，控制MCU向串口屏发送数据的周期大于100ms，就可以避免数据丢失的问题；
 		//    2) 如果仍然有数据丢失的问题，请判断串口屏的BUSY引脚，为高时不能发送数据给串口屏。
 		
-//	while(Pulses_check)        //开机同步主机脉冲
-//	{
-//		
-//		if(RX_Data[1] == CMD_UPDATE_MACH3_NUMBER)  //接收到坐标数据
-//		{	
-//			Recdata1=RX_Data[18];
-//			Recdata2=RX_Data[19];			 
-//      RecPulses= (Recdata1<<8)+Recdata2;  //获取脉冲值
-//      if(TIM4->CNT==RecPulses)
-//				check_time++;
-//			else 
-//				TIM4->CNT=RecPulses;
-//      if(check_time>5)
-//        Pulses_check=0;
-//			
-//      sprintf(bufrec,"%u",RecPulses);	
-//			SetTextValue(0,23,(uchar *)bufrec);     //显示脉冲值			
-//		}
-//	}
+	while(Pulses_check)        //开机同步主机脉冲
+	{
+		
+		if(RX_Data[1] == CMD_UPDATE_MACH3_NUMBER)  //接收到坐标数据
+		{	
+			Recdata1=RX_Data[18];
+			Recdata2=RX_Data[19];			 
+      RecPulses= (Recdata1<<8)+Recdata2;  //获取脉冲值
+      if(TIM4->CNT==RecPulses)
+				check_time++;
+			else 
+				TIM4->CNT=RecPulses;
+      if(check_time>5)
+        Pulses_check=0;
+			
+      sprintf(bufrec,"%u",RecPulses);	
+			SetTextValue(0,23,(uchar *)bufrec);     //显示脉冲值			
+		}
+	}
 	  
 		
 	while(1)                                                                        

@@ -22,24 +22,19 @@ void Key_Init(void)
 	
 	GPIO_InitStructure.GPIO_Pin  = GPIO_Pin_5;    //PA5  Y轴按钮
 	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_IPU; //设置成上拉输入
- 	GPIO_Init(GPIOA, &GPIO_InitStructure);        //初始化GPIOA5
+ 	GPIO_Init(GPIOA, &GPIO_InitStructure);        //初始化GPIOA.5
  
 	GPIO_InitStructure.GPIO_Pin  = GPIO_Pin_6;    //PA6  Z轴按钮
 	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_IPU; //PA0设置成输入，默认下拉	  
-	GPIO_Init(GPIOA, &GPIO_InitStructure);        //初始化GPIOA6
+	GPIO_Init(GPIOA, &GPIO_InitStructure);        //初始化GPIOA.6
 	
 	GPIO_InitStructure.GPIO_Pin  = GPIO_Pin_0;    //PB0  A轴按钮
 	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_IPU; //设置成上拉输入
- 	GPIO_Init(GPIOB, &GPIO_InitStructure);        //初始化GPIOB0
+ 	GPIO_Init(GPIOB, &GPIO_InitStructure);        //初始化GPIOB.0
 	
 	GPIO_InitStructure.GPIO_Pin  = GPIO_Pin_1;    //PB1  B轴按钮
 	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_IPU; //设置成上拉输入
- 	GPIO_Init(GPIOB, &GPIO_InitStructure);        //初始化GPIOB1
- 
-	GPIO_InitStructure.GPIO_Pin  = GPIO_Pin_12;    //PB12  急停按钮
-	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_IPU; //PA0设置成输入，默认下拉	  
-	GPIO_Init(GPIOB, &GPIO_InitStructure);        //初始化GPIOB12
-
+ 	GPIO_Init(GPIOB, &GPIO_InitStructure);        //初始化GPIOB.1
 
 }
 
@@ -49,7 +44,7 @@ void Key_scan(void)
 {
   uint8 Last_time_Axis_mode;
 	
-	if(key_X == 0||key_Y == 0||key_Z == 0||key_A == 0||key_B == 0||key_Estop == 0)  //有按键触发
+	if(key_X == 0||key_Y == 0||key_Z == 0||key_A == 0||key_B == 0)  //有按键触发
 	{
 		
 		Last_time_Axis_mode = Axis_Gets();   //获取上次选中轴
@@ -94,10 +89,7 @@ void Key_scan(void)
 			  Show_B_Axis_State();  //显示B轴选中状态
 			}
 		}
-		else if(key_Estop == 0)  //急停轴按钮
-		{
-			Press_button = CMD_EStop;
-		}
+		
  
 	}
 
