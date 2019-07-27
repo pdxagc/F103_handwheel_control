@@ -12,16 +12,17 @@
 #include "malloc.h"
 #include "string.h"
 
-extern uint8  cmd_buffer[CMD_MAX_SIZE];                     //LCD指令缓存
-extern uint8  Work_Page_Status;
-extern uint8 Override_num;
-extern Speed_Control Speed;
-extern Pram_Status pram_status;
-extern Control_Panel_Pram control_panel_pram;
-extern Return_Workpiece_Zero return_workpiece_zero;
-extern Devide_Set devide_set;  
-extern char  Working_line_buf[20];                      //保存加工行数
-extern uint16 Pulses_counter;                           // 手轮脉冲数量
+
+Speed_Control Speed;
+Pram_Status pram_status;
+Control_Panel_Pram control_panel_pram;
+Return_Workpiece_Zero return_workpiece_zero;
+Devide_Set devide_set;  
+
+uint8  cmd_buffer[CMD_MAX_SIZE];                     //LCD指令缓存
+uint8  Override_num;
+char  Working_line_buf[20];                      //保存加工行数
+uint16 Pulses_counter;                           // 手轮脉冲数量
 
 uint8 Coordinate_Change_Counter=0;                      //坐标切换按钮触发计数
 uint8 Override_Change_Counter=1;                        //倍率切换按钮触发计数
@@ -38,7 +39,7 @@ uint16 get_control_id;                   //获取控件ID
 uint32 get_value;                        //获取数值
 uint8  input_buf[20];                    //键盘输入内容
 
-uint8  Press_button=0XFF;          //记录哪个按钮触发
+uint8  Press_button=0XFF;          //记录哪个按钮触发(需要把按键发送给雕刻机)
 uint8 last_time_work_state=0;      //记录上一次机器工作状态,默认是关机状态
 int32 Working_line;                //加工行数
 uint8 first_time_re_workpiece;     //首次进入回工件零页面
@@ -74,7 +75,7 @@ void TFT_command_analyse(void)
 {
 	qsize  size = 0;                                             //指令长度 
   size = queue_find_cmd(cmd_buffer,CMD_MAX_SIZE);              //接收到LCD屏的数据，从USART1的指令缓冲区cmd_buffer中获取一条指令，得到指令长度       
-	if(size>0 && cmd_buffer[1]!=0x07)  //接收到指令 ，及判断是否为开机提示
+	if(size>0 && cmd_buffer[1]!=0x07)                            //接收到指令 ，及判断是否为开机提示
 	{                                                                           
 		Usart2_Receive_data_handle((PCTRL_MSG)cmd_buffer, size);   //指令分析处理 ，标记应该进入哪个Work_Page_Status，标记相应的操作位
 		memset(cmd_buffer, 0, CMD_MAX_SIZE);                       //对指令缓冲cmd_buffer清零
@@ -584,7 +585,7 @@ void Usart2_Receive_data_handle( PCTRL_MSG msg, uint16 size )
 									case 15:Work_Page_Status=ControlPanel_Page;break;
 									case 42:                                           //X轴按钮触发
 									{																			
-										control_panel_pram.Axis_press= CMD_X_AXIS;								
+										control_panel_pram.Axis_press = CMD_X_AXIS;								
 									}break;
 									case 43:                                           //Y轴按钮触发
 									{
@@ -756,14 +757,14 @@ void Usart2_Receive_data_handle( PCTRL_MSG msg, uint16 size )
 									{
 										if(get_button_state)
 										{
-											control_panel_pram.Press_button = CMD_Clear;								
+											Press_button = CMD_Clear;								
 										}																					
 									}break;    
                   case 2:                                             //回机械零按钮触发	
                   {
 										if(get_button_state)
 										{
-											control_panel_pram.Press_button = CMD_Return_Machine_Zero;
+											Press_button = CMD_Return_Machine_Zero;
 																								
 										}
 										get_button_state=0;	
@@ -774,7 +775,7 @@ void Usart2_Receive_data_handle( PCTRL_MSG msg, uint16 size )
 										{
 												control_panel_pram.Override_Change_button=1;
 												Override_Change_Process();                    //倍率切换控制
-												control_panel_pram.Press_button = CMD_Override_Change;												
+												Press_button = CMD_Override_Change;												
 										}
 										get_button_state=0;										
 									}break;
@@ -782,7 +783,7 @@ void Usart2_Receive_data_handle( PCTRL_MSG msg, uint16 size )
 									{
 										if(get_button_state)
 										{
-											control_panel_pram.Press_button = CMD_Spin_On_Off;						
+											Press_button = CMD_Spin_On_Off;						
 										}
 										get_button_state=0;	
 									}break;
@@ -791,7 +792,7 @@ void Usart2_Receive_data_handle( PCTRL_MSG msg, uint16 size )
                     if(get_button_state)   
 										{										
 											control_panel_pram.All_Spindle_Clear_Button=1;
-											control_panel_pram.Press_button = CMD_All_Spin_Clear;
+											Press_button = CMD_All_Spin_Clear;
 											get_button_state=0;
 										}
 									}break;
@@ -801,7 +802,7 @@ void Usart2_Receive_data_handle( PCTRL_MSG msg, uint16 size )
 										{
 											Work_Page_Status=Return_WorkPiece_Zero_Page;
 											first_time_re_workpiece=1;
-											control_panel_pram.Press_button = CMD_Return_WorkPiece_Zero;
+											Press_button = CMD_Return_WorkPiece_Zero;
 											get_button_state=0;
 										}
 									}break;
@@ -810,7 +811,7 @@ void Usart2_Receive_data_handle( PCTRL_MSG msg, uint16 size )
 											if(get_button_state)
 											{										
 												  Coordinate_Change_Process();//坐标切换控制
-												  control_panel_pram.Press_button = CMD_Coordinate_Change;
+												  Press_button = CMD_Coordinate_Change;
 												  get_button_state=0;
 											 }										
 									}break;
@@ -818,7 +819,7 @@ void Usart2_Receive_data_handle( PCTRL_MSG msg, uint16 size )
 									{											
 											if(get_button_state)
 											{
-												control_panel_pram.Press_button = CMD_Soft_Limit;						
+												Press_button = CMD_Soft_Limit;						
 											}
 											get_button_state=0;	
 									}break;
@@ -826,7 +827,7 @@ void Usart2_Receive_data_handle( PCTRL_MSG msg, uint16 size )
 									{
 										if(get_button_state)
 											{
-												control_panel_pram.Press_button = CMD_Safe_Z;						
+												Press_button = CMD_Safe_Z;						
 											}
 											get_button_state=0;	
 									}break;
@@ -836,7 +837,7 @@ void Usart2_Receive_data_handle( PCTRL_MSG msg, uint16 size )
 										{
 											jump_work_set.First_get_into = 1;
 											Work_Page_Status=Jump_Work_Page;
-											control_panel_pram.Press_button = CMD_Jump_Work;
+											Press_button = CMD_Jump_Work;
 											get_button_state=0;
 										}
 									}break;
@@ -844,7 +845,7 @@ void Usart2_Receive_data_handle( PCTRL_MSG msg, uint16 size )
 									{										
 											if(get_button_state)
 											{
-												control_panel_pram.Press_button = CMD_Auto_knife;								
+												Press_button = CMD_Auto_knife;								
 											}
 											get_button_state=0;	
 									}break;
@@ -852,14 +853,14 @@ void Usart2_Receive_data_handle( PCTRL_MSG msg, uint16 size )
 									{
 											if(get_button_state)
 											{
-												control_panel_pram.Press_button = CMD_Divided;								
+												Press_button = CMD_Divided;								
 											}
 											get_button_state=0;	
 									}break;
 									case 13:                                           //开始按钮触发
 									{
 										state.Work_state=Start;
-										control_panel_pram.Press_button = CMD_Start;
+										Press_button = CMD_Start;
 										TIM_Cmd(TIM4, DISABLE);      //禁止 TIM4
 //										SetButtonValue(2,14,0);     //停止按钮松开状态
 										SetButtonValue(2,13,1);       //开始按钮按下状态										
@@ -869,14 +870,14 @@ void Usart2_Receive_data_handle( PCTRL_MSG msg, uint16 size )
 										state.Work_state=Stop;
 //										SetButtonValue(2,13,0);     //开始按钮松开状态
 										SetButtonValue(2,14,1);     //停止按钮按下状态
-                    control_panel_pram.Press_button = CMD_Stop;
+                    Press_button = CMD_Stop;
 									  TIM_Cmd(TIM4, ENABLE);      //使能 TIM4
 																	
 									}break;
 									case 15:                                            //复位按钮触发
 									{
 										state.Work_state=Stop;
-										control_panel_pram.Press_button = CMD_Reset;  						
+										Press_button = CMD_Reset;  						
 									}break;
 									case 16:                                          //退出控制面板按钮触发
 									{
@@ -886,7 +887,7 @@ void Usart2_Receive_data_handle( PCTRL_MSG msg, uint16 size )
 									case 22:                                            //X轴按钮触发
 									{	
 																											
-										control_panel_pram.Axis_press= CMD_X_AXIS;								
+										control_panel_pram.Axis_press = CMD_X_AXIS;								
 									}break;
 									case 23:                                            //Y轴按钮触发
 									{
@@ -1194,7 +1195,7 @@ void Usart2_Receive_data_handle( PCTRL_MSG msg, uint16 size )
 					}break;
 					case Same_file_Error_Page: Work_Page_Status=Same_file_Error_Page;break;//画面7：同名文件报错页面
 					case Download_Fail_Pgae: Work_Page_Status=Download_Fail_Pgae;break;    //画面8：下载失败页面
-					case Delete_Page: Work_Page_Status=Delete_Page;                    //画面9：删除页面
+					case Delete_Page: Work_Page_Status=Delete_Page;                        //画面9：删除页面
 					{
 						switch(get_control_id)
 						{
@@ -1364,11 +1365,11 @@ void Work_state_control(void)
 	{
 		if(state.Work_state==Start)         
 		{
-			Show_Start_Working(Work_Page_Status);      //串口屏显示当前处于加工状态
+			Show_Start_Working(Work_Page_Status);      //TFT屏显示当前处于加工状态
 		}
 		else                                 
 		{
-			Show_Stop_Working(Work_Page_Status);        //串口屏显示当前已经停止加工
+			Show_Stop_Working(Work_Page_Status);        //TFT屏显示当前已经停止加工
 		}
 		last_time_work_state=state.Work_state;
 	}
@@ -1433,7 +1434,6 @@ void Power_On_Set(void)
 		SetProgressValue(17,3,i*2);     //设置进度条的值
 		delay_ms(5);                  //延时0.05秒
 	}
-	delay_ms(100);
 	SetScreen(0);           //切换到加工页面
 	delay_ms(10);
 	
@@ -1441,7 +1441,7 @@ void Power_On_Set(void)
 	SetTextValue(2,30,"G54");
 	SetTextValue(0,28,"关");         //设置手轮引导“关”
 	SetTextValue(2,31,"关");
-	SetTextValue(0,29,"X10");         //设置倍率：X1
+	SetTextValue(0,29,"X10");         //设置倍率：X10
 	SetTextValue(2,32,"X10");
 	Override_num=10;                   //开机默认倍率
 	
@@ -1816,3 +1816,82 @@ void Show_B_Coordinata(void)
 	}
 }
 
+//显示X轴选中状态
+void Show_X_Axis_State(void)
+{
+  SetButtonValue(0,42,1);           //X轴选中状态
+	SetButtonValue(0,43,0);
+	SetButtonValue(0,44,0);
+	SetButtonValue(0,45,0);
+	SetButtonValue(0,46,0);
+	
+  SetButtonValue(2,22,1);
+	SetButtonValue(2,23,0);
+	SetButtonValue(2,24,0);
+	SetButtonValue(2,25,0);
+	SetButtonValue(2,26,0);
+}
+
+//显示Y轴选中状态
+void Show_Y_Axis_State(void)
+{
+  SetButtonValue(0,42,0);           //Y轴选中状态
+	SetButtonValue(0,43,1);
+	SetButtonValue(0,44,0);
+	SetButtonValue(0,45,0);
+	SetButtonValue(0,46,0);
+	
+  SetButtonValue(2,22,0);
+	SetButtonValue(2,23,1);
+	SetButtonValue(2,24,0);
+	SetButtonValue(2,25,0);
+	SetButtonValue(2,26,0);
+}
+
+//显示Z轴选中状态
+void Show_Z_Axis_State(void)
+{
+  SetButtonValue(0,42,0);           //Z轴选中状态
+	SetButtonValue(0,43,0);
+	SetButtonValue(0,44,1);
+	SetButtonValue(0,45,0);
+	SetButtonValue(0,46,0);
+	
+  SetButtonValue(2,22,0);
+	SetButtonValue(2,23,0);
+	SetButtonValue(2,24,1);
+	SetButtonValue(2,25,0);
+	SetButtonValue(2,26,0);
+}
+
+//显示A轴选中状态
+void Show_A_Axis_State(void)
+{
+  SetButtonValue(0,42,0);           //A轴选中状态
+	SetButtonValue(0,43,0);
+	SetButtonValue(0,44,0);
+	SetButtonValue(0,45,1);
+	SetButtonValue(0,46,0);
+	
+  SetButtonValue(2,22,0);
+	SetButtonValue(2,23,0);
+	SetButtonValue(2,24,0);
+	SetButtonValue(2,25,1);
+	SetButtonValue(2,26,0);
+}
+
+//显示B轴选中状态
+void Show_B_Axis_State(void)
+{
+  SetButtonValue(0,42,0);           //B轴选中状态
+	SetButtonValue(0,43,0);
+	SetButtonValue(0,44,0);
+	SetButtonValue(0,45,0);
+	SetButtonValue(0,46,1);
+	
+  SetButtonValue(2,22,0);
+	SetButtonValue(2,23,0);
+	SetButtonValue(2,24,0);
+	SetButtonValue(2,25,0);
+	SetButtonValue(2,26,1);
+}

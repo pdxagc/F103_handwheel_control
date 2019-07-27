@@ -15,30 +15,22 @@
 #include "stm32f10x_tim.h"
 #include "tft.h"
 #include "malloc.h"
+#include "key.h"
 
 
 
 volatile uint32  timer_tick_count = 0;               //定时器节拍
-uint8  cmd_buffer[CMD_MAX_SIZE];                     //LCD指令缓存
 
-uint8  TX_Data[30]; //the sending package    存储串口3要发送的数据（主程序发送）
-uint8  RX_Data[30]; //the receiving package  接收串口3发来的数据（在中断中接收）
-
-
-uint16 Pulses_counter;              // 手轮脉冲数量
-uint8 Override_num;                //倍率
-
-uint8 Pulses_check=1;              //脉冲同步标志位
+uint8 TX_Data[30]; //the sending package    存储串口3要发送的数据（主程序发送）
+uint8 RX_Data[30]; //the receiving package  接收串口3发来的数据（在中断中接收）
+uint8 Pulses_check=1;              //脉冲同步次数标志位
 
 
 uint8 Mark_10ms=0;                 //10ms计时标记位
 uint8 Mark_10ms_Count;             //10ms计时溢出统计位
 uint8 Mark_20ms=0;                 //20ms计时标记位
 uint8 Mark_20ms_Count=0;           //20ms计时
-uint8 Mark_60ms=0;                //100ms计时标记位
-
-
-char  Working_line_buf[20];        //保存加工行数
+uint8 Mark_60ms=0;                 //100ms计时标记位
 
 
 
@@ -53,15 +45,19 @@ int main()
   char bufrec[20];
   uint16 Recdata1,Recdata2,RecPulses;	 
 	uint8  check_time=0;      //脉冲同步检查次数
+	 
 	Set_System();             //配置时钟                                                                                                                                                                                                                                                              
 	systicket_init();         //配置时钟节拍
 	Usart1_Init(115200);      //串口1初始化(与雕刻机通讯)
   Usart2_Init(115200);      //串口2初始化(与TFT屏通讯) 	 
 	queue_reset();            //清空串口接收缓冲区 
 	TIME2_Init();             //定时器2初始化
+	Key_Init();               //按键初始化	
 	//TIME3_Init();             //定时器3初始化(向主机询问坐标)
-  TIME4_Init();             //定时器4初始化(计算手轮脉冲)                                                                                              
-	delay_ms(300);            //延时等待串口屏初始化完毕,必须等待300ms  
+  TIME4_Init();             //定时器4初始化(计算手轮脉冲)
+   
+	delay_ms(300);            //延时等待串口屏初始化完毕,必须等待300ms
+   
 	//Usart3_Init(115200);      //串口3初始化
 	
 	 
@@ -73,25 +69,25 @@ int main()
 		//    1) 一般情况下，控制MCU向串口屏发送数据的周期大于100ms，就可以避免数据丢失的问题；
 		//    2) 如果仍然有数据丢失的问题，请判断串口屏的BUSY引脚，为高时不能发送数据给串口屏。
 		
-	while(Pulses_check)        //开机同步主机脉冲
-	{
-		
-		if(RX_Data[1] == CMD_UPDATE_MACH3_NUMBER)  //接收到坐标数据
-		{	
-			Recdata1=RX_Data[18];
-			Recdata2=RX_Data[19];			 
-      RecPulses= (Recdata1<<8)+Recdata2;  //获取脉冲值
-      if(TIM4->CNT==RecPulses)
-				check_time++;
-			else 
-				TIM4->CNT=RecPulses;
-      if(check_time>5)
-        Pulses_check=0;
-			
-      sprintf(bufrec,"%u",RecPulses);	
-			SetTextValue(0,23,(uchar *)bufrec);     //显示脉冲值			
-		}
-	}
+//	while(Pulses_check)        //开机同步主机脉冲
+//	{
+//		
+//		if(RX_Data[1] == CMD_UPDATE_MACH3_NUMBER)  //接收到坐标数据
+//		{	
+//			Recdata1=RX_Data[18];
+//			Recdata2=RX_Data[19];			 
+//      RecPulses= (Recdata1<<8)+Recdata2;  //获取脉冲值
+//      if(TIM4->CNT==RecPulses)
+//				check_time++;
+//			else 
+//				TIM4->CNT=RecPulses;
+//      if(check_time>5)
+//        Pulses_check=0;
+//			
+//      sprintf(bufrec,"%u",RecPulses);	
+//			SetTextValue(0,23,(uchar *)bufrec);     //显示脉冲值			
+//		}
+//	}
 	  
 		
 	while(1)                                                                        
@@ -104,6 +100,7 @@ int main()
 		
 		if(Mark_20ms) 
 		{
+		  Key_scan();                         //手轮物理按键扫描
 		  TFT_command_analyse();              //分析TFT屏的命令，触发了什么按钮 			  
 			Mark_20ms=0;
 		}

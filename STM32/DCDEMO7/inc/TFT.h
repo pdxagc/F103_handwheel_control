@@ -89,7 +89,7 @@ typedef struct Pram_Status
 
 typedef struct Control_Panel_Pram
 {
-	uint8  Press_button;                  //记录哪个按钮触发
+//  uint8  Press_button;                  //记录哪个按钮触发
   uint8  Axis_press;                    //记录哪个轴选中
 //	uint8  Y_press;                       //选中Y轴
 //	uint8  Z_press;                       //选中Z轴
@@ -283,6 +283,22 @@ void Show_A_Coordinata(void);
 
 //显示B轴坐标
 void Show_B_Coordinata(void);
+
+
+//显示X轴选中状态
+void Show_X_Axis_State(void);
+
+//显示Y轴选中状态
+void Show_Y_Axis_State(void);
+
+//显示Z轴选中状态
+void Show_Z_Axis_State(void);
+
+//显示A轴选中状态
+void Show_A_Axis_State(void);
+
+//显示B轴选中状态
+void Show_B_Axis_State(void);
 
 
 #endif

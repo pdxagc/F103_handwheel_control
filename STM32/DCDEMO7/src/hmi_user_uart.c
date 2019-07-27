@@ -35,7 +35,7 @@ extern uint8 Override_num;
 extern uint8  TX_Data [30]; //the sending package
 extern uint8  RX_Data [30]; //the receiving package
 extern Control_Panel_Pram control_panel_pram;
-
+extern uint8  Press_button;          //记录哪个按钮触发(需要把按键发送给雕刻机)
 #define My_Address 2
 uint8  RX_Busy=0;
 uint8  HC_Address, rxcounter, remaincounter; //this unit is this unit address, if change to master become 0000 
@@ -493,14 +493,14 @@ uint8 Check_Pulses_change(void)
 uint8 Check_CMD_button_change(void)
 {
 	uint8 result2;
-	if(last_time_button==control_panel_pram.Press_button)
+	if(last_time_button==Press_button)
 	{
-		control_panel_pram.Press_button = 0XFF;
+		Press_button = 0XFF;
 	  result2 = 0;
 	}
 	else 
 	{
-	  last_time_button=control_panel_pram.Press_button;
+	  last_time_button=Press_button;
 		result2 = 1;	
 	}
 	return result2;
@@ -523,19 +523,19 @@ uint8 Check_Override_change(void)
 }
 
 //确定是哪个轴选中
-uint8 Axis_Gets()
+uint8 Axis_Gets(void)
 {
-	uint8 axis;
+	uint8 axis_mode;
 	switch(control_panel_pram.Axis_press)
 	{
-		case CMD_X_AXIS: axis=10;break;
-	  case CMD_Y_AXIS: axis=11;break;
-		case CMD_Z_AXIS: axis=12;break;
-		case CMD_A_AXIS: axis=13;break;
-		case CMD_B_AXIS: axis=14;break;
+		case CMD_X_AXIS: axis_mode=X_mode;break;
+	  case CMD_Y_AXIS: axis_mode=Y_mode;break;
+		case CMD_Z_AXIS: axis_mode=Z_mode;break;
+		case CMD_A_AXIS: axis_mode=A_mode;break;
+		case CMD_B_AXIS: axis_mode=B_mode;break;
 	}
 	
-	return axis;
+	return axis_mode;
 }
 
 //创建发给主机的指令和数据
@@ -554,7 +554,7 @@ void Create_CMD_and_Date(void)
 			TX_Data[3] = Pulses_counter>>8;
 			TX_Data[4] = Pulses_counter;
 			TX_Data[5] = Override_num;
-			TX_Data[6] = control_panel_pram.Press_button;
+			TX_Data[6] = Press_button;
 			TX_Data[7] = Axis_Gets();
 			TX_Data[8] = 4;
 			TX_Data[9] = SetXor(TX_Data[1],1);	

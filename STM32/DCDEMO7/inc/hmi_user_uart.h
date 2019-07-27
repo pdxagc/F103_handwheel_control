@@ -16,9 +16,13 @@
 #define int16    short int
 #define int32    long
 
+#define X_mode 10
+#define Y_mode 11
+#define Z_mode 12
+#define A_mode 13
+#define B_mode 14
 
-
-//////COMMAND TABLE//////////
+//////Button TABLE//////////
 
 //控制面板
 #define CMD_X_AXIS	0                  //X轴选中
@@ -38,7 +42,7 @@
 #define CMD_1	13
 #define CMD_2	14
 #define CMD_EStop	15                    //紧急停止
-//#define CMD_Stop  16
+
 #define CMD_All_Spin_Clear	17          //全轴清零
 #define CMD_Coordinate_Change 18        //坐标切换
 #define CMD_Soft_Limit	19              //软限位
@@ -78,9 +82,16 @@
 #define CMD_Sign_In       48     //登录账户
 
 
+
+
+//*********** COMMAND TABLE
 #define CMD_ASK_SLAVE 29                 //主机请求数据
-#define CMD_RPY_HC_MPG1	36               //主机获取数据
-#define CMD_UPDATE_MACH3_NUMBER	41       //主机发送坐标
+#define CMD_RPY_HC_MPG1	36               //手轮发送数据
+#define CMD_UPDATE_MACH3_NUMBER	41       //主机发送坐标数据
+
+
+
+
 
 // 串口1初始化
 void Usart1_Init(uint32 Baudrate);
@@ -142,6 +153,9 @@ uint8 Check_CMD_button_change(void);
 
 //判断倍率是否发生变化
 uint8 Check_Override_change(void);
+
+//确定是哪个轴选中
+uint8 Axis_Gets(void);
 
 //创建指令和数据
 void Create_CMD_and_Date(void);

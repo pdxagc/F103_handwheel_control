@@ -2,8 +2,6 @@
 *  \file hmi_driver.h
 *  \brief 串口屏驱动文件
 *  \version 1.0
-*  \date 2012-2018
-*  \copyright 广州大彩光电科技有限公司
 */
 
 #ifndef _HMI_DRIVER_
