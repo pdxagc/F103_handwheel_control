@@ -14,11 +14,15 @@
 .\obj\tft.o: ..\..\..\Libraries\STM32F10x_StdPeriph_Driver\inc\stm32f10x_rcc.h
 .\obj\tft.o: ..\..\..\Libraries\STM32F10x_StdPeriph_Driver\inc\stm32f10x_usart.h
 .\obj\tft.o: ..\..\..\Libraries\STM32F10x_StdPeriph_Driver\inc\misc.h
-.\obj\tft.o: C:\Keil_v5\ARM\ARMCC\Bin\..\include\stdio.h
 .\obj\tft.o: ..\inc\hmi_driver.h
+.\obj\tft.o: C:\Keil_v5\ARM\ARMCC\Bin\..\include\stdio.h
 .\obj\tft.o: ..\inc\flash.h
 .\obj\tft.o: ..\inc\ulitity.h
 .\obj\tft.o: ..\inc\cJSON.h
 .\obj\tft.o: C:\Keil_v5\ARM\ARMCC\Bin\..\include\stddef.h
 .\obj\tft.o: C:\Keil_v5\ARM\ARMCC\Bin\..\include\stdlib.h
+.\obj\tft.o: ..\..\..\Libraries\STM32F10x_StdPeriph_Driver\inc\stm32f10x_tim.h
 .\obj\tft.o: ..\inc\timer.h
+.\obj\tft.o: ..\inc\cmd_queue.h
+.\obj\tft.o: ..\inc\malloc.h
+.\obj\tft.o: C:\Keil_v5\ARM\ARMCC\Bin\..\include\string.h

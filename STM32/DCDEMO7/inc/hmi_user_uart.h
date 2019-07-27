@@ -87,6 +87,9 @@ void Usart1_Init(uint32 Baudrate);
 
 
 //串口2，时钟初始化函数    A2,A3    
+void Usart2_Init(uint32 BaudRate);
+
+//串口3，时钟初始化函数    A2,A3 
 void Usart3_Init(uint32 BaudRate);
 
 //RS485 模式控制.en:0,接收;1,发送.
@@ -102,13 +105,13 @@ void  SendChar(uchar t);
 
 
 // 发送的字节
- void Usart_SendByte( USART_TypeDef * pUSARTx, uint8_t ch);
+void Usart_SendByte( USART_TypeDef * pUSARTx, uint8_t ch);
 
 // 发送的字符串
- void Usart_SendString( USART_TypeDef * pUSARTx, char *str);
+void Usart_SendString( USART_TypeDef * pUSARTx, char *str);
  
-  //Usart3_send_Str 发送数组内容
- void Usart3_send_Str(uint8 buf[]);
+//Usart3_send_Str 发送数组内容
+// void Usart3_send_Str(uint8 buf[]);
 
 // 发送数据前，生成一个校验参数	
 char SetXor	(char length, char start);
@@ -119,17 +122,17 @@ unsigned char CheckXor (char data, unsigned char len);
 //地址校验
 uint8_t Check_Address (char data);
 
-//串口2中断执行函数  //place at ISR
-void Usart3_Recieve_ISR_Process (void);
+//串口1中断，接收雕刻机数据  //place at ISR
+void Usart1_Recieve_Process (void);
 
 //串口2接收数据处理函数
-void Usart3_Receive_Data_handle (void);
+void Usart1_Rec_Data_handle (void);
 
 //给主机发送数据
 void Send_data_to_Master(void);
 
 // 串口2发送数据函数
-void Usart3_Send_Data (uint8 length);
+void Usart1_Send_Data (uint8 length);
 
 //判断脉冲是否发生变化
 uint8 Check_Pulses_change(void);

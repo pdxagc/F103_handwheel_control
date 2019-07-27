@@ -135,22 +135,7 @@ void PendSV_Handler(void)
 /*            STM32F10x Peripherals Interrupt Handlers                        */
 /******************************************************************************/
 
-/*******************************************************************************
-* Function Name  : USART1_IRQHandler
-* Description    : This function handles USART1 global interrupt request.
-* Input          : None
-* Output         : None
-* Return         : None
-*******************************************************************************/
-void USART1_IRQHandler(void)
-{
-    if (USART_GetITStatus(USART1, USART_IT_RXNE) != RESET)
-    {
-        uint8_t data = USART_ReceiveData(USART1);
-        queue_push(data);
-    }
 
-}
 
 extern volatile uint32_t timer_tick_count;
 /*******************************************************************************

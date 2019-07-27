@@ -17,8 +17,9 @@
 .\obj\hmi_user_uart.o: ..\inc\cJSON.h
 .\obj\hmi_user_uart.o: C:\Keil_v5\ARM\ARMCC\Bin\..\include\stddef.h
 .\obj\hmi_user_uart.o: ..\inc\tft.h
+.\obj\hmi_user_uart.o: ..\inc\hmi_driver.h
 .\obj\hmi_user_uart.o: C:\Keil_v5\ARM\ARMCC\Bin\..\include\string.h
 .\obj\hmi_user_uart.o: ..\inc\ulitity.h
 .\obj\hmi_user_uart.o: ..\inc\hw_config.h
 .\obj\hmi_user_uart.o: C:\Keil_v5\ARM\ARMCC\Bin\..\include\stdio.h
-.\obj\hmi_user_uart.o: ..\inc\hmi_driver.h
+.\obj\hmi_user_uart.o: ..\inc\cmd_queue.h

@@ -21,6 +21,7 @@ hmi_user_uart.c中的串口发送接收函数共3个函数：
 #include "hw_config.h"
 #include "stdio.h"
 #include "hmi_driver.h"
+#include "cmd_queue.h"
 
 
 #define USART3_REC_LEN 2048
@@ -46,7 +47,7 @@ uint8  last_time_button=0;       //记录按键变化
 
 
 /*******************************************************************************  
-* 函 数 名         : Usart1_Init(与LCD屏通讯)  
+* 函 数 名         : Usart1_Init(与雕刻机通讯)  
 * 函数功能         : IO端口及串口1，时钟初始化函数    A9,A10    
 * 输    入         : 无  
 * 输    出         : 无  
@@ -57,24 +58,32 @@ void Usart1_Init(uint32 BaudRate)
     USART_InitTypeDef USART_InitStructure;    //声明一个结构体变量，用来初始化串口
 	  NVIC_InitTypeDef NVIC_InitStructure;
     /* Enable GPIO clock */
-    RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOA | RCC_APB2Periph_AFIO, ENABLE);
+    RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOA , ENABLE);
     RCC_APB2PeriphClockCmd(RCC_APB2Periph_USART1, ENABLE);
 
     /* Configure USART Tx as alternate function push-pull */
-    GPIO_InitStructure.GPIO_Pin =GPIO_Pin_9;                     //USART1_TX PA.9
-    GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AF_PP;              //复用推挽输出
-    GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;            
+    GPIO_InitStructure.GPIO_Pin =GPIO_Pin_9;                     //USART1_TX PA.9   
+    GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;   
+    GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AF_PP;              //复用推挽输出	
     GPIO_Init(GPIOA, &GPIO_InitStructure);                       //初始化 GPIOA.9
 
     //  /* Configure USART Rx as input floating */
     GPIO_InitStructure.GPIO_Pin = GPIO_Pin_10;                    //USART1_RX PA.10
 	  GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
     GPIO_InitStructure.GPIO_Mode = GPIO_Mode_IN_FLOATING;         //浮空输入
-    GPIO_Init(GPIOA, &GPIO_InitStructure);
+    GPIO_Init(GPIOA, &GPIO_InitStructure);                        //初始化 GPIOA.10
 	  //串口参数初始化 /* USART configuration */
+	
+	 //初始化485使能引脚 PA7
+		GPIO_InitStructure.GPIO_Pin = GPIO_Pin_7;
+    GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;    
+    GPIO_InitStructure.GPIO_Mode = GPIO_Mode_Out_PP;     //推挽输出
+    GPIO_Init(GPIOA, &GPIO_InitStructure);
+	
+	
     USART_DeInit(USART1);                                          //复位USART1
     USART_InitStructure.USART_BaudRate = BaudRate;                 //波特率设置
-    USART_InitStructure.USART_WordLength = USART_WordLength_8b;    //字长为 8 位
+    USART_InitStructure.USART_WordLength = USART_WordLength_9b;    //字长为9 位
     USART_InitStructure.USART_StopBits = USART_StopBits_1;         //一个停止位
     USART_InitStructure.USART_Parity = USART_Parity_No;            //无奇偶校验位
     USART_InitStructure.USART_HardwareFlowControl = USART_HardwareFlowControl_None; //无硬件数据流控制
@@ -86,18 +95,68 @@ void Usart1_Init(uint32 BaudRate)
 		NVIC_InitStructure.NVIC_IRQChannelSubPriority = 1;		   //响应优先级0
 		NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;			     //开启中断
 		NVIC_Init(&NVIC_InitStructure);	
-    //Interrupts_Config();      //配置串口中断 
 		
 		
     USART_ITConfig(USART1, USART_IT_RXNE, ENABLE);                  //接收中断使能
 
     /* Enable USART */
     USART_Cmd(USART1, ENABLE);                                     //使能串口
+		RS485_TX_Set(0);		                                         //使能485接收模式
 }
 
 
 /*******************************************************************************  
-* 函 数 名         : Usart3_Init(与主机通讯)
+* 函 数 名         : Usart2_Init(与TFT屏通讯)
+* 函数功能         : IO端口及串口，时钟初始化函数    PA2,PA3    
+* 输    入         : 无  
+* 输    出         : 无  
+*******************************************************************************/ 
+void Usart2_Init(uint32 BaudRate)
+{
+    GPIO_InitTypeDef GPIO_InitStructure;      //声明一个结构体变量，用来初始化GPIO   
+    USART_InitTypeDef USART_InitStructure;    //声明一个结构体变量，用来初始化串口
+	  NVIC_InitTypeDef NVIC_InitStructure;
+    /* Enable GPIO clock */
+    RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOA , ENABLE);
+    RCC_APB1PeriphClockCmd(RCC_APB1Periph_USART2, ENABLE);
+
+    /* Configure USART Tx as alternate function push-pull */
+    GPIO_InitStructure.GPIO_Pin =GPIO_Pin_2;                     //USART1_TX PA.2
+    GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;  
+    GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AF_PP;              //复用推挽输出	
+    GPIO_Init(GPIOA, &GPIO_InitStructure);                       //初始化 GPIOA.2
+
+    //  /* Configure USART Rx as input floating */
+    GPIO_InitStructure.GPIO_Pin = GPIO_Pin_3;                    //USART1_RX PA.3
+	  GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
+    GPIO_InitStructure.GPIO_Mode = GPIO_Mode_IN_FLOATING;         //浮空输入
+    GPIO_Init(GPIOA, &GPIO_InitStructure);                        //初始化 GPIOA.3
+	
+	  //串口参数初始化 /* USART configuration */
+    USART_DeInit(USART2);                                          //复位USART2
+    USART_InitStructure.USART_BaudRate = BaudRate;                 //波特率设置
+    USART_InitStructure.USART_WordLength = USART_WordLength_8b;    //字长为 8 位
+    USART_InitStructure.USART_StopBits = USART_StopBits_1;         //一个停止位
+    USART_InitStructure.USART_Parity = USART_Parity_No;            //无奇偶校验位
+    USART_InitStructure.USART_HardwareFlowControl = USART_HardwareFlowControl_None; //无硬件数据流控制
+    USART_InitStructure.USART_Mode =   USART_Mode_Tx|USART_Mode_Rx; //收发模式 
+    USART_Init(USART2, &USART_InitStructure);                      //初始化串口    
+
+    NVIC_InitStructure.NVIC_IRQChannel = USART2_IRQn;        //中断号；
+		NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 1;//抢占优先级1
+		NVIC_InitStructure.NVIC_IRQChannelSubPriority = 1;		   //响应优先级0
+		NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;			     //开启中断
+		NVIC_Init(&NVIC_InitStructure);	
+		
+		
+    USART_ITConfig(USART2, USART_IT_RXNE, ENABLE);                  //接收中断使能
+
+    /* Enable USART */
+    USART_Cmd(USART2, ENABLE);                                     //使能串口
+}
+
+/*******************************************************************************  
+* 函 数 名         : Usart3_Init()
 * 函数功能         : IO端口及串口3，时钟初始化函数    PB10,PB11    
 * 输    入         : 无  
 * 输    出         : 无  
@@ -110,8 +169,8 @@ void Usart3_Init(uint32 BaudRate)
 		USART_InitTypeDef USART_InitStructure;
 		NVIC_InitTypeDef NVIC_InitStructure;
  
-		RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOB|RCC_APB2Periph_AFIO, ENABLE);
-    RCC_APB1PeriphClockCmd(RCC_APB1Periph_USART3|RCC_APB2Periph_AFIO, ENABLE); 
+		RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOB, ENABLE);
+    RCC_APB1PeriphClockCmd(RCC_APB1Periph_USART3, ENABLE); 
 		
 		//USART3_TX   PB10      //TX-485
     GPIO_InitStructure.GPIO_Pin = GPIO_Pin_10; 
@@ -125,11 +184,7 @@ void Usart3_Init(uint32 BaudRate)
     GPIO_InitStructure.GPIO_Mode = GPIO_Mode_IN_FLOATING;
     GPIO_Init(GPIOB, &GPIO_InitStructure);
 		
-		//初始化485发送或接收使能引脚 PA1
-		GPIO_InitStructure.GPIO_Pin = GPIO_Pin_1;
-    GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;    
-    GPIO_InitStructure.GPIO_Mode = GPIO_Mode_Out_PP;     //推挽输出
-    GPIO_Init(GPIOA, &GPIO_InitStructure);
+		
  
    //Usart3 NVIC 配置
     NVIC_InitStructure.NVIC_IRQChannel = USART3_IRQn;        //中断号；
@@ -140,7 +195,7 @@ void Usart3_Init(uint32 BaudRate)
 
  
 		USART_InitStructure.USART_BaudRate =BaudRate;
-		USART_InitStructure.USART_WordLength = USART_WordLength_9b;            //字长为9位数据格式
+		USART_InitStructure.USART_WordLength = USART_WordLength_8b;            //字长为8位数据格式
 		USART_InitStructure.USART_StopBits = USART_StopBits_1;                 //一个停止位
 		USART_InitStructure.USART_Parity = USART_Parity_No;                    //无奇偶校验位
 		USART_InitStructure.USART_HardwareFlowControl = USART_HardwareFlowControl_None;   //无硬件流控
@@ -148,84 +203,96 @@ void Usart3_Init(uint32 BaudRate)
     USART_Init(USART3, &USART_InitStructure);       
 		
 
-    USART_ITConfig(USART3, USART_IT_RXNE, ENABLE);  //接收中断使能
+    USART_ITConfig(USART3, USART_IT_RXNE, ENABLE);     //接收中断使能
     USART_Cmd(USART3, ENABLE);    
     
-    RS485_TX_Set(0);		//使能485接收模式
+    
 }
 
 
-
-void USART3_IRQHandler(void)
+void USART1_IRQHandler(void)
 {
-	if(USART3->SR &1<<3)
+	if(USART1->SR &1<<3)
 	{
 		uint8_t i;
-		i=USART3->SR;
-		i=USART3->DR;
+		i=USART1->SR;
+		i=USART1->DR;
 		return;
 	}
-	Usart3_Recieve_ISR_Process();
+	Usart1_Recieve_Process();
 }
+
+void USART2_IRQHandler(void)
+{
+    if (USART_GetITStatus(USART2, USART_IT_RXNE) != RESET)
+    {
+        uint8_t data = USART_ReceiveData(USART2);
+        queue_push(data);
+    }
+
+}
+
+
 
 
 //RS485 模式控制.en:0,接收;1,发送.
 void RS485_TX_Set(uint8 en)
 {
 	if(en)
-		GPIO_SetBits(GPIOA, GPIO_Pin_1);
+		GPIO_SetBits(GPIOA, GPIO_Pin_7);
 	else
-		GPIO_ResetBits(GPIOA, GPIO_Pin_1);
+		GPIO_ResetBits(GPIOA, GPIO_Pin_7);
 }
  
 /***************************************************************************
-*   \name   SendChar()（本函数是USART1专用）
+*   \name   SendChar()（本函数是USART2专用）
 *   \brief  发送1个字节 
 *   \param  t 发送的字节
 *****************************************************************************/
 void  SendChar(uchar t)     
 {
-    USART_SendData(USART1,t);
-    while(USART_GetFlagStatus(USART1, USART_FLAG_TXE) == RESET); //等待数据转移到移位寄存器
-    while((USART_GetFlagStatus(USART1, USART_FLAG_TC) == RESET));//等待串口发送完毕
+    USART_SendData(USART2,t);
+    while(USART_GetFlagStatus(USART2, USART_FLAG_TXE) == RESET); //等待数据转移到移位寄存器
+    while((USART_GetFlagStatus(USART2, USART_FLAG_TC) == RESET));//等待串口发送完毕
 }
 
 
-/***************************************************************************
-*   \brief  发送一个字符 
-*   \param  ch 发送的字节
-*****************************************************************************/
- void Usart_SendByte( USART_TypeDef * pUSARTx, uint8_t ch)
- {
+
  
-    USART_SendData(pUSARTx,ch);                                    /* 发送一个字节数据到 USART */
-    while (USART_GetFlagStatus(pUSARTx, USART_FLAG_TXE) == RESET); /* 等待发送数据寄存器为空 */
- }
- 
- //Usart3_send_Str 发送数组内容
- void Usart3_send_Str(uint8 buf[])
- {
-	 uint8 i=0;
-	 while(i<10)
-	 {
-		 Usart_SendByte( USART3, buf[i] );
-			i++;
-	    while (USART_GetFlagStatus(USART3,USART_FLAG_TC)==RESET); /* 等待发送完成 */	 
-	 }
- 
- }
-// 发送的字符串
- void Usart_SendString( USART_TypeDef * pUSARTx, char *str)
- {
-		//unsigned int k=0;
-		while (*str !='\0')
-		{
-			Usart_SendByte( pUSARTx, *str );
-			str++;
-		} 
-	  while (USART_GetFlagStatus(pUSARTx,USART_FLAG_TC)==RESET); /* 等待发送完成 */
- }
- 
+//Usart3_send_Str 发送数组内容
+//void Usart3_send_Str(uint8 buf[])
+// {
+//	 uint8 i=0;
+//	 while(i<10)
+//	 {
+//		 Usart_SendByte( USART3, buf[i] );
+//			i++;
+//	    while (USART_GetFlagStatus(USART3,USART_FLAG_TC)==RESET); /* 等待发送完成 */	 
+//	 }
+// 
+// }
+///***************************************************************************
+//*   \brief  发送一个字节
+//*   \param  ch 发送的字节
+//*****************************************************************************/
+// void Usart_SendByte( USART_TypeDef * pUSARTx, uint8_t ch)
+// {
+// 
+//    USART_SendData(pUSARTx,ch);                                    /* 发送一个字节数据到 USART */
+//    while (USART_GetFlagStatus(pUSARTx, USART_FLAG_TXE) == RESET); /* 等待发送数据寄存器为空 */
+// }
+////发送的字符串
+// void Usart_SendString( USART_TypeDef * pUSARTx, char *str)
+// {
+//		//unsigned int k=0;
+//		while (*str !='\0')
+//		{
+//			Usart_SendByte( pUSARTx, *str );
+//			str++;
+//		} 
+//	  while (USART_GetFlagStatus(pUSARTx,USART_FLAG_TC)==RESET); /* 等待发送完成 */
+// }
+// 
 
  // 发送数据前，生成一个校验参数	
 char SetXor	(char length, char start)
@@ -268,13 +335,13 @@ uint8_t Check_Address (char data)
 }
 
    
-// 串口3接收中断执行函数  //place at ISR，接收主机发送的数据
-void Usart3_Recieve_ISR_Process (void)
+// 串口1接收主机发送的数据 //place at ISR
+void Usart1_Recieve_Process (void)
 { 	
 	 uchar RX_Buffer;
 	 short dat; //16 bit	 
-	 dat=USART3->DR;
-	 USART3->SR&=~(1<<5);  //SR寄存器的第五位清0
+	 dat=USART1->DR;
+	 USART1->SR&=~(1<<5);  //SR寄存器的第五位清0
 	 RX_Buffer=dat;
 	 if(dat&(1<<8))
 	 {
@@ -310,33 +377,25 @@ void Usart3_Recieve_ISR_Process (void)
 	  }
 
 }
-//给主机发送数据
-void Send_data_to_Master(void)
-{
-	if(USART3->SR &1<<3)
-	{
-		uint8_t i;
-		i=USART3->SR;
-		i=USART3->DR;
-		return;
-	}
-   Usart3_Send_Data(10);
-}
+/*
+#define CMD_ASK_SLAVE 29 (0x1D)                //主机请求数据
+#define CMD_RPY_HC_MPG1	36               //手轮发送数据
+#define CMD_UPDATE_MACH3_NUMBER	41 (0x29)      //主机发送数据
+*/
 
-
-//串口2接收数据处理函数
-void Usart3_Receive_Data_handle (void)
+//串口1接收数据后，对数据进行处理
+void Usart1_Rec_Data_handle (void)
 {
 
 	uint8 command;
 	uint16 Recdata1,Recdata2;
-	if(ready2read)        //检验通过
+	if(ready2read)                    //检验通过
 	{
 		command=RX_Data[1];
 		switch(command)
 		{
-			case CMD_ASK_SLAVE:           //发送数据
-				Usart3_Send_Data(10);
+			case CMD_ASK_SLAVE:           //发送数据  //#define CMD_ASK_SLAVE 29                 //主机请求数据
+				Usart1_Send_Data(10);
 			break;			
 			case CMD_UPDATE_MACH3_NUMBER: //接收到坐标  
 			{
@@ -363,8 +422,22 @@ void Usart3_Receive_Data_handle (void)
 
 }
 
-// 串口3发送数据
-void Usart3_Send_Data (uint8 length)
+////给主机发送数据
+//void Send_data_to_Master(void)
+//{
+//	if(USART1->SR &1<<3)
+//	{
+//		uint8_t i;
+//		i=USART1->SR;
+//		i=USART1->DR;
+//		return;
+//	}
+//   Usart1_Send_Data(10);
+//}
+
+
+// 串口1发送数据
+void Usart1_Send_Data (uint8 length)
 { 
 	uint8 i,x,y,z;
 	uint16 temp_pulses;
@@ -380,18 +453,21 @@ void Usart3_Send_Data (uint8 length)
 		{
 			if (i==0)
 			{
-				USART3->DR =(uint32_t)(1<<8)|TX_Data[0];
-				while((USART3->SR&0X40)==0);
+				USART1->DR =(uint32_t)(1<<8)|TX_Data[0];
+				while((USART1->SR&0X40)==0);
 			}
 			else
 			{
-				USART3->DR = TX_Data[i];
-				while((USART3->SR&0X40)==0);
+				USART1->DR = TX_Data[i];
+				while((USART1->SR&0X40)==0);
+				
+				temp_pulses=(TX_Data[3]<<8)+TX_Data[4];
+				sprintf(buf3,"%u",temp_pulses);	
+				SetTextValue(0,21,(uchar *)buf3);  
+				
 			};//循环发送,直到发送完毕   		
 		}
-		temp_pulses=(TX_Data[3]<<8)+TX_Data[4];
-		sprintf(buf3,"%u",temp_pulses);	
-		SetTextValue(0,21,(uchar *)buf3);  
+		
 		RS485_TX_Set(0);
 	}
 }

@@ -1,12 +1,21 @@
 #ifndef _TFT_H
 #define _TFT_H
 #include "hmi_user_uart.h"
+#include "hmi_driver.h"
 
 
 #define voice_on   0
 #define voice_off  1
 #define Changed   1
 #define Unchanged  0
+
+#define Show_Disconnect_Network_Control 3
+#define Hide_Disconnect_Network_Control 4
+#define Show_Sign_Out_Control 3
+#define Hide_Sign_Out_Control 4
+
+#define Start 1
+#define Stop  0
 
 #define START_ADDR1 0x0800d000     //定义一个Flash操作的起始地址宏定义
 #define START_ADDR2 0x0800d400
@@ -174,6 +183,39 @@ typedef struct Jump_Work_Set
 }Jump_Work_Set;
 
 
+//LCD屏数据处理
+void TFT_command_analyse(void);
+
+//计算首轮脉冲个数
+void Pulses_Count_Process(void);
+
+//程序进入标记的工作页面，处理相关任务
+void TFT_handle(void);
+
+/*! 
+*  \brief  消息处理流程
+*  \param msg 待处理消息
+*  \param size 消息长度
+*/
+void Usart2_Receive_data_handle( PCTRL_MSG msg, uint16 size );
+
+/*! 
+*  \brief  文本控件通知
+*  \details  当文本通过键盘更新(或调用GetControlValue)时，执行此函数
+*  \details  文本控件的内容以字符串形式下发到MCU，如果文本控件内容是浮点值，
+*  \details  则需要在此函数中将下发字符串重新转回浮点值。
+*  \param screen_id 画面ID
+*  \param control_id 控件ID
+*  \param str 文本控件内容
+*/
+
+float NotifyText(uint8 *str);
+
+//主机工作状态显示
+void Work_state_control(void);
+
+
+
 //显示机器已经停止加工
 void Show_Stop_Working(uint8 state);
 
@@ -217,7 +259,7 @@ void Coordinate_Change_Process(void);
 void Override_Change_Process(void);
 
 //在加工页面和控制面板页面显示所有轴坐标
-void LCD_Show_coordanate_value(void);
+void TFT_Show_coordanate_value(void);
 
 
 //在回工件零页面显示所有轴坐标值

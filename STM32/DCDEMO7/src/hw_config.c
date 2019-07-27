@@ -88,15 +88,15 @@ void Set_System(void)
 * Input          : None.
 * Return         : None.
 *******************************************************************************/
-void Interrupts_Config(void)
-{
-    NVIC_InitTypeDef NVIC_InitStructure;
-    NVIC_PriorityGroupConfig(NVIC_PriorityGroup_1);
-    /* Enable USART Interrupt */
-    NVIC_InitStructure.NVIC_IRQChannel = USART1_IRQn;
-    NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 1;
-    NVIC_Init(&NVIC_InitStructure);
-}
+//void Interrupts_Config(void)
+//{
+//    NVIC_InitTypeDef NVIC_InitStructure;
+//    NVIC_PriorityGroupConfig(NVIC_PriorityGroup_1);
+//    /* Enable USART Interrupt */
+//    NVIC_InitStructure.NVIC_IRQChannel = USART1_IRQn;
+//    NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 1;
+//    NVIC_Init(&NVIC_InitStructure);
+//}
 
 
 
