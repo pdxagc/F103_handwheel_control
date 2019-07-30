@@ -1,4 +1,3 @@
-
 #include "ulitity.h"
 
 extern volatile  uint32 timer_tick_count;
@@ -29,4 +28,17 @@ void systicket_init(void)
 {
     SysTick_CLKSourceConfig(SysTick_CLKSource_HCLK_Div8);
     SysTick_Config(48000000/100);                              //一秒钟进入100次中断
+}
+
+
+
+//time为要延时的us数.		    								   
+void delay_us(uint16 time)
+{    
+   uint16 i=0;  
+   while(time--)
+   {
+      i=10;  //自己定义
+      while(i--) ;    
+   }
 }

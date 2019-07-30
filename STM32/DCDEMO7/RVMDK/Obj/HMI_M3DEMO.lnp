@@ -23,6 +23,8 @@
 ".\obj\timer.o"
 ".\obj\exti.o"
 ".\obj\key.o"
+".\obj\iic.o"
+".\obj\24c02.o"
 --library_type=microlib --strict --scatter ".\Obj\HMI_M3DEMO.sct"
 --summary_stderr --info summarysizes --map --load_addr_map_info --xref --callgraph --symbols
 --info sizes --info totals --info unused --info veneers

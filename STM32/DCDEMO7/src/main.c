@@ -16,6 +16,8 @@
 #include "tft.h"
 #include "malloc.h"
 #include "key.h"
+#include "iic.h"
+
 
 
 
@@ -27,11 +29,14 @@ uint8 Pulses_check=1;              //脉冲同步次数标志位
 
 
 uint8 Mark_10ms=0;                 //10ms计时标记位
-uint8 Mark_10ms_Count;             //10ms计时溢出统计位
+uint8 Mark_10ms_Count=0;           //10ms溢出次数统计
 uint8 Mark_20ms=0;                 //20ms计时标记位
-uint8 Mark_20ms_Count=0;           //20ms计时
-uint8 Mark_60ms=0;                 //100ms计时标记位
-
+uint8 Mark_20ms_Count=0;           //20ms溢出次数统计
+uint8 Mark_60ms=0;                 //60ms计时标记位
+uint8 Mark_1s=0;                   //1s计时标记位
+uint8 Send_Estop_to_handwheel=1;   //给手轮发送紧急停止消息，1：发送，0：不发送
+uint8 Clear_Estop_massage=0;       //清除手轮紧急停止消息；1：清除，0：不清除
+uint8 Estop_button=Estop_Off;      //紧急停止按钮
 
 
 /******************************************************************************************************/
@@ -41,8 +46,8 @@ uint8 Mark_60ms=0;                 //100ms计时标记位
 /*******************************************************************************************************/
 int main()                                                                          
  { 
-//  uint16 time_conuter=0;	
-  char bufrec[20];
+  uint16 time_conuter=0;	
+  char bufrec[20],buf1[20];
   uint16 Recdata1,Recdata2,RecPulses;	 
 	uint8  check_time=0;      //脉冲同步检查次数
 	 
@@ -53,10 +58,10 @@ int main()
 	queue_reset();            //清空串口接收缓冲区 
 	TIME2_Init();             //定时器2初始化
 	Key_Init();               //按键初始化	
-	EXTIX_Init();             //紧急停止中断初始化
+	//EXTIX_Init();             //紧急停止中断初始化
 	//TIME3_Init();             //定时器3初始化(向主机询问坐标)
   TIME4_Init();             //定时器4初始化(计算手轮脉冲)
-   
+  IIC_Init();               //IIC初始化
 	delay_ms(300);            //延时等待串口屏初始化完毕,必须等待300ms
    
 	//Usart3_Init(115200);      //串口3初始化
@@ -70,46 +75,48 @@ int main()
 		//    1) 一般情况下，控制MCU向串口屏发送数据的周期大于100ms，就可以避免数据丢失的问题；
 		//    2) 如果仍然有数据丢失的问题，请判断串口屏的BUSY引脚，为高时不能发送数据给串口屏。
 		
-	while(Pulses_check)        //开机同步主机脉冲
-	{
-		
-		if(RX_Data[1] == CMD_UPDATE_MACH3_NUMBER)  //接收到坐标数据
-		{	
-			Recdata1=RX_Data[18];
-			Recdata2=RX_Data[19];			 
-      RecPulses= (Recdata1<<8)+Recdata2;  //获取脉冲值
-      if(TIM4->CNT==RecPulses)
-				check_time++;
-			else 
-				TIM4->CNT=RecPulses;
-      if(check_time>5)
-        Pulses_check=0;
-			
-      sprintf(bufrec,"%u",RecPulses);	
-			SetTextValue(0,23,(uchar *)bufrec);     //显示脉冲值			
-		}
-	}
+//	while(Pulses_check)        //开机同步主机脉冲
+//	{
+//		
+//		if(RX_Data[1] == CMD_UPDATE_MACH3_NUMBER)  //接收到坐标数据
+//		{	
+//			Recdata1=RX_Data[18];
+//			Recdata2=RX_Data[19];			 
+//      RecPulses= (Recdata1<<8)+Recdata2;  //获取脉冲值
+//      if(TIM4->CNT==RecPulses)
+//				check_time++;
+//			else 
+//				TIM4->CNT=RecPulses;
+//      if(check_time>5)
+//        Pulses_check=0;
+//			
+//      sprintf(bufrec,"%u",RecPulses);	
+//			SetTextValue(0,23,(uchar *)bufrec);     //显示脉冲值			
+//		}
+//	}
 	  
 		
 	while(1)                                                                        
-	{
-		//time_conuter++;
-	
-		Pulses_Count_Process();               //计算手轮脉冲
-		Usart1_Rec_Data_handle();             //串口1（雕刻机数据）处理接收的数据 
-	  TFT_handle();                         //程序进入不同的工作页面,处理相关任务
+	{		
 		
-		if(Mark_20ms) 
+		Estop_Button_Scan();                  //紧急停止按钮扫描
+		if(Estop_button==Estop_Off)           //紧急停止按钮没有触发
 		{
-		  Key_scan();                         //手轮物理按键扫描
-		  TFT_command_analyse();              //分析TFT屏的命令，触发了什么按钮 			  
-			Mark_20ms=0;
-		}
-		if(Mark_60ms)                         //定时满60ms
-		{
-			TFT_Show_coordanate_value();        //显示工件坐标 
-			Work_state_control();               //雕刻机工作状态显示
-			Mark_60ms=0;
+      time_conuter++;	
+			Pulses_Count_Process();               //计算手轮脉冲
+			Usart1_Rec_Data_handle();             //串口1（雕刻机数据）处理接收的数据 
+			TFT_handle();                         //程序进入不同的工作页面,处理相关任务		
+			if(Mark_20ms) 
+			{
+				Key_scan();                         //手轮物理按键扫描
+				TFT_command_analyse();              //分析TFT屏的命令，触发了什么按钮 			  
+				Mark_20ms=0;
+			}
+			if(Mark_60ms)                         //定时满60ms
+			{
+				TFT_Show_coordanate_value();        //显示工件坐标 
+				Work_state_control();               //雕刻机工作状态显示
+				Mark_60ms=0;
 //			Usart1_Send_Data(10);
 //			if(Start_Download)
 //			{
@@ -120,12 +127,29 @@ int main()
 //					Download_Per++;
 //				}
 //		  }
-		}
+			}	
+			sprintf(buf1,"%d",time_conuter);  
+			SetTextValue(0,23,(uchar *)buf1);     //显示加工行数，需要向主机询问
+		} 
+		else
+		{							
+      if(Mark_1s)
+			{
+				Mark_1s=0;			
+				if(Send_Estop_to_handwheel)
+				{
+					SetTextValue(0,26,(uchar *)"紧急停止");     //显示紧急停止
+				}			
+				if(Clear_Estop_massage)
+				{
+					ClearTextValue(0,26);				
+				}
+				Send_Estop_to_handwheel= ~Send_Estop_to_handwheel;
+				Clear_Estop_massage= ~Clear_Estop_massage;
+			}	
+		}		
 		
-			
-    	
-//		sprintf(Working_line_buf,"%d",Pulses_counter);  
-//		SetTextValue(0,23,(uchar *)Working_line_buf);     //显示加工行数，需要向主机询问
-	}  
+	}
+	
 }
 

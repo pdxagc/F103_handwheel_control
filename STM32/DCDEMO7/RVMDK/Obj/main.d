@@ -27,3 +27,4 @@
 .\obj\main.o: ..\inc\tft.h
 .\obj\main.o: ..\inc\malloc.h
 .\obj\main.o: ..\inc\key.h
+.\obj\main.o: ..\inc\iic.h

@@ -7,7 +7,7 @@
 
   <Targets>
     <Target>
-      <TargetName>DCDEMO</TargetName>
+      <TargetName>HandWheel</TargetName>
       <ToolsetNumber>0x4</ToolsetNumber>
       <ToolsetName>ARM-ADS</ToolsetName>
       <pCCUsed>5060300::V5.06 update 3 (build 300)::ARMCC</pCCUsed>
@@ -337,7 +337,7 @@
               <MiscControls></MiscControls>
               <Define>USE_STDPERIPH_DRIVER, STM32F10X_MD</Define>
               <Undefine></Undefine>
-              <IncludePath>..\..\..\Libraries\CMSIS\Core\CM3;..\..\..\Libraries\STM32_USB-FS-Device_Driver\inc;..\..\..\Libraries\STM32F10x_StdPeriph_Driver\inc;..\..\..\Utilities\STM32_EVAL;..\..\..\Utilities\STM32_EVAL\STM3210B_EVAL;..\inc;..\inc;..\inc</IncludePath>
+              <IncludePath>..\..\..\Libraries\CMSIS\Core\CM3;..\..\..\Libraries\STM32_USB-FS-Device_Driver\inc;..\..\..\Libraries\STM32F10x_StdPeriph_Driver\inc;..\..\..\Utilities\STM32_EVAL;..\..\..\Utilities\STM32_EVAL\STM3210B_EVAL;..\inc;..\inc;..\inc;..\inc;..\inc</IncludePath>
             </VariousControls>
           </Cads>
           <Aads>
@@ -530,6 +530,16 @@
               <FileName>key.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\src\key.c</FilePath>
+            </File>
+            <File>
+              <FileName>IIC.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\src\IIC.c</FilePath>
+            </File>
+            <File>
+              <FileName>24C02.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\src\24C02.c</FilePath>
             </File>
           </Files>
         </Group>

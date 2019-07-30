@@ -14,10 +14,11 @@ extern uint8 Mark_10ms;                 //20ms¼ÆÊ±±ê¼ÇÎ»
 extern uint8 Mark_10ms_Count;
 extern uint8 Mark_20ms;                 //20ms¼ÆÊ±±ê¼ÇÎ»
 extern uint8 Mark_20ms_Count;           //20ms¼ÆÊ±Òç³öÍ³¼ÆÎ»
-extern uint8 Mark_60ms;                //100ms¼ÆÊ±±ê¼ÇÎ
-//uint8 Counter_Dir=0;          //¼ÆÊý·½Ïò,0:Õý×ª£¬1£º·´×ª
+extern uint8 Mark_60ms;                 //100ms¼ÆÊ±±ê¼ÇÎ»
+extern uint8 Mark_1s;                   //1s¼ÆÊ±±ê¼ÇÎ»
+
 uint8 TIME3_Counter=0;         //¶¨Ê±Æ÷3Òç³ö¼ÆÊý
-uint16 ABCD=1;
+
 
 
 /*******************************************************************************  
@@ -148,8 +149,13 @@ void TIM2_IRQHandler(void)
 //		if(Mark_10ms_Count == 2)
 //		{
 		  Mark_20ms = 1;
-			Mark_10ms_Count = 0;
+			Mark_10ms_Count++;
 			Mark_20ms_Count++;
+		  if(Mark_10ms_Count==20)
+			{
+			  Mark_1s=1;
+				Mark_10ms_Count=0;
+			}
 			if(Mark_20ms_Count == 3)
 			{
 				Mark_60ms = 1;
@@ -214,28 +220,6 @@ void Puless_count_clear(void)
 	
 }
 
-//ËùÓÐÖáÂö³åÊýÁ¿ÇåÁã
-void Pulses_num_Clear(void)
-{
-  Puless_count_clear();
-	
-	control_panel_pram.X_value=0;
-	control_panel_pram.Y_value=0;
-	control_panel_pram.Z_value=0;
-	control_panel_pram.A_value=0;
-	control_panel_pram.B_value=0;
-	
-	control_panel_pram.Temp_save_Xvalue=0;
-  control_panel_pram.Temp_save_Yvalue=0;
-	control_panel_pram.Temp_save_Zvalue=0;
-	control_panel_pram.Temp_save_Avalue=0;
-	control_panel_pram.Temp_save_Bvalue=0;
-	
-	return_workpiece_zero.Re_X_Value=0;
-	return_workpiece_zero.Re_Y_Value=0;
-	return_workpiece_zero.Re_Z_Value=0;
-	return_workpiece_zero.Re_A_Value=0;
-	return_workpiece_zero.Re_B_Value=0;
-}
+
 
 

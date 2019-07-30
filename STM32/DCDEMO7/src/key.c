@@ -5,7 +5,8 @@
 #include "ulitity.h"
 
 
-extern uint8 Press_button;
+extern uint8 Estop_button;         //紧急停止按钮
+extern uint8 Press_button;         //记录哪个按钮触发(需要把按键发送给雕刻机)
 extern Control_Panel_Pram control_panel_pram;      //声明控制面板相关参数的结构体变量
 
 
@@ -35,6 +36,10 @@ void Key_Init(void)
 	GPIO_InitStructure.GPIO_Pin  = GPIO_Pin_1;    //PB1  B轴按钮
 	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_IPU; //设置成上拉输入
  	GPIO_Init(GPIOB, &GPIO_InitStructure);        //初始化GPIOB.1
+	
+	GPIO_InitStructure.GPIO_Pin  = GPIO_Pin_12;    //PB12  急停按钮
+	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_IPU; //PB12设置成上拉输入	  
+	GPIO_Init(GPIOB, &GPIO_InitStructure);        //初始化GPIOB12
 
 }
 
@@ -42,11 +47,12 @@ void Key_Init(void)
 //按键扫描函数
 void Key_scan(void)
 {
-  uint8 Last_time_Axis_mode;
+	static uint8 public_button_unpressed=1;  //按键松开标志  
+  uint8 Last_time_Axis_mode;          //记录上一时刻是那个轴处于选中状态
 	
-	if(key_X == 0||key_Y == 0||key_Z == 0||key_A == 0||key_B == 0)  //有按键触发
+	if(public_button_unpressed && (key_X == 0||key_Y == 0||key_Z == 0||key_A == 0||key_B == 0)) //有按键触发
 	{
-		
+		public_button_unpressed=0;
 		Last_time_Axis_mode = Axis_Gets();   //获取上次选中轴
 		delay_ms(10);     //去抖动 
 		if(key_X == 0)    //X轴按钮
@@ -88,11 +94,39 @@ void Key_scan(void)
 			{
 			  Show_B_Axis_State();  //显示B轴选中状态
 			}
-		}
-		
- 
+		}		
 	}
-
+	else if(key_X && key_Y && key_Z && key_A && key_B)
+	{
+	  public_button_unpressed=1;
+	}
 
 }
 
+
+//紧急停止按钮扫描
+void Estop_Button_Scan(void)
+{
+	static uint8 Estop_button_unpressed=1;         //紧急停止按钮松开标志位
+  if(Estop_button_unpressed && key_Estop == 0)   //急停轴按钮触发
+	{
+		Estop_button_unpressed=0;
+		delay_ms(10);               //去抖动 
+		if(key_Estop == 0)
+		{
+			Press_button = CMD_EStop;
+			if(Estop_button==Estop_Off)
+				Estop_button=Estop_On;
+			else
+			{
+				Estop_button=Estop_Off;
+				ClearTextValue(0,26);
+			}
+	  }
+	}
+	else if(key_Estop == 1)
+	{
+	  Estop_button_unpressed=1;
+	}
+
+}
