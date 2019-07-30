@@ -1,14 +1,19 @@
 #include "key.h"
 #include "stm32f10x_gpio.h"
 #include "hmi_user_uart.h"
+#include "hmi_driver.h"
 #include "tft.h"
 #include "ulitity.h"
+#include "stdio.h"
+#include "iic.h"
+#include "24c02.h"
+
 
 
 extern uint8 Estop_button;         //紧急停止按钮
 extern uint8 Press_button;         //记录哪个按钮触发(需要把按键发送给雕刻机)
 extern Control_Panel_Pram control_panel_pram;      //声明控制面板相关参数的结构体变量
-
+extern uint8 Estop_Press_time;
 
 //按键初始化函数
 void Key_Init(void)
@@ -107,7 +112,9 @@ void Key_scan(void)
 //紧急停止按钮扫描
 void Estop_Button_Scan(void)
 {
-	static uint8 Estop_button_unpressed=1;         //紧急停止按钮松开标志位
+//	uint8 Readvalue;
+//	char buf[20];
+	static uint8 Estop_button_unpressed=1;         //紧急停止按钮松开标志位,1:松开，0：按下
   if(Estop_button_unpressed && key_Estop == 0)   //急停轴按钮触发
 	{
 		Estop_button_unpressed=0;
@@ -122,6 +129,14 @@ void Estop_Button_Scan(void)
 				Estop_button=Estop_Off;
 				ClearTextValue(0,26);
 			}
+			
+			//测试24c02
+//			Estop_Press_time++;
+//			AT24CXX_WriteOneByte(0,Estop_Press_time);
+//			delay_ms(10);  
+//			Readvalue=AT24CXX_ReadOneByte(0);
+//			sprintf(buf,"%u",Readvalue);	
+//			SetTextValue(0,23,(uchar *)buf);
 	  }
 	}
 	else if(key_Estop == 1)

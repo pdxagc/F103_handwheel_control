@@ -5,8 +5,8 @@
 
    	   		   
 //IO方向设置
-#define SDA_IN()  {GPIOB->CRH&=0XFFFF0FFF;GPIOC->CRH|=8<<12;}
-#define SDA_OUT() {GPIOB->CRH&=0XFFFF0FFF;GPIOC->CRH|=3<<12;}
+#define SDA_IN()  {GPIOB->CRH&=0XFFFF0FFF;GPIOB->CRH|=8<<12;}
+#define SDA_OUT() {GPIOB->CRH&=0XFFFF0FFF;GPIOB->CRH|=3<<12;}
 
 //位带操作,实现51类似的GPIO控制功能
 //具体实现思想,参考<<CM3权威指南>>第五章(87页~92页).
@@ -72,11 +72,7 @@ uint8 IIC_Read_Byte(unsigned char ack);//IIC读取一个字节
 uint8 IIC_Wait_Ack(void); 				//IIC等待ACK信号
 void IIC_Ack(void);					//IIC发送ACK信号
 void IIC_NAck(void);				//IIC不发送ACK信号
-
-void IIC_Write_One_Byte(uint8 daddr,uint8 addr,uint8 data);
-uint8 IIC_Read_One_Byte(uint8 daddr,uint8 addr);	  
-
-
+  
 
 
 

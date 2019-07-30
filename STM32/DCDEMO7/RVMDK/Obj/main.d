@@ -28,3 +28,4 @@
 .\obj\main.o: ..\inc\malloc.h
 .\obj\main.o: ..\inc\key.h
 .\obj\main.o: ..\inc\iic.h
+.\obj\main.o: ..\inc\24c02.h

@@ -17,6 +17,7 @@
 #include "malloc.h"
 #include "key.h"
 #include "iic.h"
+#include "24c02.h"
 
 
 
@@ -37,7 +38,7 @@ uint8 Mark_1s=0;                   //1s计时标记位
 uint8 Send_Estop_to_handwheel=1;   //给手轮发送紧急停止消息，1：发送，0：不发送
 uint8 Clear_Estop_massage=0;       //清除手轮紧急停止消息；1：清除，0：不清除
 uint8 Estop_button=Estop_Off;      //紧急停止按钮
-
+uint8 Estop_Press_time=0;          //紧急按钮按下次数统计
 
 /******************************************************************************************************/
 /*!                                                                                 
@@ -58,7 +59,7 @@ int main()
 	queue_reset();            //清空串口接收缓冲区 
 	TIME2_Init();             //定时器2初始化
 	Key_Init();               //按键初始化	
-	//EXTIX_Init();             //紧急停止中断初始化
+	//EXTIX_Init();             //中断初始化
 	//TIME3_Init();             //定时器3初始化(向主机询问坐标)
   TIME4_Init();             //定时器4初始化(计算手轮脉冲)
   IIC_Init();               //IIC初始化
@@ -94,7 +95,14 @@ int main()
 //			SetTextValue(0,23,(uchar *)bufrec);     //显示脉冲值			
 //		}
 //	}
-	  
+
+
+
+//   while(AT24CXX_Check()) 
+//	 {
+//	   SetTextValue(0,26,(uchar *)"检测失败");	 
+//	 }
+//	   SetTextValue(0,26,(uchar *)"检测成功");
 		
 	while(1)                                                                        
 	{		
@@ -128,8 +136,8 @@ int main()
 //				}
 //		  }
 			}	
-			sprintf(buf1,"%d",time_conuter);  
-			SetTextValue(0,23,(uchar *)buf1);     //显示加工行数，需要向主机询问
+//			sprintf(buf1,"%d",time_conuter);  
+//			SetTextValue(0,23,(uchar *)buf1);     //显示加工行数，需要向主机询问
 		} 
 		else
 		{							

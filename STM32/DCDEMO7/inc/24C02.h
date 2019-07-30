@@ -16,8 +16,11 @@
 
 uint8 AT24CXX_ReadOneByte(uint16 ReadAddr);							//指定地址读取一个字节
 void AT24CXX_WriteOneByte(uint16 WriteAddr,uint8 DataToWrite);		//指定地址写入一个字节
+
 void AT24CXX_WriteLenByte(uint16 WriteAddr,uint32 DataToWrite,uint8 Len);//指定地址开始写入指定长度的数据
 uint32 AT24CXX_ReadLenByte(uint16 ReadAddr,uint8 Len);					//指定地址开始读取指定长度数据
+
+uint8 AT24CXX_Check(void);
 void AT24CXX_Write(u16 WriteAddr,uint8 *pBuffer,uint16 NumToWrite);	//从指定地址开始写入指定长度的数据
 void AT24CXX_Read(u16 ReadAddr,uint8 *pBuffer,uint16 NumToRead);   	//从指定地址开始读出指定长度的数据
 

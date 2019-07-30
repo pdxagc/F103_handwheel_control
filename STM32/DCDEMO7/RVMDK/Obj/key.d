@@ -15,6 +15,9 @@
 .\obj\key.o: ..\..\..\Libraries\STM32F10x_StdPeriph_Driver\inc\misc.h
 .\obj\key.o: ..\inc\hmi_user_uart.h
 .\obj\key.o: ..\inc\stm32f10x_it.h
-.\obj\key.o: ..\inc\tft.h
 .\obj\key.o: ..\inc\hmi_driver.h
+.\obj\key.o: ..\inc\tft.h
 .\obj\key.o: ..\inc\ulitity.h
+.\obj\key.o: C:\Keil_v5\ARM\ARMCC\Bin\..\include\stdio.h
+.\obj\key.o: ..\inc\iic.h
+.\obj\key.o: ..\inc\24c02.h

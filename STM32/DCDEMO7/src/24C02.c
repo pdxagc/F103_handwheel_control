@@ -14,19 +14,21 @@ uint8 AT24CXX_ReadOneByte(uint16 ReadAddr)
 		IIC_Send_Byte(0XA0);	   //发送写命令
 		IIC_Wait_Ack();
 		IIC_Send_Byte(ReadAddr>>8);//发送高地址
-		IIC_Wait_Ack();		 
+		//IIC_Wait_Ack();		 
 	}
 	else 
 		IIC_Send_Byte(0XA0+((ReadAddr/256)<<1));   //发送器件地址0XA0,写数据 	 
 
 	IIC_Wait_Ack(); 
-    IIC_Send_Byte(ReadAddr%256);   //发送低地址
-	IIC_Wait_Ack();	    
+  IIC_Send_Byte(ReadAddr%256);   //发送低地址
+	IIC_Wait_Ack();	 
+
+	//开始读数据
 	IIC_Start();  	 	   
 	IIC_Send_Byte(0XA1);           //进入接收模式			   
 	IIC_Wait_Ack();	 
-    temp=IIC_Read_Byte(0);		   
-    IIC_Stop();//产生一个停止条件	    
+  temp=IIC_Read_Byte(0);		   
+  IIC_Stop();//产生一个停止条件	    
 	return temp;
 }
 //在AT24CXX指定地址写入一个数据
@@ -43,15 +45,16 @@ void AT24CXX_WriteOneByte(uint16 WriteAddr,uint8 DataToWrite)
  	}
 	else
 	{
-		IIC_Send_Byte(0XA0+((WriteAddr/256)<<1));   //发送器件地址0XA0,写数据 
+		IIC_Send_Byte(0XA0+((WriteAddr/256)<<1));   //发送器件地址0XA0,写数据 //器件地址+数据地址高字节(数据地址一个字节表示不完，会挤到器件地址里面)
 	}	 
 	IIC_Wait_Ack();	   
-    IIC_Send_Byte(WriteAddr%256);   //发送低地址
-	IIC_Wait_Ack(); 	 										  		   
+  IIC_Send_Byte(WriteAddr%256);   //发送低地址
+	IIC_Wait_Ack(); 
+  //开始写数据	
 	IIC_Send_Byte(DataToWrite);     //发送字节							   
 	IIC_Wait_Ack();  		    	   
-    IIC_Stop();//产生一个停止条件 
-	delay_ms(10);	 
+  IIC_Stop();    //产生一个停止条件 
+	delay_ms(10);	 //演示10ms,也叫写周期
 }
 //在AT24CXX里面的指定地址开始写入长度为Len的数据
 //该函数用于写入16bit或者32bit的数据.
@@ -92,12 +95,14 @@ uint8 AT24CXX_Check(void)
 {
 	uint8 temp;
 	temp=AT24CXX_ReadOneByte(255);//避免每次开机都写AT24CXX			   
-	if(temp==0X55)return 0;		   
+	if(temp==0X55)
+		return 0;		   
 	else//排除第一次初始化的情况
 	{
 		AT24CXX_WriteOneByte(255,0X55);
-	    temp=AT24CXX_ReadOneByte(255);	  
-		if(temp==0X55)return 0;
+	  temp=AT24CXX_ReadOneByte(255);	  
+		if(temp==0X55)
+			return 0;
 	}
 	return 1;											  
 }
