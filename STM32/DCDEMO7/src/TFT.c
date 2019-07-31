@@ -11,6 +11,7 @@
 #include "cmd_queue.h"
 #include "malloc.h"
 #include "string.h"
+#include "24c02.h"
 
 
 Speed_Control Speed;
@@ -74,7 +75,7 @@ Jump_Work_Set jump_work_set;               //声明跳行加工相关参数的结构体变量
 void TFT_command_analyse(void)
 {
 	qsize  size = 0;                                             //指令长度 
-  size = queue_find_cmd(cmd_buffer,CMD_MAX_SIZE);              //接收到LCD屏的数据，从USART1的指令缓冲区cmd_buffer中获取一条指令，得到指令长度       
+  size = queue_find_cmd(cmd_buffer,CMD_MAX_SIZE);              //接收到LCD屏的数据，从USART2的指令缓冲区cmd_buffer中获取一条指令，得到指令长度       
 	if(size>0 && cmd_buffer[1]!=0x07)                            //接收到指令 ，及判断是否为开机提示
 	{                                                                           
 		Usart2_Receive_data_handle((PCTRL_MSG)cmd_buffer, size);   //指令分析处理 ，标记应该进入哪个Work_Page_Status，标记相应的操作位
@@ -115,14 +116,13 @@ void Pulses_Count_Process(void)
 *参数：Work_Page_Status ：手轮当前所在的工作页面
 *
 *************************************************************/
-void TFT_handle(void)
+void TFT_Page_handle(void)
 {
 	switch(Work_Page_Status)
 	{	
 		case Working_Page: //*********************************************************加工页面***************************************************************************************************
 		{	
-			
-			//TFT_Show_coordanate_value();		                  //串口屏显示工件和机械坐标	
+			                           
 			Spindle_and_Work_Speed_Key_Process();	           	//加工中心主轴速度和加工速度按钮处理
 	
 			//SetTextValue(0,21,(uchar *)file_name);          //显示正在加载的文件名	
@@ -159,7 +159,6 @@ void TFT_handle(void)
 		case ControlPanel_Page:  //******************************************************控制面板页面*****************************************************************************************
 		{	
 			//Get_Pulses_num();                                   //计算脉冲个数 
-		  //TFT_Show_coordanate_value();		                    //串口屏显示工件和机械坐标
 			
 			//SetTextValue(2,27,(uchar *)file_name);            //显示正在加载的文件名	         				
 			//sprintf(Working_line_buf,"%d",Pulses_counter);  
@@ -1432,9 +1431,10 @@ void Power_On_Set(void)
 	for(i=0;i<50;i++)
 	{
 		SetProgressValue(17,3,i*2);     //设置进度条的值
-		delay_ms(5);                  //延时0.05秒
+		delay_ms(5);                    //延时0.05秒
 	}
-	SetScreen(0);           //切换到加工页面
+	SetScreen(0);                    //切换到加工页面
+	//SetTouchPaneOption(1,1,0,0);     //触摸屏设置
 	delay_ms(10);
 	
 	SetTextValue(0,27,"G54");        //设置当前坐标值：G54
@@ -1478,15 +1478,15 @@ void Power_On_Set(void)
 }
 
 //设置页面几个参数值获取（断电保存在flash）
-void Setting_page_pram_get(void)
+void Get_Setting_page_pram(void)
 {
-	pram_status.Voice_last_status=FlashRead(START_ADDR1);
+	pram_status.Voice_last_status=AT24CXX_ReadOneByte(0);
 	pram_status.voice_button_status=pram_status.Voice_last_status;            //设置语音提醒模式
-	pram_status.Safe_Z_last_status=FlashRead(START_ADDR2);
+	pram_status.Safe_Z_last_status=AT24CXX_ReadOneByte(1);
 	pram_status.Safe_Z_button_satus=pram_status.Safe_Z_last_status;           //设置安全Z模式
-	pram_status.Auto_Knife_last_status=FlashRead(START_ADDR3);
+	pram_status.Auto_Knife_last_status=AT24CXX_ReadOneByte(2);
 	pram_status.Auto_Knife_button_status=pram_status.Auto_Knife_last_status;  //设置自动对刀模式
-	pram_status.Unit_Change_last_status=FlashRead(START_ADDR4);
+	pram_status.Unit_Change_last_status=AT24CXX_ReadOneByte(3);
 	pram_status.Unit_Change_button_status=pram_status.Unit_Change_last_status; //设置单位模式
 }
 
@@ -1529,7 +1529,8 @@ void Speaker_Key_Process(uint8  state)
 		 SetButtonValue(1,27,0);
      pram_status.Voice_last_status=voice_on;	
 	}
-	FLASH_WriteByte(START_ADDR1,(uint16)pram_status.Voice_last_status);
+	AT24CXX_WriteOneByte(0,pram_status.Voice_last_status);
+//	FLASH_WriteByte(START_ADDR1,(uint16)pram_status.Voice_last_status);
 }
 //设置页面安全Z按钮触发后处理程序
 void Safe_Z_process(uint8 state)
@@ -1546,7 +1547,8 @@ void Safe_Z_process(uint8 state)
 	  pram_status.Safe_Z_last_status=0;
 //		Usart_SendString(USART2,"Safe_z:mode1"); 
 	}
-	FLASH_WriteByte(START_ADDR2,(uint16)pram_status.Safe_Z_last_status);
+	AT24CXX_WriteOneByte(1,pram_status.Safe_Z_last_status);
+//	FLASH_WriteByte(START_ADDR2,(uint16)pram_status.Safe_Z_last_status);
 }
 //设置页面自动对刀按钮触发后处理程序
 void Auto_Knife_process(uint8 state)
@@ -1563,7 +1565,8 @@ void Auto_Knife_process(uint8 state)
 	  pram_status.Auto_Knife_last_status=0;
 //		Usart_SendString(USART2,"Auto_Knife:mode2");
 	}
-	FLASH_WriteByte(START_ADDR3,(uint16)pram_status.Auto_Knife_last_status);
+	AT24CXX_WriteOneByte(2,pram_status.Auto_Knife_last_status);
+//	FLASH_WriteByte(START_ADDR3,(uint16)pram_status.Auto_Knife_last_status);
 }
 //设置页面单位切换按钮触发后处理程序
 void Unit_Change_process(uint8 state)
@@ -1580,7 +1583,8 @@ void Unit_Change_process(uint8 state)
 	  pram_status.Unit_Change_last_status=0;
 //		Usart_SendString(USART2,"Unit:mode1");
 	}
-  FLASH_WriteByte(START_ADDR4,(uint16)pram_status.Unit_Change_last_status);
+	AT24CXX_WriteOneByte(3,pram_status.Unit_Change_last_status);
+//  FLASH_WriteByte(START_ADDR4,(uint16)pram_status.Unit_Change_last_status);
 
 }
 

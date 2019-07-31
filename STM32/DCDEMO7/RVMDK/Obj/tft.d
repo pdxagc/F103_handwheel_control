@@ -26,3 +26,4 @@
 .\obj\tft.o: ..\inc\cmd_queue.h
 .\obj\tft.o: ..\inc\malloc.h
 .\obj\tft.o: C:\Keil_v5\ARM\ARMCC\Bin\..\include\string.h
+.\obj\tft.o: ..\inc\24c02.h

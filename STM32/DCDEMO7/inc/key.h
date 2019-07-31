@@ -21,6 +21,9 @@ void Key_scan(void);
 //紧急停止按钮扫描
 void Estop_Button_Scan(void);
 
+//紧急按钮触发处理函数
+void Estop_button_process(void);
+
 
 
 #endif

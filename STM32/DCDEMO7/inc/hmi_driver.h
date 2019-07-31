@@ -463,6 +463,9 @@ void SetTextValue(uint16 screen_id,uint16 control_id,uchar *str);
 */
 void ClearTextValue(uint16 screen_id,uint16 control_id);
 
+//´¥ÃþÆÁÊ¹ÄÜ¿ØÖÆ
+void TouchScreenControl(uint8 value);
+
 
 #if FIRMWARE_VER>=908
 

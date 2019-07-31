@@ -30,13 +30,16 @@ uint8 Pulses_check=1;              //脉冲同步次数标志位
 
 
 uint8 Mark_10ms=0;                 //10ms计时标记位
-uint8 Mark_10ms_Count=0;           //10ms溢出次数统计
+uint8 Mark_10ms_Count;
 uint8 Mark_20ms=0;                 //20ms计时标记位
-uint8 Mark_20ms_Count=0;           //20ms溢出次数统计
+uint8 Mark_20ms_Count;
+uint8 Mark_30ms=0;                 //30ms计时标记位
 uint8 Mark_60ms=0;                 //60ms计时标记位
-uint8 Mark_1s=0;                   //1s计时标记位
+uint8 Mark_500ms=0;                //500ms计时标记位
+
 uint8 Send_Estop_to_handwheel=1;   //给手轮发送紧急停止消息，1：发送，0：不发送
 uint8 Clear_Estop_massage=0;       //清除手轮紧急停止消息；1：清除，0：不清除
+
 uint8 Estop_button=Estop_Off;      //紧急停止按钮
 uint8 Estop_Press_time=0;          //紧急按钮按下次数统计
 
@@ -69,7 +72,7 @@ int main()
 	
 	 
 	Power_On_Set();                 //串口屏开机动画和参数初始化设置	
-	Setting_page_pram_get();        //获取串口屏设置页面相关参数值（保存在flash）	
+	Get_Setting_page_pram();        //获取串口屏设置页面相关参数值（保存在flash）	
 	Return_last_status();           //恢复上一次串口屏设置页面相关参数值
 
 		//    MCU不要频繁向串口屏发送数据，否则串口屏的内部缓存区会满，从而导致数据丢失(缓冲区大小：标准型8K，基本型4.7K)
@@ -96,7 +99,7 @@ int main()
 //		}
 //	}
 
-
+   
 
 //   while(AT24CXX_Check()) 
 //	 {
@@ -105,26 +108,31 @@ int main()
 //	   SetTextValue(0,26,(uchar *)"检测成功");
 		
 	while(1)                                                                        
-	{		
+	{				
+//		time_conuter++;	
 		
-		Estop_Button_Scan();                  //紧急停止按钮扫描
-		if(Estop_button==Estop_Off)           //紧急停止按钮没有触发
+		Pulses_Count_Process();               //计算手轮脉冲
+		 
+		TFT_Page_handle();                         //程序进入不同的工作页面,处理相关任务		
+		
+		
+		if(Mark_10ms)
 		{
-      time_conuter++;	
-			Pulses_Count_Process();               //计算手轮脉冲
-			Usart1_Rec_Data_handle();             //串口1（雕刻机数据）处理接收的数据 
-			TFT_handle();                         //程序进入不同的工作页面,处理相关任务		
-			if(Mark_20ms) 
-			{
-				Key_scan();                         //手轮物理按键扫描
-				TFT_command_analyse();              //分析TFT屏的命令，触发了什么按钮 			  
-				Mark_20ms=0;
-			}
-			if(Mark_60ms)                         //定时满60ms
-			{
-				TFT_Show_coordanate_value();        //显示工件坐标 
-				Work_state_control();               //雕刻机工作状态显示
-				Mark_60ms=0;
+			Estop_button_process();               //紧急按钮触发处理函数
+			Usart1_Rec_Data_handle();             //串口1（雕刻机数据）处理接收的数据
+		  Mark_10ms=0;
+		}
+		if(Mark_20ms) 
+		{
+			Key_scan();                         //手轮物理按键扫描
+			TFT_command_analyse();              //分析TFT屏的命令，触发了什么按钮 			  
+			Mark_20ms=0;
+		}
+		if(Mark_60ms)                         //定时满60ms
+		{
+			TFT_Show_coordanate_value();        //显示工件坐标（机械坐标待增加） 
+			Work_state_control();               //雕刻机工作状态显示（未增加蓝牙，WiFi状态）
+			Mark_60ms=0;
 //			Usart1_Send_Data(10);
 //			if(Start_Download)
 //			{
@@ -135,27 +143,10 @@ int main()
 //					Download_Per++;
 //				}
 //		  }
-			}	
+		}	
 //			sprintf(buf1,"%d",time_conuter);  
 //			SetTextValue(0,23,(uchar *)buf1);     //显示加工行数，需要向主机询问
-		} 
-		else
-		{							
-      if(Mark_1s)
-			{
-				Mark_1s=0;			
-				if(Send_Estop_to_handwheel)
-				{
-					SetTextValue(0,26,(uchar *)"紧急停止");     //显示紧急停止
-				}			
-				if(Clear_Estop_massage)
-				{
-					ClearTextValue(0,26);				
-				}
-				Send_Estop_to_handwheel= ~Send_Estop_to_handwheel;
-				Clear_Estop_massage= ~Clear_Estop_massage;
-			}	
-		}		
+				
 		
 	}
 	

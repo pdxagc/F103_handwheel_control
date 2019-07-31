@@ -389,15 +389,15 @@ void Usart1_Rec_Data_handle (void)
 
 	uint8 command;
 	uint16 Recdata1,Recdata2;
-	if(ready2read)                    //检验通过
+	if(ready2read)                    //检验通过，收到了主机数据
 	{
 		command=RX_Data[1];
 		switch(command)
 		{
-			case CMD_ASK_SLAVE:           //发送数据  //#define CMD_ASK_SLAVE 29                 //主机请求数据
+			case CMD_ASK_SLAVE:           //给主机发送数据  //#define CMD_ASK_SLAVE 29                 //主机请求数据
 				Usart1_Send_Data(10);
 			break;			
-			case CMD_UPDATE_MACH3_NUMBER: //接收到坐标  
+			case CMD_UPDATE_MACH3_NUMBER: //接收到主机坐标数据  
 			{
 				Recdata1=RX_Data[2];
 				Recdata2=RX_Data[4];

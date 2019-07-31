@@ -630,7 +630,7 @@ void GUI_AreaInycolor(uint16 x0, uint16 y0, uint16 x1,uint16 y1 )
     END_CMD();
 }
 /*! 
-*  \brief   触摸屏设置
+*  \brief   触摸屏设置  
 *  \param enable 触摸使能
 *  \param beep_on 触摸蜂鸣器
 *  \param work_mode 触摸工作模式：0按下就上传，1松开才上传，2不断上传坐标值，3按下和松开均上传数据
@@ -2051,3 +2051,13 @@ void ShowControl(uint16 screen_id,uint16 control_id,uint8 value)
     TX_8(value);
     END_CMD();
 }
+
+//触摸屏使能控制,0:禁止更新，1：使能更新
+void TouchScreenControl(uint8 value)
+{
+  BEGIN_CMD();
+	TX_8(0XB3);
+	TX_8(value);
+	END_CMD();
+}
+

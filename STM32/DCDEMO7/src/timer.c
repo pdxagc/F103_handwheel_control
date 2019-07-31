@@ -13,9 +13,10 @@ extern Devide_Set devide_set;
 extern uint8 Mark_10ms;                 //20ms计时标记位
 extern uint8 Mark_10ms_Count;
 extern uint8 Mark_20ms;                 //20ms计时标记位
-extern uint8 Mark_20ms_Count;           //20ms计时溢出统计位
-extern uint8 Mark_60ms;                 //100ms计时标记位
-extern uint8 Mark_1s;                   //1s计时标记位
+extern uint8 Mark_20ms_Count;
+extern uint8 Mark_30ms;                 //30ms计时标记位
+extern uint8 Mark_60ms;                 //60ms计时标记位
+extern uint8 Mark_500ms;                //500ms计时标记位
 
 uint8 TIME3_Counter=0;         //定时器3溢出计数
 
@@ -23,7 +24,7 @@ uint8 TIME3_Counter=0;         //定时器3溢出计数
 
 /*******************************************************************************  
 * 函 数 名         : TIME2_Init  
-* 函数功能         :  TIME2初始化  ,//20ms  刷新LCD屏数据
+* 函数功能         :  TIME2初始化  ,//10ms定时中断
 * 输    入         : 无  
 * 输    出         : 无  
 *******************************************************************************/ 
@@ -35,7 +36,7 @@ void TIME2_Init(void)
 	RCC_APB1PeriphClockCmd(RCC_APB1Periph_TIM2, ENABLE);     //使能TIM2时钟 
 	
 	//配置定时器3
-	TIM_TimeBaseStructure.TIM_Period = 199;                    //设置自动重装载寄存器周期的值
+	TIM_TimeBaseStructure.TIM_Period = 99;                    //设置自动重装载寄存器周期的值
 	TIM_TimeBaseStructure.TIM_Prescaler =7199;                  //设置时钟频率除数的预分频值
 	TIM_TimeBaseStructure.TIM_ClockDivision = TIM_CKD_DIV1;     //设置时钟分割
 	TIM_TimeBaseStructure.TIM_CounterMode = TIM_CounterMode_Up; //TIM 向上计数
@@ -144,24 +145,29 @@ void TIM2_IRQHandler(void)
 	if (TIM_GetITStatus(TIM2, TIM_IT_Update) != RESET) //检查 TIM2 更新中断发生与否
 	{
 		TIM_ClearITPendingBit(TIM2, TIM_IT_Update ); //清除 TIM2 更新中断标志
-//	  Mark_10ms=1;
-//    Mark_10ms_Count++;		//10ms，查询LCD命令
-//		if(Mark_10ms_Count == 2)
-//		{
+	  Mark_10ms=1;
+    Mark_10ms_Count++;		//10ms，查询LCD命令
+		if(Mark_10ms_Count%2==0)
+		{
 		  Mark_20ms = 1;
-			Mark_10ms_Count++;
 			Mark_20ms_Count++;
-		  if(Mark_10ms_Count==20)
+			if(Mark_20ms_Count==25)
 			{
-			  Mark_1s=1;
-				Mark_10ms_Count=0;
+			  Mark_500ms=1;
+				Mark_20ms_Count=0;
 			}
-			if(Mark_20ms_Count == 3)
-			{
-				Mark_60ms = 1;
-				Mark_20ms_Count=0;			
-			}
-		
+		}
+		if(Mark_10ms_Count%3==0)
+		{
+			Mark_30ms=1;
+			Mark_10ms_Count=0;
+		}
+		if(Mark_10ms_Count%6==0)
+		{
+			Mark_60ms = 1;
+			Mark_10ms_Count=0;			
+		}
+	
 	}
 }
 

@@ -14,6 +14,9 @@ extern uint8 Estop_button;         //紧急停止按钮
 extern uint8 Press_button;         //记录哪个按钮触发(需要把按键发送给雕刻机)
 extern Control_Panel_Pram control_panel_pram;      //声明控制面板相关参数的结构体变量
 extern uint8 Estop_Press_time;
+extern uint8 Mark_500ms;                   //500ms计时标记位
+extern uint8 Send_Estop_to_handwheel;
+extern uint8 Clear_Estop_massage;
 
 //按键初始化函数
 void Key_Init(void)
@@ -59,7 +62,7 @@ void Key_scan(void)
 	{
 		public_button_unpressed=0;
 		Last_time_Axis_mode = Axis_Gets();   //获取上次选中轴
-		delay_ms(10);     //去抖动 
+		delay_ms(5);     //去抖动 
 		if(key_X == 0)    //X轴按钮
 		{
 			control_panel_pram.Axis_press = CMD_X_AXIS;
@@ -106,6 +109,7 @@ void Key_scan(void)
 	  public_button_unpressed=1;
 	}
 
+	Estop_Button_Scan();                  //紧急停止按钮扫描
 }
 
 
@@ -118,16 +122,20 @@ void Estop_Button_Scan(void)
   if(Estop_button_unpressed && key_Estop == 0)   //急停轴按钮触发
 	{
 		Estop_button_unpressed=0;
-		delay_ms(10);               //去抖动 
+		delay_ms(5);               //去抖动 
 		if(key_Estop == 0)
 		{
 			Press_button = CMD_EStop;
-			if(Estop_button==Estop_Off)
-				Estop_button=Estop_On;
-			else
+			if(Estop_button==Estop_Off)  //触发紧急停止按钮
 			{
+				Estop_button=Estop_On;
+				//TouchScreenControl(0);     //禁止触摸屏更新
+			}
+			else
+			{                          //关闭紧急停止按钮
 				Estop_button=Estop_Off;
 				ClearTextValue(0,26);
+				//TouchScreenControl(1);     //使能触摸屏更新
 			}
 			
 			//测试24c02
@@ -142,6 +150,31 @@ void Estop_Button_Scan(void)
 	else if(key_Estop == 1)
 	{
 	  Estop_button_unpressed=1;
-	}
+	} 
+	
+}
+
+
+//紧急按钮触发处理函数
+void Estop_button_process(void)
+{
+   if(Estop_button==Estop_On)           //紧急停止按钮触发
+		{							
+      if(Mark_500ms)
+			{
+				Mark_500ms=0;			
+				if(Send_Estop_to_handwheel)
+				{
+					SetTextValue(0,26,(uchar *)"紧急停止");     //显示紧急停止
+				}			
+				if(Clear_Estop_massage)
+				{
+					ClearTextValue(0,26);				
+				}
+				Send_Estop_to_handwheel= ~Send_Estop_to_handwheel;
+				Clear_Estop_massage= ~Clear_Estop_massage;
+				
+			}	
+		}
 
 }

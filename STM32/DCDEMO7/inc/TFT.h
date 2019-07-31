@@ -190,7 +190,7 @@ void TFT_command_analyse(void);
 void Pulses_Count_Process(void);
 
 //程序进入标记的工作页面，处理相关任务
-void TFT_handle(void);
+void TFT_Page_handle(void);
 
 /*! 
 *  \brief  消息处理流程
@@ -229,7 +229,7 @@ void XYZAB_button_reset(void);
 void Power_On_Set(void);
 
 //设置页面几个参数值获取（断电保存在flash）
-void Setting_page_pram_get(void);
+void Get_Setting_page_pram(void);
 
 //加工中心主轴速度和加工速度按钮处理
 void Spindle_and_Work_Speed_Key_Process(void);
