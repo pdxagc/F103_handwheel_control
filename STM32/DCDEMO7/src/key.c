@@ -17,6 +17,7 @@ extern uint8 Estop_Press_time;
 extern uint8 Mark_500ms;                   //500ms计时标记位
 extern uint8 Send_Estop_to_handwheel;
 extern uint8 Clear_Estop_massage;
+extern uint8 Light_mark_button;  
 
 //按键初始化函数
 void Key_Init(void)
@@ -70,6 +71,8 @@ void Key_scan(void)
 			{
 			  Show_X_Axis_State();   //显示X轴选中状态		
 			}
+			Light_mark_button++;
+				
 		}
 		else if(key_Y == 0)  //Y轴按钮
 		{
@@ -78,6 +81,7 @@ void Key_scan(void)
 			{	 
          Show_Y_Axis_State();  //显示Y轴选中状态
 			}
+			Light_mark_button++;
 		}
 		else if(key_Z == 0)  //Z轴按钮
 		{
@@ -86,6 +90,8 @@ void Key_scan(void)
 			{
 			   Show_Z_Axis_State();  //显示Z轴选中状态
 			}
+			
+			Light_mark_button++;
 		}
 		else if(key_A == 0)  //A轴按钮
 		{
@@ -94,6 +100,7 @@ void Key_scan(void)
 			{
 			  Show_A_Axis_State();  //显示A轴选中状态
 			}
+			Light_mark_button++;
 		}
 		else if(key_B == 0)  //B轴按钮
 		{
@@ -102,7 +109,9 @@ void Key_scan(void)
 			{
 			  Show_B_Axis_State();  //显示B轴选中状态
 			}
-		}		
+			Light_mark_button++;
+		}	
+    	
 	}
 	else if(key_X && key_Y && key_Z && key_A && key_B)
 	{
@@ -126,6 +135,7 @@ void Estop_Button_Scan(void)
 		if(key_Estop == 0)
 		{
 			Press_button = CMD_EStop;
+			Light_mark_button++;
 			if(Estop_button==Estop_Off)  //触发紧急停止按钮
 			{
 				Estop_button=Estop_On;

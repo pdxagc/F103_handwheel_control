@@ -31,7 +31,7 @@ hmi_user_uart.c中的串口发送接收函数共3个函数：
 #define PULSE_DIV 4
 
 extern uint16 Pulses_counter;
-extern uint8 Override_num;
+extern uint8 Multiple_num;
 extern uint8  TX_Data [30]; //the sending package
 extern uint8  RX_Data [30]; //the receiving package
 extern Control_Panel_Pram control_panel_pram;
@@ -41,9 +41,9 @@ uint8  RX_Busy=0;
 uint8  HC_Address, rxcounter, remaincounter; //this unit is this unit address, if change to master become 0000 
 uint8  ready2send; // bit is 1 while there is command to send
 uint8  ready2read;
-uint16  last_time_Pulses_number=0;    //记录上一次脉冲
-uint8  last_time_Override=0;  //记录倍率变化
-uint8  last_time_button=0;       //记录按键变化
+uint16 last_time_Pulses_number=0;  //记录上一次脉冲
+uint8  last_time_Multiple=0;       //记录倍率变化
+uint8  last_time_button=0;         //记录按键变化
 
 
 /*******************************************************************************  
@@ -101,7 +101,7 @@ void Usart1_Init(uint32 BaudRate)
 
     /* Enable USART */
     USART_Cmd(USART1, ENABLE);                                     //使能串口
-		RS485_TX_Set(0);		                                         //使能485接收模式
+		RS485_mode_control(0);		                                     //使能485接收模式
 }
 
 
@@ -209,7 +209,7 @@ void Usart3_Init(uint32 BaudRate)
     
 }
 
-
+//串口1中断函数
 void USART1_IRQHandler(void)
 {
 	if(USART1->SR &1<<3)
@@ -219,9 +219,10 @@ void USART1_IRQHandler(void)
 		i=USART1->DR;
 		return;
 	}
-	Usart1_Recieve_Process();
+	Usart1_Recieve_Process();  //接收数据
 }
 
+//串口2中断函数
 void USART2_IRQHandler(void)
 {
     if (USART_GetITStatus(USART2, USART_IT_RXNE) != RESET)
@@ -236,7 +237,7 @@ void USART2_IRQHandler(void)
 
 
 //RS485 模式控制.en:0,接收;1,发送.
-void RS485_TX_Set(uint8 en)
+void RS485_mode_control(uint8 en)
 {
 	if(en)
 		GPIO_SetBits(GPIOA, GPIO_Pin_7);
@@ -244,11 +245,11 @@ void RS485_TX_Set(uint8 en)
 		GPIO_ResetBits(GPIOA, GPIO_Pin_7);
 }
  
-/***************************************************************************
+/*
 *   \name   SendChar()（本函数是USART2专用）
 *   \brief  发送1个字节 
 *   \param  t 发送的字节
-*****************************************************************************/
+*/
 void  SendChar(uchar t)     
 {
     USART_SendData(USART2,t);
@@ -379,22 +380,22 @@ void Usart1_Recieve_Process (void)
 }
 /*
 #define CMD_ASK_SLAVE 29 (0x1D)                //主机请求数据
-#define CMD_RPY_HC_MPG1	36               //手轮发送数据
+#define CMD_RPY_HC_MPG1	36                     //手轮发送数据
 #define CMD_UPDATE_MACH3_NUMBER	41 (0x29)      //主机发送数据
 */
 
 //串口1接收数据后，对数据进行处理
-void Usart1_Rec_Data_handle (void)
+void Receive_Data_handle (void)
 {
 
 	uint8 command;
 	uint16 Recdata1,Recdata2;
-	if(ready2read)                    //检验通过，收到了主机数据
+	if(ready2read)                    //检验通过，收到了主机的数据
 	{
-		command=RX_Data[1];
+		command=RX_Data[1];           //读取接收的命令
 		switch(command)
 		{
-			case CMD_ASK_SLAVE:           //给主机发送数据  //#define CMD_ASK_SLAVE 29                 //主机请求数据
+			case CMD_ASK_SLAVE:           //主机请求数据，手轮要给主机发送数据
 				Usart1_Send_Data(10);
 			break;			
 			case CMD_UPDATE_MACH3_NUMBER: //接收到主机坐标数据  
@@ -436,90 +437,51 @@ void Usart1_Rec_Data_handle (void)
 //}
 
 
-// 串口1发送数据
-void Usart1_Send_Data (uint8 length)
-{ 
-	uint8 i,x,y,z;
-	uint16 temp_pulses;
-	char buf3[10];
-	x = Check_Pulses_change();
-	y = Check_CMD_button_change();
-	z = Check_Override_change();
-	if(x || y || z)
-	{
-		Create_CMD_and_Date();  //创建发给主机的指令和数据
-		RS485_TX_Set(1);
-		for(i=0;i<length;i++)
-		{
-			if (i==0)
-			{
-				USART1->DR =(uint32_t)(1<<8)|TX_Data[0];
-				while((USART1->SR&0X40)==0);
-			}
-			else
-			{
-				USART1->DR = TX_Data[i];
-				while((USART1->SR&0X40)==0);
-				
-				temp_pulses=(TX_Data[3]<<8)+TX_Data[4];
-				sprintf(buf3,"%u",temp_pulses);	
-				SetTextValue(0,21,(uchar *)buf3);  
-				
-			};//循环发送,直到发送完毕   		
-		}
-		
-		RS485_TX_Set(0);
-	}
-}
+
 
 
 //判断脉冲是否发生变化
 uint8 Check_Pulses_change(void)
 {
-	uint8 result1;
 	if(last_time_Pulses_number != Pulses_counter)
 	{
 		last_time_Pulses_number = Pulses_counter;
-	  result1 = 1;
+	  return 1;
 	}
 	else 
 	{  
-		result1 = 0;	
+		return  0;	
 	}
-	return result1;
 }
 
 //判断按键是否发生变化
 uint8 Check_CMD_button_change(void)
 {
-	uint8 result2;
 	if(last_time_button==Press_button)
 	{
 		Press_button = 0XFF;
-	  result2 = 0;
+	  return 0;
 	}
 	else 
 	{
 	  last_time_button=Press_button;
-		result2 = 1;	
+		return 1;	
 	}
-	return result2;
 }
 
 //判断倍率是否发生变化
-uint8 Check_Override_change(void)
+uint8 Check_Multiple_change(void)
 {
-	uint8 result3;
-	if(last_time_Override==Override_num)
+	if(last_time_Multiple==Multiple_num)
 	{
-	  result3 = 0;
+	  return 0;
 	}
 	else 
 	{
-	  last_time_Override=Override_num;
-		result3 = 1;	
+	  last_time_Multiple=Multiple_num;
+		return 1;	
 	}
-	return result3;
+
 }
 
 //确定是哪个轴选中
@@ -553,7 +515,7 @@ void Create_CMD_and_Date(void)
 			TX_Data[2] = CMD_RPY_HC_MPG1;
 			TX_Data[3] = Pulses_counter>>8;
 			TX_Data[4] = Pulses_counter;
-			TX_Data[5] = Override_num;
+			TX_Data[5] = Multiple_num;
 			TX_Data[6] = Press_button;
 			TX_Data[7] = Axis_Gets();
 			TX_Data[8] = 4;
@@ -561,3 +523,39 @@ void Create_CMD_and_Date(void)
 		
 }
 
+
+// 串口1发送数据
+void Usart1_Send_Data (uint8 length)
+{ 
+	uint8 i,x,y,z;
+	uint16 temp_pulses;
+	char buf3[10];
+	x = Check_Pulses_change();
+	y = Check_CMD_button_change();
+	z = Check_Multiple_change();
+	if(x || y || z)
+	{
+		Create_CMD_and_Date();  //创建发给主机的指令和数据
+		RS485_mode_control(1);
+		for(i=0;i<length;i++)
+		{
+			if (i==0)
+			{
+				USART1->DR =(uint32_t)(1<<8)|TX_Data[0];
+				while((USART1->SR&0X40)==0);
+			}
+			else
+			{
+				USART1->DR = TX_Data[i];
+				while((USART1->SR&0X40)==0);
+				
+				temp_pulses=(TX_Data[3]<<8)+TX_Data[4];
+				sprintf(buf3,"%u",temp_pulses);	
+				SetTextValue(0,21,(uchar *)buf3);  
+				
+			};//循环发送,直到发送完毕   		
+		}
+		
+		RS485_mode_control(0);
+	}
+}

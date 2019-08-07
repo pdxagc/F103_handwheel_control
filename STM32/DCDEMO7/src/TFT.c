@@ -13,6 +13,11 @@
 #include "string.h"
 #include "24c02.h"
 
+extern uint8 Light_mark_button; 
+extern uint8 last_time_light_mark_button; //记录上次触发标记值
+extern uint8 TIME3_Counter;                //定时器3溢出计数
+uint8 TIM3_EN_Mark=1;                        //定时器3使能标志位
+
 
 Speed_Control Speed;
 Pram_Status pram_status;
@@ -21,12 +26,14 @@ Return_Workpiece_Zero return_workpiece_zero;
 Devide_Set devide_set;  
 
 uint8  cmd_buffer[CMD_MAX_SIZE];                     //LCD指令缓存
-uint8  Override_num;
+uint8  Multiple_num;
 char  Working_line_buf[20];                      //保存加工行数
 uint16 Pulses_counter;                           // 手轮脉冲数量
+uint16 last_Pulses_Counter;
+uint8 Puless_Changed_Mark=0;                     //脉冲变化标记位，0；无变化，1：有变化
 
 uint8 Coordinate_Change_Counter=0;                      //坐标切换按钮触发计数
-uint8 Override_Change_Counter=1;                        //倍率切换按钮触发计数
+uint8 Multiple_Change_Counter=1;                        //倍率切换按钮触发计数
 uint8 Pulses_count_mark=1;                              //脉冲计数使能标记位
 uint8 file_name[20]="精雕佛像";    //文件名
 
@@ -40,7 +47,7 @@ uint16 get_control_id;                   //获取控件ID
 uint32 get_value;                        //获取数值
 uint8  input_buf[20];                    //键盘输入内容
 
-uint8  Press_button=0XFF;          //记录哪个按钮触发(需要把按键发送给雕刻机)
+uint8  Press_button=0XFF;          //记录哪个按钮触发(需要把按键发送给雕刻机),0XFF：表示无效按键
 uint8 last_time_work_state=0;      //记录上一次机器工作状态,默认是关机状态
 int32 Working_line;                //加工行数
 uint8 first_time_re_workpiece;     //首次进入回工件零页面
@@ -71,15 +78,20 @@ Return_Workpiece_Zero return_workpiece_zero;//声明回工件零相关参数的结构体变量
 Devide_Set devide_set;                     //声明分中设置相关参数的结构体变量
 Jump_Work_Set jump_work_set;               //声明跳行加工相关参数的结构体变量
 
-//对来自TFT屏的命令进行分析
-void TFT_command_analyse(void)
-{
-	qsize  size = 0;                                             //指令长度 
-  size = queue_find_cmd(cmd_buffer,CMD_MAX_SIZE);              //接收到LCD屏的数据，从USART2的指令缓冲区cmd_buffer中获取一条指令，得到指令长度       
-	if(size>0 && cmd_buffer[1]!=0x07)                            //接收到指令 ，及判断是否为开机提示
-	{                                                                           
-		Usart2_Receive_data_handle((PCTRL_MSG)cmd_buffer, size);   //指令分析处理 ，标记应该进入哪个Work_Page_Status，标记相应的操作位
-		memset(cmd_buffer, 0, CMD_MAX_SIZE);                       //对指令缓冲cmd_buffer清零
+
+
+//计算脉冲数量
+void Get_Pulses_num(void)
+{	
+	uint16 temp_count;
+	temp_count=TIM_GetCounter(TIM4);
+	if(temp_count%4==0)
+	{
+  	Pulses_counter= temp_count;
+	}
+	else
+	{
+	  Pulses_counter=temp_count+(4-temp_count%4);
 	}
 }
 
@@ -88,11 +100,11 @@ void Pulses_Count_Process(void)
 {
   if( Work_Page_Status == Working_Page || Work_Page_Status == ControlPanel_Page )  //当处于加工页面或者控制面板页面时，手轮脉冲计数开始
 	{
-//		if(Pulses_count_mark)       //脉冲计数使能标记位置1
-//		{
+		if(Pulses_count_mark)       //脉冲计数使能标记位置1
+		{
 		  TIM_Cmd(TIM4, ENABLE);    //开启定时器4，开始脉冲计数
 			Pulses_count_mark=0;
-//		}
+		}
 		Get_Pulses_num();          //计算脉冲数量
 		
 		sprintf(Working_line_buf,"%u",Pulses_counter);  
@@ -102,11 +114,59 @@ void Pulses_Count_Process(void)
 	{
 		if(Pulses_count_mark==0)
 		{
-	    TIM_Cmd(TIM4, DISABLE);          //禁止 TIM4，脉冲不计数
-		  Pulses_count_mark=1;
+	    TIM_Cmd(TIM4, DISABLE);          //禁止 TIM4，脉冲不计数	
+      Pulses_count_mark=1;			
+		}
+		
+	}	
+}
+
+
+//屏幕背光亮度控制
+void light_Control_Process(void)
+{
+	
+	
+	//判断脉冲是否发生变化
+	if(last_Pulses_Counter != Pulses_counter)
+	{
+		last_Pulses_Counter = Pulses_counter;
+	  Puless_Changed_Mark = 1;
+	}
+	else  
+		Puless_Changed_Mark =  0;	
+	
+	if(Light_mark_button != last_time_light_mark_button || Puless_Changed_Mark)  //有按键触发或者手轮转动
+	{
+		SetLightLevel(50);
+		last_time_light_mark_button=Light_mark_button;
+		TIME3_Counter=0;           //定时器3溢出次数清零
+		TIM3_EN_Mark=1;            //使能定时器3
+		if(Light_mark_button==100)  //清零
+		{
+		  last_time_light_mark_button=0;
+			Light_mark_button=0;
 		}
 	}
+	else
+	{
+		if(TIM3_EN_Mark)
+		{
+		  TIM_Cmd(TIM3, ENABLE);	
+			TIM3_EN_Mark=0;
+		}			
+	}
 	
+	
+	if(TIME3_Counter==2)  //定时30s,没有动作发生，则降低屏幕亮度
+	{
+		TIME3_Counter=0;
+	  SetLightLevel(200);
+		TIM_Cmd(TIM3, DISABLE);
+	}
+
+
+
 
 }
 
@@ -133,10 +193,10 @@ void TFT_Page_handle(void)
 		}break;
 		case Setting_page:  //********************************************************设置页面*************************************************************************************************
 		{
-		 if(pram_status.Screen_ID1_Setting_concel)          //取消按钮按下
+		 if(pram_status.Setting_Page_cancel_button)          //取消按钮按下
 		 {
 				Return_last_status();                           //恢复上一次设置状态 
-				pram_status.Screen_ID1_Setting_concel=0;
+				pram_status.Setting_Page_cancel_button=0;
 				Work_Page_Status=Working_Page;				 
 		 }		
 		}break;
@@ -144,12 +204,12 @@ void TFT_Page_handle(void)
 		{
 			if(state.Work_state==Stop)                                   //停止加工
 			{
-				if(pram_status.Screen_ID21_Setting_Sure)                   //“确定按钮”按下
+				if(pram_status.Save_Pram_Page_Sure_button)                   //“确定按钮”按下
 				{
 					Save_Set();                                              //保存设置
 					Work_Page_Status=Working_Page;
 				}
-				if(pram_status.Screen_ID21_Setting_concel)                 //取消按钮按下
+				if(pram_status.Save_Pram_Page_concel_button)                 //取消按钮按下
 				{
 					Return_last_status();                                    //恢复上一次设置状态
 					Work_Page_Status=Working_Page;					
@@ -407,15 +467,21 @@ void TFT_Page_handle(void)
 		
 		}
 			break;
-		case Same_file_Error_Page:    //**************************************************同名文件报错页面****************************************************************************************
-			break;
-		case Download_Fail_Pgae:    //***************************************************下载失败提醒页面
-			break;
+//		case Same_file_Error_Page:    //**************************************************同名文件报错页面****************************************************************************************
+//			break;
+//		case Download_Fail_Pgae:    //***************************************************下载失败提醒页面
+//			break;
 		case Delete_Page:         //*****************************************************删除页面****************************************************************************************
-		{		}	
+		{		
+			
+		}	
 		break;
 		case Storage_View_Page:    //*****************************************************内存预览页面****************************************************************************************
-			break;	
+		{
+		
+		
+		
+		}break;	
 		case Net_Account_Manage_Page:  //**************************************************网络与账户登录管理**********************************************************************************
 			{
 				if(WiFi_Password_Right==5)   //WiFi账号和密码正确
@@ -473,7 +539,7 @@ void TFT_Page_handle(void)
 			break;
 		case SignOut_Remind_Page: 
 			break;
-		case Cancel_Download_Pgae:
+		case Cancel_Download_Page:
 			break;
 		default:
 			break;
@@ -481,6 +547,18 @@ void TFT_Page_handle(void)
 
 }
 
+//对来自TFT屏的命令进行分析
+void TFT_command_analyse(void)
+{
+	qsize  size = 0;                                             //指令长度 
+  size = queue_find_cmd(cmd_buffer,CMD_MAX_SIZE);              //接收到LCD屏的数据，从USART2的指令缓冲区cmd_buffer中获取一条指令，得到指令长度       
+	if(size>0 && cmd_buffer[1]!=0x07)                            //接收到指令 ，及判断是否为开机提示
+	{                                                                           
+		Usart2_Receive_data_handle((PCTRL_MSG)cmd_buffer, size);   //指令分析处理 ，标记应该进入哪个Work_Page_Status，标记相应的操作位
+	  Light_mark_button++;                                       //表示屏幕有按键触发，
+		memset(cmd_buffer, 0, CMD_MAX_SIZE);                       //对指令缓冲cmd_buffer清零
+	}
+}
 
 /****************************************************
 *  \brief  消息处理流程
@@ -508,7 +586,7 @@ void Usart2_Receive_data_handle( PCTRL_MSG msg, uint16 size )
 							Work_Page_Status=Working_Page;
 							switch(get_control_id)
 							{
-									case 3:                  //主轴速度减
+									case Spindle_Speed_Subtract_Button:                  //主轴速度减
 									{
 										if(get_button_state)
 										{
@@ -522,7 +600,7 @@ void Usart2_Receive_data_handle( PCTRL_MSG msg, uint16 size )
 												get_button_state=0;
 									  }
 									}break;	
-									case 4:                  //主轴速度加
+									case Spindle_Speed_Add_Button:                  //主轴速度加
 									{
 										if(get_button_state)
 										{   
@@ -536,7 +614,7 @@ void Usart2_Receive_data_handle( PCTRL_MSG msg, uint16 size )
 												get_button_state=0;
 									  }
 									}break;
-									case 5:                  //加工速度减
+									case Work_Speed_Subtract_Button:                  //加工速度减
 									{
 										if(get_button_state)
 										{
@@ -557,7 +635,7 @@ void Usart2_Receive_data_handle( PCTRL_MSG msg, uint16 size )
 		                    get_button_state=0;
 									  }												
 									}break;
-									case 6:                  //加工速度加
+									case Work_Speed_Add_Buttoub:                  //加工速度加
 									{
 										if(get_button_state)
 										{
@@ -578,30 +656,34 @@ void Usart2_Receive_data_handle( PCTRL_MSG msg, uint16 size )
 												get_button_state=0;
 									  }	
 									}break;
-									case 12:Work_Page_Status=File_Manage_Page;break;
-									case 13:Work_Page_Status=Net_Account_Manage_Page;break;
-									case 14:Work_Page_Status=Setting_page;break;
-									case 15:Work_Page_Status=ControlPanel_Page;break;
-									case 42:                                           //X轴按钮触发
+									case File_Manage_Button1:
+										Work_Page_Status=File_Manage_Page;break;
+									case Net_Account_Manage_Button1:
+										Work_Page_Status=Net_Account_Manage_Page;break;
+									case Setting_Button:
+										Work_Page_Status=Setting_page;break;
+									case Control_Panel_Button:
+										Work_Page_Status=ControlPanel_Page;break;
+									case X_Press_Button1:                                           //X轴按钮触发
 									{																			
 										control_panel_pram.Axis_press = CMD_X_AXIS;								
 									}break;
-									case 43:                                           //Y轴按钮触发
+									case Y_Press_Button1:                                           //Y轴按钮触发
 									{
 																				
 										control_panel_pram.Axis_press = CMD_Y_AXIS;						
 									}break;
-									case 44:                                              //Z轴按钮触发
+									case Z_Press_Button1:                                              //Z轴按钮触发
 									{
 																			
 										control_panel_pram.Axis_press = CMD_Z_AXIS;														
 									}break;
-									case 45:                                             //A轴按钮触发
+									case A_Press_Button1:                                             //A轴按钮触发
 									{
 																				
 										control_panel_pram.Axis_press = CMD_A_AXIS;															
 									}break;
-									case 46:                                           //B轴按钮触发
+									case B_Press_Button1:                                           //B轴按钮触发
 									{
 																			
 										control_panel_pram.Axis_press = CMD_B_AXIS;											
@@ -617,26 +699,35 @@ void Usart2_Receive_data_handle( PCTRL_MSG msg, uint16 size )
 						{
 							switch(get_control_id)                                
 							{
-									case 1:                           //安全Z按钮触发
+									case Safe_Z_Button1:                           //安全Z按钮触发
 									{
 										if(get_button_state)
 											pram_status.Safe_Z_button_satus=1;
 										else
 											pram_status.Safe_Z_button_satus=0;													
 									}break;
-									case 2:                          //自动对刀按钮触发
+									case Auto_kinfe_Button1:                          //自动对刀按钮触发
 									{
 										if(get_button_state)
 											pram_status.Auto_Knife_button_status=1;
 										else
 											pram_status.Auto_Knife_button_status=0;						
 									}break;
-									case 3:                          //单位选择按钮触发
+									case Uint_Button:                          //单位选择按钮触发
 									{
 										if(get_button_state)
 											pram_status.Unit_Change_button_status=1;
 										else
 											pram_status.Unit_Change_button_status=0;						
+									}break;
+									case Sure_Button1:                             //确定按钮按下
+									{
+										Work_Page_Status=Save_Pram_Page;						
+									}break;
+									case Cancel_button1:                             //取消按钮按下
+									{
+		//								pram_status.Setting_Page_cancel_button=0;
+										pram_status.Setting_Page_cancel_button=1;					
 									}break;
 									case 6:                          //获取安全Z高度
 									{
@@ -725,23 +816,14 @@ void Usart2_Receive_data_handle( PCTRL_MSG msg, uint16 size )
 //		                Usart_SendString(USART2,(char *)buf);       
 									}										
 									break;
-									case 27:                           //语音提示按钮触发 
+									case Voice_button:                           //语音提示按钮触发 
 									{
 										if(get_button_state)                                
 											pram_status.voice_button_status=voice_off; //按钮按下，语音提醒关
 										else
 											pram_status.voice_button_status=voice_on;  //按钮松开，语音提醒开													
 									}break;
-									case 4:                             //确定按钮按下
-									{
-		//								pram_status.Screen_ID1_Setting_Sure=1;	
-		//                pram_status.Screen_ID1_Setting_concel=0;								
-									}break;
-									case 5:                             //取消按钮按下
-									{
-		//								pram_status.Screen_ID1_Setting_Sure=0;
-										pram_status.Screen_ID1_Setting_concel=1;						
-									}break;
+									
 								
 									default: break;		
                  }									
@@ -752,14 +834,14 @@ void Usart2_Receive_data_handle( PCTRL_MSG msg, uint16 size )
 							Work_Page_Status=ControlPanel_Page;
 							switch(get_control_id)
 							{
-                  case 1:                                           //清零按钮触发
+                  case Clear_Botton:                                           //清零按钮触发
 									{
 										if(get_button_state)
 										{
 											Press_button = CMD_Clear;								
 										}																					
 									}break;    
-                  case 2:                                             //回机械零按钮触发	
+                  case Return_Machine_Zero_Button:                            //回机械零按钮触发	
                   {
 										if(get_button_state)
 										{
@@ -768,17 +850,17 @@ void Usart2_Receive_data_handle( PCTRL_MSG msg, uint16 size )
 										}
 										get_button_state=0;	
 									}break;                                     									
-									case 3:								                              //倍率切换按钮触发
+									case Multiple_Button:								                              //倍率切换按钮触发
 									{
 										if(get_button_state)
 										{
-												control_panel_pram.Override_Change_button=1;
-												Override_Change_Process();                    //倍率切换控制
-												Press_button = CMD_Override_Change;												
+												control_panel_pram.Multiple_Change_button=1;
+												Multiple_Change_Process();                    //倍率切换控制
+												Press_button = CMD_Multiple_Change;												
 										}
 										get_button_state=0;										
 									}break;
-								  case 4:                                             //主轴开关按钮触发
+								  case Spin_Button:                                             //主轴开关按钮触发
 									{
 										if(get_button_state)
 										{
@@ -786,7 +868,7 @@ void Usart2_Receive_data_handle( PCTRL_MSG msg, uint16 size )
 										}
 										get_button_state=0;	
 									}break;
-			            case 5:                                              //全轴清零按钮触发
+			            case All_Clear_Button:                                       //全轴清零按钮触发
 									{
                     if(get_button_state)   
 										{										
@@ -795,7 +877,7 @@ void Usart2_Receive_data_handle( PCTRL_MSG msg, uint16 size )
 											get_button_state=0;
 										}
 									}break;
-									case 6:                                            //回工件零按钮触发
+									case Return_Workpiece_Zero_Button:                          //回工件零按钮触发
 									{
 										if(get_button_state)    
 										{
@@ -805,7 +887,7 @@ void Usart2_Receive_data_handle( PCTRL_MSG msg, uint16 size )
 											get_button_state=0;
 										}
 									}break;
-									case 7:                                            //坐标切换按钮触发
+									case Coordinate_Button:                                      //坐标切换按钮触发
 									{
 											if(get_button_state)
 											{										
@@ -814,7 +896,7 @@ void Usart2_Receive_data_handle( PCTRL_MSG msg, uint16 size )
 												  get_button_state=0;
 											 }										
 									}break;
-									case 8:                                            //软限位开关按钮触发
+									case Soft_Limit_button:                                      //软限位开关按钮触发
 									{											
 											if(get_button_state)
 											{
@@ -822,7 +904,7 @@ void Usart2_Receive_data_handle( PCTRL_MSG msg, uint16 size )
 											}
 											get_button_state=0;	
 									}break;
-									case 9:                                            // 安全Z开关
+									case Safe_Z_Button2:                                         // 安全Z开关
 									{
 										if(get_button_state)
 											{
@@ -830,7 +912,7 @@ void Usart2_Receive_data_handle( PCTRL_MSG msg, uint16 size )
 											}
 											get_button_state=0;	
 									}break;
-									case 10:                                         //跳行加工按钮触发
+									case Jump_Work_Button:                                      //跳行加工按钮触发
 									{
 										if(get_button_state)
 										{
@@ -840,7 +922,7 @@ void Usart2_Receive_data_handle( PCTRL_MSG msg, uint16 size )
 											get_button_state=0;
 										}
 									}break;
-									case 11:                                          //对刀按钮触发
+									case Auto_kinfe_Button2:                                     //对刀按钮触发
 									{										
 											if(get_button_state)
 											{
@@ -848,7 +930,7 @@ void Usart2_Receive_data_handle( PCTRL_MSG msg, uint16 size )
 											}
 											get_button_state=0;	
 									}break;
-									case 12:                                         //分中按钮触发
+									case Divided_Button:                                         //分中按钮触发
 									{
 											if(get_button_state)
 											{
@@ -856,7 +938,7 @@ void Usart2_Receive_data_handle( PCTRL_MSG msg, uint16 size )
 											}
 											get_button_state=0;	
 									}break;
-									case 13:                                           //开始按钮触发
+									case Start_Button1:                                           //开始按钮触发
 									{
 										state.Work_state=Start;
 										Press_button = CMD_Start;
@@ -864,7 +946,7 @@ void Usart2_Receive_data_handle( PCTRL_MSG msg, uint16 size )
 //										SetButtonValue(2,14,0);     //停止按钮松开状态
 										SetButtonValue(2,13,1);       //开始按钮按下状态										
 									}break;
-									case 14:                                           //停止按钮触发
+									case Stop_Button:                                           //停止按钮触发
 									{
 										state.Work_state=Stop;
 //										SetButtonValue(2,13,0);     //开始按钮松开状态
@@ -873,40 +955,48 @@ void Usart2_Receive_data_handle( PCTRL_MSG msg, uint16 size )
 									  TIM_Cmd(TIM4, ENABLE);      //使能 TIM4
 																	
 									}break;
-									case 15:                                            //复位按钮触发
+									case Reset_Button:                                            //复位按钮触发
 									{
 										state.Work_state=Stop;
 										Press_button = CMD_Reset;  						
 									}break;
-									case 16:                                          //退出控制面板按钮触发
+									case Exit_Contronl_Panel_Button:                                          //退出控制面板按钮触发
 									{
 										Work_Page_Status=Working_Page;
 									}
 									break;
-									case 22:                                            //X轴按钮触发
+									case X_Press_Button2:                                            //X轴按钮触发
 									{	
 																											
 										control_panel_pram.Axis_press = CMD_X_AXIS;								
 									}break;
-									case 23:                                            //Y轴按钮触发
+									case Y_Press_Button2:                                            //Y轴按钮触发
 									{
 																		
 										control_panel_pram.Axis_press = CMD_Y_AXIS;						
 									}break;
-									case 24:                                              //Z轴按钮触发
+									case Z_Press_Button2:                                              //Z轴按钮触发
 									{
 															
 										control_panel_pram.Axis_press = CMD_Z_AXIS;														
 									}break;
-									case 25:                                             //A轴按钮触发
+									case A_Press_Button2:                                             //A轴按钮触发
 									{
 																	
 										control_panel_pram.Axis_press = CMD_A_AXIS;															
 									}break;
-									case 26:                                           //B轴按钮触发
+									case B_Press_Button2:                                           //B轴按钮触发
 									{  
 																	
 										control_panel_pram.Axis_press = CMD_B_AXIS;											
+									}break; 
+									case File_Manage_Button2:                                     //文件管理按钮
+									{
+									   Work_Page_Status=File_Manage_Page;
+									}break;									
+									case Net_Account_Manage_Button2:                             //网络账户管理
+									{
+									   Work_Page_Status=Net_Account_Manage_Page;
 									}break;
 									default:break;				
 							}
@@ -918,7 +1008,7 @@ void Usart2_Receive_data_handle( PCTRL_MSG msg, uint16 size )
 						{
 							switch(get_control_id)                                
 							{
-									case 1:                  //全轴按钮触发
+									case All_Spindle_Button:                  //全轴按钮触发
 									{
 										if(get_button_state)            //按钮是按下状态  
 										{
@@ -946,7 +1036,7 @@ void Usart2_Receive_data_handle( PCTRL_MSG msg, uint16 size )
 										}
 									
 									}break;
-									case 2:                     //取消按钮触发
+									case Cancel_Button2:                     //取消按钮触发
 									{
 									  TIM_Cmd(TIM4, ENABLE);      //使能 TIM4
 										if(get_button_state) 
@@ -961,7 +1051,7 @@ void Usart2_Receive_data_handle( PCTRL_MSG msg, uint16 size )
 										}										
 									
 									}break;
-									case 3:                   //确定按钮触发
+									case Sure_Button2:                   //确定按钮触发
 									{
 										TIM_Cmd(TIM4, ENABLE);      //使能 TIM4
 										if(get_button_state) 
@@ -974,7 +1064,7 @@ void Usart2_Receive_data_handle( PCTRL_MSG msg, uint16 size )
 										}
 																		
 									}break;
-									case 4:                           //X轴按钮触发
+									case X_Press_Button3:                           //X轴按钮触发
 									{
 										if(get_button_state) 
 										{											
@@ -987,7 +1077,7 @@ void Usart2_Receive_data_handle( PCTRL_MSG msg, uint16 size )
 										}
 									
 									}break;
-									case 5:                           //Y轴按钮触发
+									case Y_Press_Button3:                           //Y轴按钮触发
 									{
 										if(get_button_state) 
 										{											
@@ -1000,7 +1090,7 @@ void Usart2_Receive_data_handle( PCTRL_MSG msg, uint16 size )
 										}
 									
 									}break;
-									case 6:                           //Z轴按钮触发
+									case Z_Press_Button3:                           //Z轴按钮触发
 									{
 										if(get_button_state)
 										{											
@@ -1013,7 +1103,7 @@ void Usart2_Receive_data_handle( PCTRL_MSG msg, uint16 size )
 										}
 									
 									}break;
-									case 7:                           //A轴按钮触发
+									case A_Press_Button3:                           //A轴按钮触发
 									{
 										if(get_button_state)
 										{											
@@ -1026,7 +1116,7 @@ void Usart2_Receive_data_handle( PCTRL_MSG msg, uint16 size )
 										}
 									
 									}break;
-									case 8:                           //B轴按钮触发
+									case B_Press_Button3:                           //B轴按钮触发
 									{
 										if(get_button_state)
 										{											
@@ -1088,14 +1178,14 @@ void Usart2_Receive_data_handle( PCTRL_MSG msg, uint16 size )
 					{
 						switch(get_control_id)
 						{
-							case 1:                         //确定按钮触发
+							case Sure_Button3:                         //确定按钮触发
 							{
 							  jump_work_set.Jump_Work_Sure = 1;
 								jump_work_set.Jump_Work_cancel = 0;
 								Working_line = jump_work_set.New_work_line;
 								Work_Page_Status = ControlPanel_Page;
 							}break;
-							case 2:                        //取消按钮触发
+							case Cancel_Button3:                        //取消按钮触发
 							{
 							  jump_work_set.Jump_Work_cancel = 1;
 								jump_work_set.Jump_Work_Sure = 0;
@@ -1113,7 +1203,7 @@ void Usart2_Receive_data_handle( PCTRL_MSG msg, uint16 size )
 						Work_Page_Status=File_Manage_Page;
 						switch(get_control_id)
 						{
-							case 1:
+							case Download_button:                               //下载按钮触发
 							{
 							  if(get_button_state)
 								{
@@ -1121,20 +1211,21 @@ void Usart2_Receive_data_handle( PCTRL_MSG msg, uint16 size )
 								}
 							}
 							break;
-							case 2:  //取消下载按钮触发
+							case Canael_Download_button:                  //取消下载按钮触发
 							{
-							  
+							   Work_Page_Status=Cancel_Download_Page;
 							}
 							break;
-							case 3: 
-								{
+							case Delete_Button:                         //删除按钮触发
+							{
+								Work_Page_Status=Delete_Page;
 							  if(get_button_state)
-								{
-									Press_button = CMD_Delete;								
+								{									
+									Press_button = CMD_Delete;	                 								
 								}
 							}
 							break;
-							case 4:
+							case Storage_button:                        //内存预览按钮触发
               {
 								Work_Page_Status=Storage_View_Page;
 							  if(get_button_state)
@@ -1143,8 +1234,11 @@ void Usart2_Receive_data_handle( PCTRL_MSG msg, uint16 size )
 								}
 							}								
 							break;
-							case 5: Work_Page_Status=ControlPanel_Page;break;
-							case 6: 
+							case Open_and_Load_Button:                //打开加载按钮触发
+							{
+								Work_Page_Status=ControlPanel_Page;
+							}break;
+							case Cloud_Last_Page_button:              //云空间上一页按钮触发
 							{
 							  if(get_button_state)
 								{
@@ -1153,7 +1247,7 @@ void Usart2_Receive_data_handle( PCTRL_MSG msg, uint16 size )
 								}
 							}	
 							break;
-							case 7: 
+							case Cloud_Next_Page_button:          //云空间下一页按钮触发
 							{
 							  if(get_button_state)
 								{
@@ -1161,7 +1255,7 @@ void Usart2_Receive_data_handle( PCTRL_MSG msg, uint16 size )
 								}
 							}
 								break;
-							case 8: 
+							case SD_Last_Page_button:              //SD卡上一页按钮触发
 							{
 							  if(get_button_state)
 								{
@@ -1170,7 +1264,7 @@ void Usart2_Receive_data_handle( PCTRL_MSG msg, uint16 size )
 								}
 							}
 								break;
-							case 9: 
+							case SD_Next_Page_button:              //SD卡下一页按钮触发
 							{
 							  if(get_button_state)
 								{
@@ -1178,46 +1272,92 @@ void Usart2_Receive_data_handle( PCTRL_MSG msg, uint16 size )
 								}
 							}
 								break;
-							case 10:Cloud_File_Button=0X01;break;
-							case 11:Cloud_File_Button=0X02;break;
-							case 12:Cloud_File_Button=0X03;break;
-							case 13:Cloud_File_Button=0X04;break;
-							case 14:SD_File_Button=0X01;break;
-							case 15:SD_File_Button=0X02;break;
-							case 16:SD_File_Button=0X03;break;
-							case 17:SD_File_Button=0X04;break;
+							case Cloud_file_1:
+								Cloud_File_Button=0X01;break;
+							case Cloud_file_2:
+								Cloud_File_Button=0X02;break;
+							case Cloud_file_3:
+								Cloud_File_Button=0X03;break;
+							case Cloud_file_4:
+								Cloud_File_Button=0X04;break;
+							case SD_file_1:
+								SD_File_Button=0X01;break;
+							case SD_file_2:
+								SD_File_Button=0X02;break;
+							case SD_file_3:
+								SD_File_Button=0X03;break;
+							case SD_file_4:
+								SD_File_Button=0X04;break;
 							
-							case 18:Work_Page_Status=Working_Page;break;
-							case 19:Work_Page_Status=Net_Account_Manage_Page;break;
+							case Working_Page_button3:
+								Work_Page_Status=Working_Page;break;
+							case Net_Account_Manage_Button3:
+								Work_Page_Status=Net_Account_Manage_Page;break;
 							default:break;
 						}
 					}break;
-					case Same_file_Error_Page: Work_Page_Status=Same_file_Error_Page;break;//画面7：同名文件报错页面
-					case Download_Fail_Pgae: Work_Page_Status=Download_Fail_Pgae;break;    //画面8：下载失败页面
-					case Delete_Page: Work_Page_Status=Delete_Page;                        //画面9：删除页面
+					case Same_file_Error_Page:                                       //画面7：同名文件报错页面
 					{
+						Work_Page_Status=Same_file_Error_Page;
+//						if(get_control_id==)
+					}break; 
+					case Download_Fail_Pgae:                                       //画面8：下载失败页面
+					{
+						Work_Page_Status=Download_Fail_Pgae;
+					}break;    
+					case Delete_Page:                                              //画面9：删除页面
+					{	
 						switch(get_control_id)
 						{
-					    case 1:
+					    case Sure_Button4:        //确定按钮触发
 							{
 							  if(get_button_state)
 								{
+									Work_Page_Status=File_Manage_Page;
 									Press_button = CMD_File_Delete_Sure;								
 								}
-							}
+							}break;
+							case Cancel_Button4:
+							{								
+								Work_Page_Status=File_Manage_Page;
+							}break;
 						}
 					}
 					break;
-					case Storage_View_Page: Work_Page_Status=Storage_View_Page;break;   //画面10：内存空间预览页面
+					case Storage_View_Page:                                      //画面10：内存空间预览页面
+					{
+						Work_Page_Status=Storage_View_Page;
+						switch(get_control_id)
+						{
+					    case Net_Account_Manage_Button4:                      //网络账户页面按钮触发
+							{
+							  if(get_button_state)
+								{
+									Work_Page_Status=Net_Account_Manage_Page;							
+								}
+							}break;
+							case Working_Page_button1:                           //加工页面按钮触发
+							{								
+								Work_Page_Status=Working_Page;
+							}break;
+							case Return_File_Manage_Button:                     //会文件管理按钮触发
+							{
+							   Work_Page_Status=File_Manage_Page;
+							}break;
+							default:break;
+						}
+						
+					}break;  
+					
 					case Net_Account_Manage_Page:                                       //画面11：网络账户管理
 					{
 						Work_Page_Status=Net_Account_Manage_Page;
 						switch(get_control_id)
 						{
-							case 1: Work_Page_Status=Working_Page;break;
-							case 2: Work_Page_Status=File_Manage_Page;break;
-							case 3: Work_Page_Status=Choose_WiFi_Page;break;
-							case 4: 
+							case Working_Page_button2: Work_Page_Status=Working_Page;break;
+							case File_Manage_Button4: Work_Page_Status=File_Manage_Page;break;
+							case Choose_WiFi_Button: Work_Page_Status=Choose_WiFi_Page;break;
+							case Connect_WiFi_Button: 
 							{
 							  if(get_button_state)
 								{
@@ -1225,7 +1365,7 @@ void Usart2_Receive_data_handle( PCTRL_MSG msg, uint16 size )
 								}
 							
 							}break;
-							case 5:
+							case Sign_In_Button:
 							{
 							  if(get_button_state)
 								{
@@ -1233,6 +1373,8 @@ void Usart2_Receive_data_handle( PCTRL_MSG msg, uint16 size )
 								}
 							
 							}
+							case Disconnect_WIFI_Button:break;
+							case Sign_Out_Button:break;
 							default:break;
 						}
 					}break;
@@ -1241,30 +1383,30 @@ void Usart2_Receive_data_handle( PCTRL_MSG msg, uint16 size )
 						Work_Page_Status=Choose_WiFi_Page;
 						switch(get_control_id)
 						{
-							case 1: 
+							case WiFi_1_Button: 
 							{
 							  Work_Page_Status=Net_Account_Manage_Page;
 							}break;
-							case 2: 
+							case WiFi_2_Button: 
 							{
 							  Work_Page_Status=Net_Account_Manage_Page;
 							}break;
-							case 3: 
+							case WiFi_3_Button: 
 							{
 							  Work_Page_Status=Net_Account_Manage_Page;
 							}break;
-							case 4: 
+							case WiFi_4_Button: 
 							{
 								Work_Page_Status=Net_Account_Manage_Page;
 							}break;
-							case 5:
+							case WiFi_Next_Page_Button:
 							{
 							  if(get_button_state)
 								{
 								    WiFi_Page++;
 								}
 							}break;
-							case 6: 
+							case WiFi_Last_Page_Button: 
 							{
 								if(get_button_state)
 								{
@@ -1279,34 +1421,52 @@ void Usart2_Receive_data_handle( PCTRL_MSG msg, uint16 size )
 					{
 						switch(get_control_id)
 						{
-							case 1: Network_Control=4;
+							case Sure_Button5:       //确定按钮触发
+							{								
+								Network_Control=4;
+								Work_Page_Status=Net_Account_Manage_Page;
+							}break;
+							case Cancel_Button5:   //取消按钮触发
+							{
+								Work_Page_Status=Net_Account_Manage_Page;
+							}break;
 						}
 					}break;     
 					case SignOut_Remind_Page:                                                //画面16：退出登录提醒页面
 					{
 					  switch(get_control_id)
 						{
-							case 1: Sign_Control=4;
+							case Sure_Button6:        //确定按钮触发
+							{
+								Sign_Control=4;
+							  Work_Page_Status=Net_Account_Manage_Page;
+							}break;
+							case Cancel_Button6:      //取消按钮触发
+							{
+								Work_Page_Status=Net_Account_Manage_Page;
+							}break;
 						}
 					}	
 					break;         
-					case Cancel_Download_Pgae:                                                //取消下载提醒
+					case Cancel_Download_Page:                                                //取消下载提醒
 					{
             switch(get_control_id)
 						{
-							case 1:
+							case Sure_Button7:                                    //确定取消下载
 							{
 							  if(get_button_state)
 								{
-									Press_button = CMD_Cancel_Download;								
+									Press_button = CMD_Cancel_Download;
+                  Work_Page_Status=File_Manage_Page;									
 								}
 							}
 							break;
-							case 2: 
+							case Cancel_Button7: 
 							{
 							  if(get_button_state)
 								{
-									Press_button = 0xFF;								
+									Press_button = 0xFF;
+                  Work_Page_Status=File_Manage_Page;									
 								}
 							}
 							break;
@@ -1319,15 +1479,15 @@ void Usart2_Receive_data_handle( PCTRL_MSG msg, uint16 size )
 						{
 								switch(get_control_id)
 								{
-									case 1:    //确定按钮触发
+									case Sure_Button8:    //确定按钮触发
 									{							
-										pram_status.Screen_ID21_Setting_Sure=1;
-										pram_status.Screen_ID21_Setting_concel=0;
+										pram_status.Save_Pram_Page_Sure_button=1;
+										pram_status.Save_Pram_Page_concel_button=0;
 									}break;
-									case 2:   //取消按钮触发
+									case Cancel_Button8:   //取消按钮触发
 									{
-										pram_status.Screen_ID21_Setting_Sure=0;
-										pram_status.Screen_ID21_Setting_concel=1;						
+										pram_status.Save_Pram_Page_Sure_button=0;
+										pram_status.Save_Pram_Page_concel_button=1;						
 									}
 									default: break;	
 								}
@@ -1443,7 +1603,7 @@ void Power_On_Set(void)
 	SetTextValue(2,31,"关");
 	SetTextValue(0,29,"X10");         //设置倍率：X10
 	SetTextValue(2,32,"X10");
-	Override_num=10;                   //开机默认倍率
+	Multiple_num=10;                   //开机默认倍率
 	
 	Speed.Initial_Spindle_Speed=20000;                     //主轴初始转速
 	Speed.Initial_Spindle_Speed_Percent=100;               //主轴初始速度百分比
@@ -1473,22 +1633,13 @@ void Power_On_Set(void)
 	SetButtonValue(0,42,1);           //X轴选中状态
 	SetButtonValue(2,22,1);
 	
+	
+	//SetPowerSaving(1,200,50,30);  // 自动调节背光亮度
 
 
 }
 
-//设置页面几个参数值获取（断电保存在flash）
-void Get_Setting_page_pram(void)
-{
-	pram_status.Voice_last_status=AT24CXX_ReadOneByte(0);
-	pram_status.voice_button_status=pram_status.Voice_last_status;            //设置语音提醒模式
-	pram_status.Safe_Z_last_status=AT24CXX_ReadOneByte(1);
-	pram_status.Safe_Z_button_satus=pram_status.Safe_Z_last_status;           //设置安全Z模式
-	pram_status.Auto_Knife_last_status=AT24CXX_ReadOneByte(2);
-	pram_status.Auto_Knife_button_status=pram_status.Auto_Knife_last_status;  //设置自动对刀模式
-	pram_status.Unit_Change_last_status=AT24CXX_ReadOneByte(3);
-	pram_status.Unit_Change_button_status=pram_status.Unit_Change_last_status; //设置单位模式
-}
+
 
 //加工中心主轴速度和加工速度按钮处理
 void Spindle_and_Work_Speed_Key_Process(void)
@@ -1532,6 +1683,9 @@ void Speaker_Key_Process(uint8  state)
 	AT24CXX_WriteOneByte(0,pram_status.Voice_last_status);
 //	FLASH_WriteByte(START_ADDR1,(uint16)pram_status.Voice_last_status);
 }
+
+
+
 //设置页面安全Z按钮触发后处理程序
 void Safe_Z_process(uint8 state)
 {
@@ -1550,6 +1704,9 @@ void Safe_Z_process(uint8 state)
 	AT24CXX_WriteOneByte(1,pram_status.Safe_Z_last_status);
 //	FLASH_WriteByte(START_ADDR2,(uint16)pram_status.Safe_Z_last_status);
 }
+
+
+
 //设置页面自动对刀按钮触发后处理程序
 void Auto_Knife_process(uint8 state)
 {
@@ -1606,7 +1763,23 @@ void Save_Set(void)
 	Unit_Change_process(pram_status.Unit_Change_button_status); //单位切换按钮触发后处理程序
 
 }
-//控制面板坐标切换控制
+
+//获取设置页面几个参数值（断电保存在flash）
+void Get_Setting_page_pram(void)
+{
+	pram_status.Voice_last_status=AT24CXX_ReadOneByte(0);
+	pram_status.voice_button_status=pram_status.Voice_last_status;            //设置语音提醒模式
+	
+	pram_status.Safe_Z_last_status=AT24CXX_ReadOneByte(1);
+	pram_status.Safe_Z_button_satus=pram_status.Safe_Z_last_status;           //设置安全Z模式
+	
+	pram_status.Auto_Knife_last_status=AT24CXX_ReadOneByte(2);
+	pram_status.Auto_Knife_button_status=pram_status.Auto_Knife_last_status;  //设置自动对刀模式
+	
+	pram_status.Unit_Change_last_status=AT24CXX_ReadOneByte(3);
+	pram_status.Unit_Change_button_status=pram_status.Unit_Change_last_status; //设置单位模式
+}
+//坐标切换控制
 void Coordinate_Change_Process(void)
 {
 	Coordinate_Change_Counter++;
@@ -1652,45 +1825,45 @@ void Coordinate_Change_Process(void)
 	}
 }
 //控制面板倍率控制
-void Override_Change_Process(void)
+void Multiple_Change_Process(void)
 {
-	Override_Change_Counter++;	
-	switch(Override_Change_Counter)
+	Multiple_Change_Counter++;	
+	switch(Multiple_Change_Counter)
 	{
 		case 1:
 		{
 			SetTextValue(0,29,"X10");    //设置文本值
 			SetTextValue(2,32,"X10");
-			Override_num=10;
+			Multiple_num=10;
 			break;  
 		}
 		case 2:
 		{
 			SetTextValue(0,29,"X20");                                                                                                                                 
 			SetTextValue(2,32,"X20");
-			Override_num=20;
+			Multiple_num=20;
 			break;
 		}
 		case 3:
 		{
 			SetTextValue(0,29,"X1");
 			SetTextValue(2,32,"X1");
-			Override_num=1;
+			Multiple_num=1;
 			break;
 		}
 		case 4:
 		{
 			SetTextValue(0,29,"X2");
 			SetTextValue(2,32,"X2");
-			Override_num=2;
+			Multiple_num=2;
 			break;
 		}
 		case 5:
 		{
 			SetTextValue(0,29,"X5");
 			SetTextValue(2,32,"X5");
-			Override_num=5;
-			Override_Change_Counter=0;
+			Multiple_num=5;
+			Multiple_Change_Counter=0;
 			break;
 		}	
     default:break;		

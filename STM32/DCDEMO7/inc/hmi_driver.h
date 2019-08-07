@@ -242,6 +242,21 @@ void GUI_Line(uint16 x0, uint16 y0, uint16 x1, uint16 y1);
 void GUI_ConDots(uint8 mode,uint16 *dot,uint16 dot_cnt);
 
 /*! 
+*  \brief  自动调节背光亮度
+*  \param  enable 使能
+*  \param  bl_off_level 待机亮度
+*  \param  bl_on_level  激活亮度
+*  \param  bl_on_time  偏移量个数
+*/
+void SetPowerSaving(uint8 enable, uint8 bl_off_level, uint8 bl_on_level, uint8  bl_on_time);
+
+/*! 
+*  \brief  设置背光亮度
+*  \param  light_level  激活亮度（设置范围：50~255）
+*/
+void SetLightLevel(uint8 light_level);
+
+/*! 
 *  \brief      画空心圆
 *  \param  x0 圆心位置X坐标
 *  \param  y0 圆心位置Y坐标

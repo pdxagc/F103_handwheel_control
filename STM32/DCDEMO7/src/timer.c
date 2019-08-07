@@ -11,13 +11,16 @@ extern Control_Panel_Pram control_panel_pram;
 extern Return_Workpiece_Zero return_workpiece_zero;
 extern Devide_Set devide_set; 
 extern uint8 Mark_10ms;                 //20ms计时标记位
-extern uint8 Mark_10ms_Count;
 extern uint8 Mark_20ms;                 //20ms计时标记位
-extern uint8 Mark_20ms_Count;
 extern uint8 Mark_30ms;                 //30ms计时标记位
-extern uint8 Mark_60ms;                 //60ms计时标记位
+extern uint8 Mark_200ms;                 //60ms计时标记位
 extern uint8 Mark_500ms;                //500ms计时标记位
 
+uint8 Mark_10ms_Count;
+uint8 Mark_20ms_Count;
+uint8 Mark_30ms_Count;
+uint8 Mark_200ms_Count;
+uint8 Mark_500ms_Count;
 uint8 TIME3_Counter=0;         //定时器3溢出计数
 
 
@@ -40,13 +43,13 @@ void TIME2_Init(void)
 	TIM_TimeBaseStructure.TIM_Prescaler =7199;                  //设置时钟频率除数的预分频值
 	TIM_TimeBaseStructure.TIM_ClockDivision = TIM_CKD_DIV1;     //设置时钟分割
 	TIM_TimeBaseStructure.TIM_CounterMode = TIM_CounterMode_Up; //TIM 向上计数
-	TIM_TimeBaseInit(TIM2, &TIM_TimeBaseStructure);             //②初始化 TIM2ALIENTEK MiniSTM32 V3.0 开发板教程
+	TIM_TimeBaseInit(TIM2, &TIM_TimeBaseStructure);             //②初始化 
 
 	TIM_ITConfig(TIM2,TIM_IT_Update,ENABLE ); //③允许更新中断
 	
 	//中断优先级 NVIC 设置
 	NVIC_InitStructure.NVIC_IRQChannel = TIM2_IRQn;              //TIM2 中断
-	NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 1;    //先占优先级  级
+	NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 1;    //先占优先级 1 级
 	NVIC_InitStructure.NVIC_IRQChannelSubPriority = 2;           //从优先级 3 级
 	NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;              //IRQ 通道被使能
 	NVIC_Init(&NVIC_InitStructure);                              //初始化 NVIC 寄存器
@@ -56,35 +59,35 @@ void TIME2_Init(void)
 
 /*******************************************************************************  
 * 函 数 名         : TIME3_Init  
-* 函数功能         :  TIME3初始化  ，(向主机询问坐标) 
+* 函数功能         :  TIME3初始化() ,定时3S
 * 输    入         : 无  
 * 输    出         : 无  
 *******************************************************************************/ 
-//void TIME3_Init(void)
-//{
-//	TIM_TimeBaseInitTypeDef TIM_TimeBaseStructure;
-//	NVIC_InitTypeDef NVIC_InitStructure;
-//	
-//	RCC_APB1PeriphClockCmd(RCC_APB1Periph_TIM3, ENABLE);     //使能TIM3时钟 
-//	
-//	//配置定时器3
-//	TIM_TimeBaseStructure.TIM_Period = 1999;                     //设置自动重装载寄存器周期的值
-//	TIM_TimeBaseStructure.TIM_Prescaler =7199;                  //设置时钟频率除数的预分频值
-//	TIM_TimeBaseStructure.TIM_ClockDivision = TIM_CKD_DIV1;     //设置时钟分割
-//	TIM_TimeBaseStructure.TIM_CounterMode = TIM_CounterMode_Up; //TIM 向上计数
-//	TIM_TimeBaseInit(TIM3, &TIM_TimeBaseStructure);             //②初始化 TIM3ALIENTEK MiniSTM32 V3.0 开发板教程
+void TIME3_Init(void)
+{
+	TIM_TimeBaseInitTypeDef TIM_TimeBaseStructure;
+	NVIC_InitTypeDef NVIC_InitStructure;
+	
+	RCC_APB1PeriphClockCmd(RCC_APB1Periph_TIM3, ENABLE);     //使能TIM3时钟 
+	
+	//配置定时器3
+	TIM_TimeBaseStructure.TIM_Period = 29999;                     //设置自动重装载寄存器周期的值
+	TIM_TimeBaseStructure.TIM_Prescaler =7199;                  //设置时钟频率除数的预分频值
+	TIM_TimeBaseStructure.TIM_ClockDivision = TIM_CKD_DIV1;     //设置时钟分割
+	TIM_TimeBaseStructure.TIM_CounterMode = TIM_CounterMode_Up; //TIM 向上计数
+	TIM_TimeBaseInit(TIM3, &TIM_TimeBaseStructure);             //②初始化
 
-//	TIM_ITConfig(TIM3,TIM_IT_Update,ENABLE ); //③允许更新中断
-//	
-//	//中断优先级 NVIC 设置
-//	NVIC_InitStructure.NVIC_IRQChannel = TIM3_IRQn;              //TIM3 中断
-//	NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 1;    //先占优先级 0 级
-//	NVIC_InitStructure.NVIC_IRQChannelSubPriority = 3;           //从优先级 3 级
-//	NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;              //IRQ 通道被使能
-//	NVIC_Init(&NVIC_InitStructure);                              //初始化 NVIC 寄存器
-//	
-//	//TIM_Cmd(TIM3, ENABLE);                                       //使能 TIM3
-//}
+	TIM_ITConfig(TIM3,TIM_IT_Update,ENABLE ); //③允许更新中断
+	
+	//中断优先级 NVIC 设置
+	NVIC_InitStructure.NVIC_IRQChannel = TIM3_IRQn;              //TIM3 中断
+	NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 1;    //先占优先级 0 级
+	NVIC_InitStructure.NVIC_IRQChannelSubPriority = 3;           //从优先级 3 级
+	NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;              //IRQ 通道被使能
+	NVIC_Init(&NVIC_InitStructure);                              //初始化 NVIC 寄存器
+	
+	//TIM_Cmd(TIM3, ENABLE);                                       //使能 TIM3
+}
 
 
 
@@ -145,51 +148,49 @@ void TIM2_IRQHandler(void)
 	if (TIM_GetITStatus(TIM2, TIM_IT_Update) != RESET) //检查 TIM2 更新中断发生与否
 	{
 		TIM_ClearITPendingBit(TIM2, TIM_IT_Update ); //清除 TIM2 更新中断标志
-	  Mark_10ms=1;
-    Mark_10ms_Count++;		//10ms，查询LCD命令
-		if(Mark_10ms_Count%2==0)
+		Mark_20ms_Count++;
+		Mark_30ms_Count++;
+	  Mark_10ms=1;                  //Mark_10ms置1    
+		if(Mark_20ms_Count==2)        //Mark_20ms置1
 		{
+			Mark_20ms_Count=0;
 		  Mark_20ms = 1;
-			Mark_20ms_Count++;
-			if(Mark_20ms_Count==25)
+			Mark_200ms_Count++;
+			if(Mark_200ms_Count==10)    //Mark_200ms置1
 			{
-			  Mark_500ms=1;
-				Mark_20ms_Count=0;
-			}
+				Mark_200ms_Count=0;
+				Mark_200ms = 1;					
+        Mark_500ms_Count++;		
+        if(Mark_500ms_Count==25)  //Mark_500ms置1
+				{
+					Mark_500ms_Count=0;
+					Mark_500ms=1;				
+				}				
+			}		
 		}
-		if(Mark_10ms_Count%3==0)
+		if(Mark_30ms_Count == 3)     //Mark_30ms置1
 		{
 			Mark_30ms=1;
-			Mark_10ms_Count=0;
-		}
-		if(Mark_10ms_Count%6==0)
-		{
-			Mark_60ms = 1;
-			Mark_10ms_Count=0;			
+			Mark_30ms_Count=0;
 		}
 	
 	}
 }
 
 //定时器 3 中断服务程序
-//void TIM3_IRQHandler(void) //TIM3 中断
-//{
-//	if (TIM_GetITStatus(TIM3, TIM_IT_Update) != RESET) //检查 TIM3 更新中断发生与否
-//	{
-//		TIME3_Counter++;
-//		TIM_ClearITPendingBit(TIM3, TIM_IT_Update );                  //清除 TIM3 更新中断标志
-//		if(TIME3_Counter)
-//		{
-//		  Usart_SendString(USART2,"{\"pos\":null}\\r\\n");              //向主机询问工件坐标
-//		}
+void TIM3_IRQHandler(void) //TIM3 中断
+{
+	if (TIM_GetITStatus(TIM3, TIM_IT_Update) != RESET) //检查 TIM3 更新中断发生与否
+	{
+		TIME3_Counter++;
+		TIM_ClearITPendingBit(TIM3, TIM_IT_Update );                  //清除 TIM3 更新中断标志
 //		if(TIME3_Counter==2)
 //		{
-//	    Usart_SendString(USART2,"{\"mpo\":null}\\r\\n");		           //向主机询问机械坐标
+//		  //SetLightLevel(200);
 //			TIME3_Counter=0;
-//		}
-//		
-//	}
-//}
+//		}		
+	}
+}
 
 ////定时器 4 中断服务程序
 //void TIM4_IRQHandler(void)
@@ -203,20 +204,7 @@ void TIM2_IRQHandler(void)
 
 
 
-//计算脉冲数量
-void Get_Pulses_num(void)
-{	
-	uint16 temp_count;
-	temp_count=TIM_GetCounter(TIM4);
-	if(temp_count%4==0)
-	{
-  	Pulses_counter= temp_count;
-	}
-	else
-	{
-	  Pulses_counter=temp_count+(4-temp_count%4);
-	}
-}
+
 
 //脉冲计数寄存器清零
 void Puless_count_clear(void)

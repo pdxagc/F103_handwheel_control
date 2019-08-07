@@ -451,6 +451,18 @@ void SetPowerSaving(uint8 enable, uint8 bl_off_level, uint8 bl_on_level, uint8  
     TX_8(bl_on_time);
     END_CMD();
 }
+
+/*! 
+*  \brief  设置背光亮度
+*  \param  light_level  激活亮度（设置范围：50~255,数字越小，亮度越大）
+*/
+void SetLightLevel(uint8 light_level)
+{
+    BEGIN_CMD();
+    TX_8(0x60);
+    TX_8(light_level);
+    END_CMD();
+}
 /*! 
 *  \brief  将制定的多个坐标点用前景色连接起来
 *  \param  dot  坐标点

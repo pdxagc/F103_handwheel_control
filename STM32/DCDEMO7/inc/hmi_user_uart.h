@@ -16,14 +16,14 @@
 #define int16    short int
 #define int32    long
 
+
 #define X_mode 10
 #define Y_mode 11
 #define Z_mode 12
 #define A_mode 13
 #define B_mode 14
 
-//////Button TABLE//////////
-
+//Button TABLE for communication between the CNC Cloud mainboard and the handwheel //////////
 //控制面板
 #define CMD_X_AXIS	0                  //X轴选中
 #define CMD_Y_AXIS	1                  //Y轴选中
@@ -33,8 +33,8 @@
 #define CMD_Clear   4                     //清零
 #define CMD_Return_WorkPiece_Zero 5     //回工件零
 #define CMD_Divided	 6                   //分中
-#define CMD_Override_Change	7           //倍率切换
-#define CMD_Spin_On_Off	8               //主轴开关
+#define CMD_Multiple_Change	7           //倍率切换
+#define CMD_Spin_On_Off	 8               //主轴开关
 #define CMD_Auto_knife	9               //自动对刀
 #define CMD_Return_Machine_Zero 10      //回机械零
 #define CMD_ 11
@@ -66,7 +66,7 @@
 #define CMD_Cancel 34                   //取消
 
 //文件管理
-#define CMD_Download 37                 //下载
+#define CMD_Download 35                 //下载
 #define CMD_Cancel_Download  38         //取消下载
 #define CMD_Delete    39                //删除
 #define CMD_Storage_View 40             //内存预览
@@ -104,7 +104,7 @@ void Usart2_Init(uint32 BaudRate);
 void Usart3_Init(uint32 BaudRate);
 
 //RS485 模式控制.en:0,接收;1,发送.
-void RS485_TX_Set(uint8 en);
+void RS485_mode_control(uint8 en);
 
 
 /***************************************************************************
@@ -137,7 +137,7 @@ uint8_t Check_Address (char data);
 void Usart1_Recieve_Process (void);
 
 //串口2接收数据处理函数
-void Usart1_Rec_Data_handle (void);
+void Receive_Data_handle (void);
 
 //给主机发送数据
 void Send_data_to_Master(void);
@@ -152,7 +152,7 @@ uint8 Check_Pulses_change(void);
 uint8 Check_CMD_button_change(void);
 
 //判断倍率是否发生变化
-uint8 Check_Override_change(void);
+uint8 Check_Multiple_change(void);
 
 //确定是哪个轴选中
 uint8 Axis_Gets(void);

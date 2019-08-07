@@ -12,7 +12,6 @@ void TIM2_IRQHandler(void);
 void TIM3_IRQHandler(void);
 void TIM4_IRQHandler(void);
 
-void Get_Pulses_num(void);
 
 //Âö³å¼ÆÊı¼Ä´æÆ÷ÇåÁã
 void Puless_count_clear(void);
