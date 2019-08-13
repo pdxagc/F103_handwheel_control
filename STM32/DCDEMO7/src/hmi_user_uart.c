@@ -30,13 +30,16 @@ hmi_user_uart.c中的串口发送接收函数共3个函数：
 #define CMD_Length 8
 #define PULSE_DIV 4
 
+#define My_Address 2
 extern uint16 Pulses_counter;
 extern uint8 Multiple_num;
 extern uint8  TX_Data [30]; //the sending package
 extern uint8  RX_Data [30]; //the receiving package
 extern Control_Panel_Pram control_panel_pram;
 extern uint8  Press_button;          //记录哪个按钮触发(需要把按键发送给雕刻机)
-#define My_Address 2
+extern uint16 master_ask,master_send;
+
+
 uint8  RX_Busy=0;
 uint8  HC_Address, rxcounter, remaincounter; //this unit is this unit address, if change to master become 0000 
 uint8  ready2send; // bit is 1 while there is command to send
@@ -219,7 +222,10 @@ void USART1_IRQHandler(void)
 		i=USART1->DR;
 		return;
 	}
-	Usart1_Recieve_Process();  //接收数据
+	if (USART_GetITStatus(USART1, USART_IT_RXNE) != RESET)
+  {
+	     Usart1_Recieve_Process();  //接收数据
+  }
 }
 
 //串口2中断函数
@@ -328,7 +334,7 @@ unsigned char CheckXor (char data, unsigned char len)
 uint8_t Check_Address (char data)
 {
 	unsigned char buf;
-	buf = data&(0x1f);//0b0001 1111;
+	buf = data&(0x1f);    //0b0001 1111;
 	if (buf==My_Address)	
 		return 1;
 	else
@@ -339,6 +345,9 @@ uint8_t Check_Address (char data)
 // 串口1接收主机发送的数据 //place at ISR
 void Usart1_Recieve_Process (void)
 { 	
+	 //uint16 master_ask=0,master_send=0;
+	 uint8 rec_command; 
+	 char buf4[20];
 	 uchar RX_Buffer;
 	 short dat; //16 bit	 
 	 dat=USART1->DR;
@@ -371,7 +380,21 @@ void Usart1_Recieve_Process (void)
 	  		RX_Busy=0;
 	  		if(CheckXor(RX_Data[rxcounter-1],RX_Data[0]))
 	  		{
-	  			ready2read=1; //校验通过									
+	  			ready2read=1; //校验通过
+					rec_command=RX_Data[1];
+					if(rec_command==CMD_ASK_SLAVE)
+					{
+						master_ask++;
+						sprintf(buf4,"master_ask:%u",master_ask);	
+		        SetTextValue(3,29,(uchar *)buf4);	
+						
+					}
+//					else if(rec_command==CMD_UPDATE_MACH3_NUMBER)
+//					{
+//						master_send++;	
+//            sprintf(buf4,"master_send:%u",master_send);	
+//			  	  SetTextValue(3,49,(uchar *)buf4);
+//					}						
 
 	  		}
 	 	   }
@@ -379,26 +402,40 @@ void Usart1_Recieve_Process (void)
 
 }
 /*
-#define CMD_ASK_SLAVE 29 (0x1D)                //主机请求数据
-#define CMD_RPY_HC_MPG1	36                     //手轮发送数据
-#define CMD_UPDATE_MACH3_NUMBER	41 (0x29)      //主机发送数据
+// COMMAND TABLE
+#define CMD_ASK_SLAVE 29                 //主机请求数据
+#define CMD_RPY_HC_MPG1	36               //手轮发送数据
+#define CMD_UPDATE_MACH3_NUMBER	41       //主机发送坐标数据
+#define CMD_Working_File_Name 50         //加工文件名
+#define CMD_Work_line 51                 //加工行数
+#define CMD_Working_Code 52              //加工代码
+#define CMD_SPin_Speed 53                //主轴速度
+#define CMD_Working_Speed 54             //加工速度
+#define CMD_Warn_Massage  55             //警报信息
+#define CMD_Clond_File_Name 56           //云空间文件名
+#define CMD_SD_Card_File_Name 57         //SD卡文件名
+#define CMD_Storage_Data  58             //内存数据
+#define CMD_Wifi_Name  59                //wifi名称
+#define CMD_Wifi_Password 60             //wif密码
+#define CMD_Account_Name  61             //用户账户
+#define CMD_Account_Password 62          //用户密码
 */
 
 //串口1接收数据后，对数据进行处理
-void Receive_Data_handle (void)
+void Communication_Data_handle (void)
 {
 
 	uint8 command;
 	uint16 Recdata1,Recdata2;
 	if(ready2read)                    //检验通过，收到了主机的数据
 	{
-		command=RX_Data[1];           //读取接收的命令
+		command=RX_Data[1];            //读取接收的命令
 		switch(command)
 		{
 			case CMD_ASK_SLAVE:           //主机请求数据，手轮要给主机发送数据
 				Usart1_Send_Data(10);
 			break;			
-			case CMD_UPDATE_MACH3_NUMBER: //接收到主机坐标数据  
+			case CMD_UPDATE_MACH3_NUMBER: //接收到工件坐标数据  
 			{
 				Recdata1=RX_Data[2];
 				Recdata2=RX_Data[4];
@@ -411,9 +448,47 @@ void Receive_Data_handle (void)
 				control_panel_pram.Z_value = (int16)(Recdata1<<8)+RX_Data[11]+((int16)((Recdata2<<8)+RX_Data[13]))*0.001;
 				Recdata1=RX_Data[14];
 				Recdata2=RX_Data[16];
-				control_panel_pram.A_value = (int16)(Recdata1<<8)+RX_Data[15]+((int16)((Recdata2<<8)+RX_Data[17]))*0.001;
-				
-        				
+				control_panel_pram.A_value = (int16)(Recdata1<<8)+RX_Data[15]+((int16)((Recdata2<<8)+RX_Data[17]))*0.001;      				
+			}break;
+			case CMD_Working_File_Name:    //加工文件名
+			{
+			
+			}break;
+			case CMD_Work_line:             //加工行数
+			{
+			
+			}break;
+			case CMD_Working_Code:             //加工代码
+			{
+			
+			}break;
+			case CMD_SPin_Speed:               //主轴速度
+			{
+			
+			}break;
+			case CMD_Working_Speed:            //加工速度
+			{
+			
+			}break;
+			case CMD_Warn_Massage:             //警报信息
+			{  
+			
+			}break;	
+			case CMD_Clond_File_Name:          //云空间文件名
+			{
+			
+			}break;
+			case CMD_SD_Card_File_Name:         //SD卡文件名
+			{
+			
+			}break;
+		  case 	CMD_Storage_Data:            //内存数据
+			{  
+			
+			}break;
+			case CMD_Wifi_Name:               //wifi名称
+			{
+			
 			}break;
 			
 		}
@@ -528,8 +603,8 @@ void Create_CMD_and_Date(void)
 void Usart1_Send_Data (uint8 length)
 { 
 	uint8 i,x,y,z;
-	uint16 temp_pulses;
-	char buf3[10];
+  static uint16 send_times=0;
+	char buf3[20];
 	x = Check_Pulses_change();
 	y = Check_CMD_button_change();
 	z = Check_Multiple_change();
@@ -547,14 +622,13 @@ void Usart1_Send_Data (uint8 length)
 			else
 			{
 				USART1->DR = TX_Data[i];
-				while((USART1->SR&0X40)==0);
-				
-				temp_pulses=(TX_Data[3]<<8)+TX_Data[4];
-				sprintf(buf3,"%u",temp_pulses);	
-				SetTextValue(0,21,(uchar *)buf3);  
+				while((USART1->SR&0X40)==0);  
 				
 			};//循环发送,直到发送完毕   		
 		}
+		send_times++;
+		sprintf(buf3,"Slave_send:%u",send_times);	
+		SetTextValue(3,50,(uchar *)buf3);
 		
 		RS485_mode_control(0);
 	}

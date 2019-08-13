@@ -43,6 +43,8 @@ uint8 Estop_Press_time=0;          //紧急按钮按下次数统计
 uint8 Light_mark_button;           //按键触发标记 
 uint8 last_time_light_mark_button; //记录上次背光触发标记值
 
+uint16 master_ask=0,master_send=0;
+
 /******************************************************************************************************/
 /*!                                                                                 
 *  \brief  程序入口                                                                 
@@ -50,6 +52,7 @@ uint8 last_time_light_mark_button; //记录上次背光触发标记值
 /*******************************************************************************************************/
 int main()                                                                          
  { 
+	char buf4[20];
   uint16 time_conuter=0;	
   char bufrec[20],buf1[20];
 //  uint16 Recdata1,Recdata2,RecPulses;	 
@@ -112,30 +115,32 @@ int main()
 		
 	while(1)                                                                        
 	{				
-//		time_conuter++;	
+		time_conuter++;	
 		
 		Pulses_Count_Process();               //计算手轮脉冲	 
-		TFT_Page_handle();                     //程序进入不同的工作页面,处理相关任务	
+		TFT_Page_handle();                    //程序进入不同的工作页面,处理相关任务	
 		
 		if(Mark_10ms)
-		{
-			
+		{	
+      Communication_Data_handle();          //串口1（雕刻机数据）数据接收处理			
 			Estop_button_process();               //紧急按钮触发处理函数
-			Receive_Data_handle();                //串口1（雕刻机数据）数据接收处理
 		  Mark_10ms=0;
 		}
 		if(Mark_20ms) 
 		{
 			Key_scan();                         //手轮物理按键扫描
-			TFT_command_analyse();              //分析TFT屏的命令，触发了什么按钮 			  
+			TFT_command_analyse();               //分析TFT屏的命令，触发了什么按钮 
+      		
 			Mark_20ms=0;
 		}
 		if(Mark_200ms)                         //定时满200ms
 		{
 			light_Control_Process();             //背光亮度控制
-			TFT_Show_coordanate_value();        //显示工件坐标（机械坐标待增加） 
-			Work_state_control();               //雕刻机工作状态显示（未增加蓝牙，WiFi状态）
+			TFT_Show_coordanate_value();         //显示工件坐标和机械坐标 
+			Work_state_control();                //雕刻机工作状态显示（未增加蓝牙，WiFi状态）
 			Mark_200ms=0;
+			
+			
 //			Usart1_Send_Data(10);
 //			if(Start_Download)
 //			{
@@ -147,8 +152,8 @@ int main()
 //				}
 //		  }
 		}	
-//			sprintf(buf1,"%d",time_conuter);  
-//			SetTextValue(0,23,(uchar *)buf1);     //显示加工行数，需要向主机询问
+			sprintf(buf1,"%u",time_conuter);  
+			SetTextValue(3,49,(uchar *)buf1);     //显示加工行数，需要向主机询问
 				
 		
 	}

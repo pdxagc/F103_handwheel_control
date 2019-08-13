@@ -136,6 +136,7 @@ void light_Control_Process(void)
 	else  
 		Puless_Changed_Mark =  0;	
 	
+	//Light_mark_button:每次屏幕有按键触发时，自动加1
 	if(Light_mark_button != last_time_light_mark_button || Puless_Changed_Mark)  //有按键触发或者手轮转动
 	{
 		SetLightLevel(50);
@@ -148,7 +149,7 @@ void light_Control_Process(void)
 			Light_mark_button=0;
 		}
 	}
-	else
+	else      //无动作发生，使能定时器3，倒计时
 	{
 		if(TIM3_EN_Mark)
 		{
@@ -156,9 +157,8 @@ void light_Control_Process(void)
 			TIM3_EN_Mark=0;
 		}			
 	}
-	
-	
-	if(TIME3_Counter==2)  //定时30s,没有动作发生，则降低屏幕亮度
+		
+	if(TIME3_Counter==4)  //定时30s,没有动作发生，则降低屏幕亮度
 	{
 		TIME3_Counter=0;
 	  SetLightLevel(200);
@@ -200,22 +200,22 @@ void TFT_Page_handle(void)
 				Work_Page_Status=Working_Page;				 
 		 }		
 		}break;
-		case Save_Pram_Page:  //****************************************************提示是否保存参数设置****************************************************************************************
-		{
-			if(state.Work_state==Stop)                                   //停止加工
-			{
-				if(pram_status.Save_Pram_Page_Sure_button)                   //“确定按钮”按下
-				{
-					Save_Set();                                              //保存设置
-					Work_Page_Status=Working_Page;
-				}
-				if(pram_status.Save_Pram_Page_concel_button)                 //取消按钮按下
-				{
-					Return_last_status();                                    //恢复上一次设置状态
-					Work_Page_Status=Working_Page;					
-				}	
-			}				
-		} break;	
+//		case Save_Pram_Page:  //****************************************************提示是否保存参数设置****************************************************************************************
+//		{
+//			if(state.Work_state==Stop)                                   //停止加工
+//			{
+//				if(pram_status.Save_Pram_Page_Sure_button)                   //“确定按钮”按下
+//				{
+//					Save_Set();                                              //保存设置
+//					Work_Page_Status=Working_Page;
+//				}
+//				if(pram_status.Save_Pram_Page_concel_button)                 //取消按钮按下
+//				{
+//					Return_last_status();                                    //恢复上一次设置状态
+//					Work_Page_Status=Working_Page;					
+//				}	
+//			}				
+//		} break;	
 		case ControlPanel_Page:  //******************************************************控制面板页面*****************************************************************************************
 		{	
 			//Get_Pulses_num();                                   //计算脉冲个数 
@@ -230,12 +230,12 @@ void TFT_Page_handle(void)
 			
 			if(first_time_re_workpiece)      //首次进入这个页面
 			{
-				SetButtonValue(3,1,0);         //所有轴显示为选中状态()
-				SetButtonValue(3,4,0);
-				SetButtonValue(3,5,0);
-				SetButtonValue(3,6,0);
-				SetButtonValue(3,7,0);
-				SetButtonValue(3,8,0);
+				SetButtonValue(4,1,0);         //所有轴显示为选中状态()
+				SetButtonValue(4,4,0);
+				SetButtonValue(4,5,0);
+				SetButtonValue(4,6,0);
+				SetButtonValue(4,7,0);
+				SetButtonValue(4,8,0);
 				
 				return_workpiece_zero.all_spindle_status=0;   //所有轴显示为选中状态
 				return_workpiece_zero.X_clear_status=0;
@@ -254,11 +254,11 @@ void TFT_Page_handle(void)
 			
 			if(return_workpiece_zero.X_clear_status==0 && return_workpiece_zero.Y_clear_status==0 && return_workpiece_zero.Z_clear_status==0 && return_workpiece_zero.A_clear_status==0 && return_workpiece_zero.B_clear_status==0)   //所有轴都选中
 			{
-				SetButtonValue(3,1,0);              //全轴按钮显示选中状态
+				SetButtonValue(4,1,0);              //全轴按钮显示选中状态
 			}
 			else
 			{
-				SetButtonValue(3,1,1);              //全轴按钮显示未选中状态
+				SetButtonValue(4,1,1);              //全轴按钮显示未选中状态
 			}
 			
 			if(return_workpiece_zero.Sure)        //确定按钮按下
@@ -550,12 +550,15 @@ void TFT_Page_handle(void)
 //对来自TFT屏的命令进行分析
 void TFT_command_analyse(void)
 {
+	
 	qsize  size = 0;                                             //指令长度 
   size = queue_find_cmd(cmd_buffer,CMD_MAX_SIZE);              //接收到LCD屏的数据，从USART2的指令缓冲区cmd_buffer中获取一条指令，得到指令长度       
 	if(size>0 && cmd_buffer[1]!=0x07)                            //接收到指令 ，及判断是否为开机提示
 	{                                                                           
 		Usart2_Receive_data_handle((PCTRL_MSG)cmd_buffer, size);   //指令分析处理 ，标记应该进入哪个Work_Page_Status，标记相应的操作位
-	  Light_mark_button++;                                       //表示屏幕有按键触发，
+	  Light_mark_button++;                                      //表示屏幕有按键触发，
+		
+		
 		memset(cmd_buffer, 0, CMD_MAX_SIZE);                       //对指令缓冲cmd_buffer清零
 	}
 }
@@ -590,6 +593,7 @@ void Usart2_Receive_data_handle( PCTRL_MSG msg, uint16 size )
 									{
 										if(get_button_state)
 										{
+											  Press_button=CMD_Spindle_Speed_Subtract;
 											  Speed.Spindle_Speed_Changed=Changed;
 												Speed.Initial_Spindle_Speed_Percent -= 10; 
 												if(Speed.Initial_Spindle_Speed_Percent <= 0)
@@ -604,6 +608,8 @@ void Usart2_Receive_data_handle( PCTRL_MSG msg, uint16 size )
 									{
 										if(get_button_state)
 										{   
+											
+											  Press_button=CMD_Spindle_Speed_Add;
 											  Speed.Spindle_Speed_Changed=Changed;
 												Speed.Initial_Spindle_Speed_Percent += 10;
 												if(Speed.Initial_Spindle_Speed_Percent >= 100)
@@ -618,6 +624,7 @@ void Usart2_Receive_data_handle( PCTRL_MSG msg, uint16 size )
 									{
 										if(get_button_state)
 										{
+											  Press_button=CMD_Work_Speed_Suttract;
 											  Speed.Work_Speed_Changed=Changed;
 												if(Speed.Initial_Work_Speed_Percent <= 100)
 												{
@@ -639,6 +646,7 @@ void Usart2_Receive_data_handle( PCTRL_MSG msg, uint16 size )
 									{
 										if(get_button_state)
 										{
+											  Press_button=CMD_Spindle_Speed_Add;
 											  Speed.Work_Speed_Changed=Changed;
 												if(Speed.Initial_Work_Speed_Percent < 100)
 												{
@@ -706,116 +714,20 @@ void Usart2_Receive_data_handle( PCTRL_MSG msg, uint16 size )
 										else
 											pram_status.Safe_Z_button_satus=0;													
 									}break;
-									case Auto_kinfe_Button1:                          //自动对刀按钮触发
+									case Auto_kinfe_Button1:                       //自动对刀按钮触发
 									{
 										if(get_button_state)
 											pram_status.Auto_Knife_button_status=1;
 										else
 											pram_status.Auto_Knife_button_status=0;						
 									}break;
-									case Uint_Button:                          //单位选择按钮触发
+									case Uint_Button:                              //单位选择按钮触发
 									{
 										if(get_button_state)
 											pram_status.Unit_Change_button_status=1;
 										else
 											pram_status.Unit_Change_button_status=0;						
 									}break;
-									case Sure_Button1:                             //确定按钮按下
-									{
-										Work_Page_Status=Save_Pram_Page;						
-									}break;
-									case Cancel_button1:                             //取消按钮按下
-									{
-		//								pram_status.Setting_Page_cancel_button=0;
-										pram_status.Setting_Page_cancel_button=1;					
-									}break;
-									case 6:                          //获取安全Z高度
-									{
-										
-										pram_status.Safe_Z_num=NotifyText(msg->param);										
-//										sprintf(buf,"Safe_Z:%.2f",pram_status.Safe_Z_num);    
-									}										
-									break;
-									case 7:                   //获取对刀高度
-									{
-										
-										pram_status.Knife_high_num=NotifyText(msg->param);										
-//										sprintf(buf,"Knife_high:%.2f",pram_status.Knife_high_num);
-//		                Usart_SendString(USART2,(char *)buf);       
-									}										
-									break;
-									case 8:                     //获取对刀块高度
-									{
-										
-										pram_status.Knife_block_high_num=NotifyText(msg->param);										
-//										sprintf(buf,"Knife_block_high:%.2f",pram_status.Knife_block_high_num);
-//		                Usart_SendString(USART2,(char *)buf);     
-									}										
-									break;
-									case 9:                  //获取对刀块X轴位置
-									{
-										
-										pram_status.Auto_Knife_block_X=NotifyText(msg->param);										
-//										sprintf(buf,"Knife_block_X:%.2f",pram_status.Auto_Knife_block_X);
-//		                Usart_SendString(USART2,(char *)buf);       
-									}										
-									break;
-									case 10:                 //获取对刀块Y轴位置
-									{
-										
-										pram_status.Auto_Knife_block_Y=NotifyText(msg->param);										
-//										sprintf(buf,"Knife_block_Y:%.2f",pram_status.Auto_Knife_block_Y);
-//		                Usart_SendString(USART2,(char *)buf);       
-									}										
-									break;
-									case 11:                 //获取对刀块Z 轴位置
-									{
-										
-										pram_status.Auto_Knife_block_Z=NotifyText(msg->param);										
-//										sprintf(buf,"Knife_block_Z:%.2f",pram_status.Auto_Knife_block_Z);
-//		                Usart_SendString(USART2,(char *)buf);      
-									}										
-									break;
-									case 12:                  //获取软限位X轴位置
-									{
-										
-										pram_status.Soft_limit_X=NotifyText(msg->param);										
-//										sprintf(buf,"Soft_limit_X:%.2f",pram_status.Soft_limit_X);
-//		                Usart_SendString(USART2,(char *)buf);      
-									}										
-									break;
-									case 13:                   //获取软限位Y轴位置
-									{
-										
-										pram_status.Soft_limit_Y=NotifyText(msg->param);										
-//										sprintf(buf,"Soft_limit_Y:%.2f",pram_status.Soft_limit_Y);
-//		                Usart_SendString(USART2,(char *)buf);      
-									}										
-									break;
-									case 14:                 //获取软限位Z轴位置
-									{
-										
-										pram_status.Soft_limit_Z=NotifyText(msg->param);										
-//										sprintf(buf,"Soft_limit_Z:%.2f",pram_status.Soft_limit_Z);
-//		                Usart_SendString(USART2,(char *)buf);      
-									}										
-									break;
-									case 15:                 //获取软限位A轴位置
-									{ 
-										
-										pram_status.Soft_limit_A=NotifyText(msg->param);										
-//										sprintf(buf,"Soft_limit_A:%.2f",pram_status.Soft_limit_A);
-//		                Usart_SendString(USART2,(char *)buf);     
-									}										
-									break;
-									case 16:                  //获取软限位B轴位置
-									{
-										
-										pram_status.Soft_limit_B=NotifyText(msg->param);										
-//										sprintf(buf,"Soft_limit_B:%.2f",pram_status.Soft_limit_B);
-//		                Usart_SendString(USART2,(char *)buf);       
-									}										
-									break;
 									case Voice_button:                           //语音提示按钮触发 
 									{
 										if(get_button_state)                                
@@ -823,94 +735,332 @@ void Usart2_Receive_data_handle( PCTRL_MSG msg, uint16 size )
 										else
 											pram_status.voice_button_status=voice_on;  //按钮松开，语音提醒开													
 									}break;
-									
-								
+									case BackLight_button:                          //背光按钮 
+									{
+										Work_Page_Status=BackLight_Adjust_Page;												
+									}break;
+									case Softlimit_button:                           //软限位设定按钮 
+									{
+										Work_Page_Status=Setting_Page_2;												
+									}break;
+									case Working_button:                             //加工页面按钮
+									{
+										Work_Page_Status=Working_Page;						
+									}break;
+									case File_Manage_Button:                         //文件管理按钮
+									{
+										 Work_Page_Status=File_Manage_Page;					
+									}break;
+									case Net_Account_Manage_Button5:                  //网络账户管理按钮
+									{
+										 Work_Page_Status=Net_Account_Manage_Page;					
+									}break;
+									case Safe_Z_Setting:                          //获取安全Z高度
+									{
+										
+										pram_status.Safe_Z_num=NotifyText(msg->param);										
+//										sprintf(buf,"Safe_Z:%.2f",pram_status.Safe_Z_num);    
+									}										
+									break;
+									case knife_height_Setting:                   //获取对刀高度
+									{
+										
+										pram_status.Knife_high_num=NotifyText(msg->param);										
+//										sprintf(buf,"Knife_high:%.2f",pram_status.Knife_high_num);
+//		                Usart_SendString(USART2,(char *)buf);       
+									}										
+									break;
+									case knife_Block_height_Setting:                     //获取对刀块高度
+									{
+										
+										pram_status.Knife_block_high_num=NotifyText(msg->param);										
+//										sprintf(buf,"Knife_block_high:%.2f",pram_status.Knife_block_high_num);
+//		                Usart_SendString(USART2,(char *)buf);     
+									}										
+									break;
+									case knife_height_X1:                  //获取对刀块X轴位置
+									{
+										
+										pram_status.Auto_Knife_block_X=NotifyText(msg->param);										
+//										sprintf(buf,"Knife_block_X:%.2f",pram_status.Auto_Knife_block_X);
+//		                Usart_SendString(USART2,(char *)buf);       
+									}										
+									break;
+									case knife_height_Y1:                 //获取对刀块Y轴位置
+									{
+										
+										pram_status.Auto_Knife_block_Y=NotifyText(msg->param);										
+//										sprintf(buf,"Knife_block_Y:%.2f",pram_status.Auto_Knife_block_Y);
+//		                Usart_SendString(USART2,(char *)buf);       
+									}										
+									break;
+									case knife_height_Z1:                 //获取对刀块Z 轴位置
+									{
+										
+										pram_status.Auto_Knife_block_Z=NotifyText(msg->param);										
+//										sprintf(buf,"Knife_block_Z:%.2f",pram_status.Auto_Knife_block_Z);
+//		                Usart_SendString(USART2,(char *)buf);      
+									}										
+									break;
+//									case 12:                  //获取软限位X轴位置
+//									{
+//										
+//										pram_status.Soft_limit_X=NotifyText(msg->param);										
+////										sprintf(buf,"Soft_limit_X:%.2f",pram_status.Soft_limit_X);
+////		                Usart_SendString(USART2,(char *)buf);      
+//									}										
+//									break;
+//									case 13:                   //获取软限位Y轴位置
+//									{
+//										
+//										pram_status.Soft_limit_Y=NotifyText(msg->param);										
+////										sprintf(buf,"Soft_limit_Y:%.2f",pram_status.Soft_limit_Y);
+////		                Usart_SendString(USART2,(char *)buf);      
+//									}										
+//									break;
+//									case 14:                 //获取软限位Z轴位置
+//									{
+//										
+//										pram_status.Soft_limit_Z=NotifyText(msg->param);										
+////										sprintf(buf,"Soft_limit_Z:%.2f",pram_status.Soft_limit_Z);
+////		                Usart_SendString(USART2,(char *)buf);      
+//									}										
+//									break;
+//									case 15:                 //获取软限位A轴位置
+//									{ 
+//										
+//										pram_status.Soft_limit_A=NotifyText(msg->param);										
+////										sprintf(buf,"Soft_limit_A:%.2f",pram_status.Soft_limit_A);
+////		                Usart_SendString(USART2,(char *)buf);     
+//									}										
+//									break;
+//									case 16:                  //获取软限位B轴位置
+//									{
+//										
+//										pram_status.Soft_limit_B=NotifyText(msg->param);										
+////										sprintf(buf,"Soft_limit_B:%.2f",pram_status.Soft_limit_B);
+////		                Usart_SendString(USART2,(char *)buf);       
+//									}										
+//									break;							
 									default: break;		
                  }									
 						}					
-					}break;   
-					case ControlPanel_Page:                                         //画面2：控制面板
+					}break;  
+          case Setting_Page_2:                                              //画面2：设置页面
 					{
+						//char buf[20];
+						Work_Page_Status=Setting_page;
+						if(state.Work_state==Stop)             //停止加工状态
+						{
+							switch(get_control_id)                                
+							{
+									case Safe_Z_Button3:                           //安全Z按钮触发
+									{
+										if(get_button_state)
+											pram_status.Safe_Z_button_satus=1;
+										else
+											pram_status.Safe_Z_button_satus=0;													
+									}break;
+									case Uint_Button2:                              //单位选择按钮触发
+									{
+										if(get_button_state)
+											pram_status.Unit_Change_button_status=1;
+										else
+											pram_status.Unit_Change_button_status=0;						
+									}break;
+									case Auto_kinfe_Button3:                       //自动对刀按钮触发
+									{
+										if(get_button_state)
+											pram_status.Auto_Knife_button_status=1;
+										else
+											pram_status.Auto_Knife_button_status=0;						
+									}break;
+									case Voice_button1:                            //语音提示按钮触发 
+									{
+										if(get_button_state)                                
+											pram_status.voice_button_status=voice_off; //按钮按下，语音提醒关
+										else
+											pram_status.voice_button_status=voice_on;  //按钮松开，语音提醒开													
+									}break;
+									case BackLight_button2:                          //背光按钮 
+									{
+										Work_Page_Status=BackLight_Adjust_Page;												
+									}break;
+									case Softlimit_button2:                           //软限位设定按钮 
+									{
+										Work_Page_Status=Setting_Page_2;												
+									}break;
+									case Working_button2:                             //加工页面按钮
+									{
+										Work_Page_Status=Working_Page;						
+									}break;
+									case File_Manage_Button6:                         //文件管理按钮
+									{
+										 Work_Page_Status=File_Manage_Page;					
+									}break;
+									case Net_Account_Manage_Button6:                  //网络账户管理按钮
+									{
+										 Work_Page_Status=Net_Account_Manage_Page;					
+									}break;
+									case Safe_Z_Setting2:                              //获取安全Z高度
+									{
+											pram_status.Safe_Z_num=NotifyText(msg->param);										
+//										sprintf(buf,"Safe_Z:%.2f",pram_status.Safe_Z_num);    
+									}										
+									break;
+									case knife_height_Setting2:                         //获取对刀高度
+									{
+											pram_status.Knife_high_num=NotifyText(msg->param);										
+//										sprintf(buf,"Knife_high:%.2f",pram_status.Knife_high_num);
+//		                Usart_SendString(USART2,(char *)buf);       
+									}										
+									break;
+									case knife_Block_height_Setting2:                  //获取对刀块高度
+									{								
+										pram_status.Knife_block_high_num=NotifyText(msg->param);										
+//										sprintf(buf,"Knife_block_high:%.2f",pram_status.Knife_block_high_num);
+//		                Usart_SendString(USART2,(char *)buf);     
+									}										
+									break;
+									case Soft_Limit_X1:                  //获取软限位X轴位置1
+									{
+										
+										pram_status.Soft_limit_X1=NotifyText(msg->param);										
+//										sprintf(buf,"Soft_limit_X:%.2f",pram_status.Soft_limit_X);
+//		                Usart_SendString(USART2,(char *)buf);      
+									}										
+									break;
+									case Soft_Limit_X2:                  //获取软限位X轴位置2
+									{
+										
+										pram_status.Soft_limit_X2=NotifyText(msg->param);										
+//										sprintf(buf,"Soft_limit_X:%.2f",pram_status.Soft_limit_X);
+//		                Usart_SendString(USART2,(char *)buf);      
+									}										
+									break;
+									case Soft_Limit_Y1:                 //获取软限位Y轴位置1
+									{
+										
+										pram_status.Soft_limit_Y1=NotifyText(msg->param);										
+//										sprintf(buf,"Soft_limit_Y:%.2f",pram_status.Soft_limit_Y);
+//		                Usart_SendString(USART2,(char *)buf);      
+									}										
+									break;
+									case Soft_Limit_Y2:                 //获取软限位Y轴位置2
+									{
+										
+										pram_status.Soft_limit_Y2=NotifyText(msg->param);										
+//										sprintf(buf,"Soft_limit_Y:%.2f",pram_status.Soft_limit_Y);
+//		                Usart_SendString(USART2,(char *)buf);      
+									}										
+									break;
+									case Soft_Limit_Z1:               //获取软限位Z轴位置1
+									{
+										
+										pram_status.Soft_limit_Z1=NotifyText(msg->param);										
+//										sprintf(buf,"Soft_limit_Z:%.2f",pram_status.Soft_limit_Z);
+//		                Usart_SendString(USART2,(char *)buf);      
+									}										
+									break;
+									case Soft_Limit_Z2:                 //获取软限位Z轴位置2
+									{ 
+										
+										pram_status.Soft_limit_Z2=NotifyText(msg->param);										
+//										sprintf(buf,"Soft_limit_A:%.2f",pram_status.Soft_limit_A);
+//		                Usart_SendString(USART2,(char *)buf);     
+									}										
+									break;
+									case Soft_Limit_A1:                  //获取软限位A轴位置1
+									{
+										
+										pram_status.Soft_limit_A1=NotifyText(msg->param);										
+//										sprintf(buf,"Soft_limit_B:%.2f",pram_status.Soft_limit_B);
+//		                Usart_SendString(USART2,(char *)buf);       
+									}										
+									break;
+									case Soft_Limit_A2:                  //获取软限位A轴位置2
+									{
+										
+										pram_status.Soft_limit_A2=NotifyText(msg->param);										
+//										sprintf(buf,"Soft_limit_B:%.2f",pram_status.Soft_limit_B);
+//		                Usart_SendString(USART2,(char *)buf);       
+									}										
+									break;
+									case Soft_Limit_B1:                  //获取软限位B轴位置1
+									{
+										
+										pram_status.Soft_limit_B1=NotifyText(msg->param);										
+//										sprintf(buf,"Soft_limit_B:%.2f",pram_status.Soft_limit_B);
+//		                Usart_SendString(USART2,(char *)buf);       
+									}										
+									break;
+									case Soft_Limit_B2:                  //获取软限位B轴位置2
+									{
+										
+										pram_status.Soft_limit_B2=NotifyText(msg->param);										
+//										sprintf(buf,"Soft_limit_B:%.2f",pram_status.Soft_limit_B);
+//		                Usart_SendString(USART2,(char *)buf);       
+									}										
+									break;						
+									default: break;		
+               }									
+						}					
+					}break; 					
+					case ControlPanel_Page:                                         //画面3：控制面板
+					{
+						  static uint16 press_time=0;
+	            char buf5[10];
+						
 							Work_Page_Status=ControlPanel_Page;
 							switch(get_control_id)
 							{
-                  case Clear_Botton:                                           //清零按钮触发
-									{
-										if(get_button_state)
-										{
-											Press_button = CMD_Clear;								
-										}																					
-									}break;    
-                  case Return_Machine_Zero_Button:                            //回机械零按钮触发	
-                  {
-										if(get_button_state)
-										{
-											Press_button = CMD_Return_Machine_Zero;
-																								
-										}
-										get_button_state=0;	
-									}break;                                     									
-									case Multiple_Button:								                              //倍率切换按钮触发
-									{
-										if(get_button_state)
-										{
-												control_panel_pram.Multiple_Change_button=1;
-												Multiple_Change_Process();                    //倍率切换控制
-												Press_button = CMD_Multiple_Change;												
-										}
-										get_button_state=0;										
-									}break;
-								  case Spin_Button:                                             //主轴开关按钮触发
-									{
-										if(get_button_state)
-										{
-											Press_button = CMD_Spin_On_Off;						
-										}
-										get_button_state=0;	
-									}break;
-			            case All_Clear_Button:                                       //全轴清零按钮触发
-									{
-                    if(get_button_state)   
-										{										
-											control_panel_pram.All_Spindle_Clear_Button=1;
-											Press_button = CMD_All_Spin_Clear;
-											get_button_state=0;
-										}
-									}break;
-									case Return_Workpiece_Zero_Button:                          //回工件零按钮触发
+								case Return_Workpiece_Zero_Button:                          //回工件零按钮触发
 									{
 										if(get_button_state)    
 										{
 											Work_Page_Status=Return_WorkPiece_Zero_Page;
 											first_time_re_workpiece=1;
 											Press_button = CMD_Return_WorkPiece_Zero;
-											get_button_state=0;
+											press_time++;
+											sprintf(buf5,"P:%u",press_time);	
+											SetTextValue(3,28,(uchar *)buf5);
+											
 										}
 									}break;
-									case Coordinate_Button:                                      //坐标切换按钮触发
-									{
-											if(get_button_state)
-											{										
-												  Coordinate_Change_Process();//坐标切换控制
-												  Press_button = CMD_Coordinate_Change;
-												  get_button_state=0;
-											 }										
-									}break;
-									case Soft_Limit_button:                                      //软限位开关按钮触发
-									{											
-											if(get_button_state)
-											{
-												Press_button = CMD_Soft_Limit;						
-											}
-											get_button_state=0;	
-									}break;
-									case Safe_Z_Button2:                                         // 安全Z开关
-									{
+									 case Return_Machine_Zero_Button:                            //回机械零按钮触发	
+                  {
 										if(get_button_state)
+										{
+											Press_button = CMD_Return_Machine_Zero;
+											press_time++;
+											sprintf(buf5,"P:%u",press_time);	
+											SetTextValue(3,28,(uchar *)buf5);
+																							
+										}	
+									}break; 
+									case Divided_Button:                                         //分中按钮触发
+									{
+											if(get_button_state)
 											{
-												Press_button = CMD_Safe_Z;						
+												Press_button = CMD_Divided;	
+												press_time++;
+											sprintf(buf5,"P:%u",press_time);	
+											SetTextValue(3,28,(uchar *)buf5);
+												
 											}
-											get_button_state=0;	
+											
+									}break;
+									case Auto_kinfe_Button2:                                     //对刀按钮触发
+									{										
+											if(get_button_state)
+											{
+												Press_button = CMD_Auto_knife;
+												press_time++;
+											sprintf(buf5,"P:%u",press_time);	
+											SetTextValue(3,28,(uchar *)buf5);
+												
+											}
+											
 									}break;
 									case Jump_Work_Button:                                      //跳行加工按钮触发
 									{
@@ -919,32 +1069,102 @@ void Usart2_Receive_data_handle( PCTRL_MSG msg, uint16 size )
 											jump_work_set.First_get_into = 1;
 											Work_Page_Status=Jump_Work_Page;
 											Press_button = CMD_Jump_Work;
-											get_button_state=0;
+											press_time++;
+											sprintf(buf5,"P:%u",press_time);	
+											SetTextValue(3,28,(uchar *)buf5);
+											
 										}
 									}break;
-									case Auto_kinfe_Button2:                                     //对刀按钮触发
-									{										
-											if(get_button_state)
-											{
-												Press_button = CMD_Auto_knife;								
-											}
-											get_button_state=0;	
+									case Safe_Z_Button2:                                         // 安全Z开关
+									{									
+											Press_button = CMD_Safe_Z;
+										press_time++;
+											sprintf(buf5,"P:%u",press_time);	
+											SetTextValue(3,28,(uchar *)buf5);
+                										
+																			
 									}break;
-									case Divided_Button:                                         //分中按钮触发
+									case Soft_Limit_button:                                      //软限位开关按钮触发
+									{											
+								
+											Press_button = CMD_Soft_Limit;	
+                      press_time++;
+											sprintf(buf5,"P:%u",press_time);	
+											SetTextValue(3,28,(uchar *)buf5);											
+											
+									}break;
+									case Coordinate_Button:                                      //坐标切换按钮触发
 									{
 											if(get_button_state)
-											{
-												Press_button = CMD_Divided;								
-											}
-											get_button_state=0;	
+											{										
+												  Coordinate_Change_Process();   //坐标切换控制
+												  Press_button = CMD_Coordinate_Change;
+												press_time++;
+											sprintf(buf5,"P:%u",press_time);	
+											SetTextValue(3,28,(uchar *)buf5);
+												 
+											 }										
 									}break;
+									case All_Clear_Button:                                       //全轴清零按钮触发
+									{
+                    if(get_button_state)   
+										{										
+											control_panel_pram.All_Spindle_Clear_Button=1;
+											Press_button = CMD_All_Spin_Clear;
+											press_time++;
+											sprintf(buf5,"P:%u",press_time);	
+											SetTextValue(3,28,(uchar *)buf5);
+											
+										}
+									}break;
+                  case Clear_Botton:                                           //清零按钮触发
+									{
+										if(get_button_state)
+										{										
+											Press_button = CMD_Clear;	
+                      press_time++;
+											sprintf(buf5,"P:%u",press_time);	
+											SetTextValue(3,28,(uchar *)buf5);											
+										}																					
+									}break;    
+                  case Spin_Button:                                             //主轴开关按钮触发
+									{
+											Press_button = CMD_Spin_On_Off;	
+                      press_time++;
+											sprintf(buf5,"P:%u",press_time);	
+											SetTextValue(3,28,(uchar *)buf5);										
+                      											
+									
+									}break;                            									
+									case Multiple_Button:								                           //倍率切换按钮触发
+									{
+										if(get_button_state)
+										{
+												control_panel_pram.Multiple_Change_button=1;
+												Multiple_Change_Process();                    //倍率切换控制
+												Press_button = CMD_Multiple_Change;	
+                      press_time++;
+											sprintf(buf5,"P:%u",press_time);	
+											SetTextValue(3,28,(uchar *)buf5);											
+										}
+																		
+									}break;							
 									case Start_Button1:                                           //开始按钮触发
 									{
 										state.Work_state=Start;
 										Press_button = CMD_Start;
 										TIM_Cmd(TIM4, DISABLE);      //禁止 TIM4
 //										SetButtonValue(2,14,0);     //停止按钮松开状态
-										SetButtonValue(2,13,1);       //开始按钮按下状态										
+										SetButtonValue(2,13,1);       //开始按钮按下状态
+										press_time++;
+											sprintf(buf5,"P:%u",press_time);	
+											SetTextValue(3,28,(uchar *)buf5);
+										
+									}break;
+									case Reset_Button:                                            //复位按钮触发
+									{
+										state.Work_state=Stop;
+										Press_button = CMD_Reset;  						
 									}break;
 									case Stop_Button:                                           //停止按钮触发
 									{
@@ -953,13 +1173,11 @@ void Usart2_Receive_data_handle( PCTRL_MSG msg, uint16 size )
 										SetButtonValue(2,14,1);     //停止按钮按下状态
                     Press_button = CMD_Stop;
 									  TIM_Cmd(TIM4, ENABLE);      //使能 TIM4
+										press_time++;
+											sprintf(buf5,"P:%u",press_time);	
+											SetTextValue(3,28,(uchar *)buf5);
 																	
-									}break;
-									case Reset_Button:                                            //复位按钮触发
-									{
-										state.Work_state=Stop;
-										Press_button = CMD_Reset;  						
-									}break;
+									}break;								
 									case Exit_Contronl_Panel_Button:                                          //退出控制面板按钮触发
 									{
 										Work_Page_Status=Working_Page;
@@ -998,10 +1216,14 @@ void Usart2_Receive_data_handle( PCTRL_MSG msg, uint16 size )
 									{
 									   Work_Page_Status=Net_Account_Manage_Page;
 									}break;
+									case Set_Button:                                             //设置按钮
+									{
+									  Work_Page_Status=Setting_page;
+									}break;
 									default:break;				
 							}
 					}break;
-					case Return_WorkPiece_Zero_Page:                                //画面3：回工件零页面
+					case Return_WorkPiece_Zero_Page:                                //画面4：回工件零页面
 					{
 						Work_Page_Status=Return_WorkPiece_Zero_Page;
 						if(state.Work_state==Stop)    //停止加工状态
@@ -1293,6 +1515,8 @@ void Usart2_Receive_data_handle( PCTRL_MSG msg, uint16 size )
 								Work_Page_Status=Working_Page;break;
 							case Net_Account_Manage_Button3:
 								Work_Page_Status=Net_Account_Manage_Page;break;
+							case Set_Button2:
+								Work_Page_Status=Setting_page;break;
 							default:break;
 						}
 					}break;
@@ -1317,10 +1541,11 @@ void Usart2_Receive_data_handle( PCTRL_MSG msg, uint16 size )
 									Press_button = CMD_File_Delete_Sure;								
 								}
 							}break;
-							case Cancel_Button4:
+							case Cancel_Button4:   //取消
 							{								
 								Work_Page_Status=File_Manage_Page;
 							}break;
+							
 						}
 					}
 					break;
@@ -1344,6 +1569,8 @@ void Usart2_Receive_data_handle( PCTRL_MSG msg, uint16 size )
 							{
 							   Work_Page_Status=File_Manage_Page;
 							}break;
+							case Set_Button4:                                   //设置按钮
+								Work_Page_Status=Setting_page;break;
 							default:break;
 						}
 						
@@ -1373,8 +1600,9 @@ void Usart2_Receive_data_handle( PCTRL_MSG msg, uint16 size )
 								}
 							
 							}
-							case Disconnect_WIFI_Button:break;
-							case Sign_Out_Button:break;
+							case Disconnect_WIFI_Button: Work_Page_Status=Disconnect_Remind_Page;break;
+							case Sign_Out_Button: Work_Page_Status=SignOut_Remind_Page;break;
+							case Set_Button3: Work_Page_Status=Setting_page;break;
 							default:break;
 						}
 					}break;
@@ -1416,7 +1644,12 @@ void Usart2_Receive_data_handle( PCTRL_MSG msg, uint16 size )
 							}break;
 							default:break;
 						}
-					}break;          
+					}break;      
+				 case BackLight_Adjust_Page:                                             //画面13：背光亮度调整
+				 {
+				 
+				 }
+					
 					case Disconnect_Remind_Page:                                            //画面15：断开网络提醒页面
 					{
 						switch(get_control_id)
@@ -1448,7 +1681,7 @@ void Usart2_Receive_data_handle( PCTRL_MSG msg, uint16 size )
 						}
 					}	
 					break;         
-					case Cancel_Download_Page:                                                //取消下载提醒
+					case Cancel_Download_Page:                                                //画面20：取消下载提醒
 					{
             switch(get_control_id)
 						{
@@ -1470,29 +1703,30 @@ void Usart2_Receive_data_handle( PCTRL_MSG msg, uint16 size )
 								}
 							}
 							break;
+							
 					  }
 					}break;
-					case Save_Pram_Page:                                                    //画面21 保存参数设置提醒页面
-					{
-						Work_Page_Status=Save_Pram_Page;
-						if(state.Work_state==Stop)    //停止加工状态
-						{
-								switch(get_control_id)
-								{
-									case Sure_Button8:    //确定按钮触发
-									{							
-										pram_status.Save_Pram_Page_Sure_button=1;
-										pram_status.Save_Pram_Page_concel_button=0;
-									}break;
-									case Cancel_Button8:   //取消按钮触发
-									{
-										pram_status.Save_Pram_Page_Sure_button=0;
-										pram_status.Save_Pram_Page_concel_button=1;						
-									}
-									default: break;	
-								}
-					  }
-					}break;
+//					case Save_Pram_Page:                                                    //画面21 保存参数设置提醒页面
+//					{
+//						Work_Page_Status=Save_Pram_Page;
+//						if(state.Work_state==Stop)    //停止加工状态
+//						{
+//								switch(get_control_id)
+//								{
+//									case Sure_Button8:    //确定按钮触发
+//									{							
+//										pram_status.Save_Pram_Page_Sure_button=1;
+//										pram_status.Save_Pram_Page_concel_button=0;
+//									}break;
+//									case Cancel_Button8:   //取消按钮触发
+//									{
+//										pram_status.Save_Pram_Page_Sure_button=0;
+//										pram_status.Save_Pram_Page_concel_button=1;						
+//									}
+//									default: break;	
+//								}
+//					  }
+//					}break;
 					default: break;						
   			}
         
@@ -1593,16 +1827,16 @@ void Power_On_Set(void)
 		SetProgressValue(17,3,i*2);     //设置进度条的值
 		delay_ms(5);                    //延时0.05秒
 	}
-	SetScreen(0);                    //切换到加工页面
+	SetScreen(3);                    //切换到控制面板页面
 	//SetTouchPaneOption(1,1,0,0);     //触摸屏设置
 	delay_ms(10);
 	
 	SetTextValue(0,27,"G54");        //设置当前坐标值：G54
-	SetTextValue(2,30,"G54");
+	SetTextValue(3,30,"G54");
 	SetTextValue(0,28,"关");         //设置手轮引导“关”
-	SetTextValue(2,31,"关");
+	SetTextValue(3,31,"关");
 	SetTextValue(0,29,"X10");         //设置倍率：X10
-	SetTextValue(2,32,"X10");
+	SetTextValue(3,32,"X10");
 	Multiple_num=10;                   //开机默认倍率
 	
 	Speed.Initial_Spindle_Speed=20000;                     //主轴初始转速
@@ -1627,7 +1861,7 @@ void Power_On_Set(void)
 	SetButtonValue(2,13,0);          //开始按钮是松开状态
 	SetButtonValue(2,14,1);          //停止按钮是按下状态
 	
-	Work_Page_Status=Working_Page;    //开机进入加工页面
+	Work_Page_Status=ControlPanel_Page;    //开机进入控制面板页面
 	
 	control_panel_pram.Axis_press = CMD_X_AXIS;
 	SetButtonValue(0,42,1);           //X轴选中状态
@@ -1788,37 +2022,37 @@ void Coordinate_Change_Process(void)
 		case 1:
 		{
 			SetTextValue(0,27,"G55");        //设置文本值
-			SetTextValue(2,30,"G55");       
+			SetTextValue(3,30,"G55");       
 			break;  
 		}
 		case 2:
 		{
 			SetTextValue(0,27,"G56");
-			SetTextValue(2,30,"G56");
+			SetTextValue(3,30,"G56");
 			break;
 		}
 		case 3:
 		{
 			SetTextValue(0,27,"G57");
-			SetTextValue(2,30,"G57");
+			SetTextValue(3,30,"G57");
 			break;
 		}
 		case 4:
 		{
 			SetTextValue(0,27,"G58");
-			SetTextValue(2,30,"G58");
+			SetTextValue(3,30,"G58");
 			break;
 		}
 		case 5:
 		{
 			SetTextValue(0,27,"G59");
-			SetTextValue(2,30,"G59");
+			SetTextValue(3,30,"G59");
 			break;
 		}
 		case 6:
 		{
 			SetTextValue(0,27,"G54");
-			SetTextValue(2,30,"G54");
+			SetTextValue(3,30,"G54");
 			Coordinate_Change_Counter=0;
 			break;
 		}	
@@ -1833,35 +2067,35 @@ void Multiple_Change_Process(void)
 		case 1:
 		{
 			SetTextValue(0,29,"X10");    //设置文本值
-			SetTextValue(2,32,"X10");
+			SetTextValue(3,32,"X10");
 			Multiple_num=10;
 			break;  
 		}
 		case 2:
 		{
 			SetTextValue(0,29,"X20");                                                                                                                                 
-			SetTextValue(2,32,"X20");
+			SetTextValue(3,32,"X20");
 			Multiple_num=20;
 			break;
 		}
 		case 3:
 		{
 			SetTextValue(0,29,"X1");
-			SetTextValue(2,32,"X1");
+			SetTextValue(3,32,"X1");
 			Multiple_num=1;
 			break;
 		}
 		case 4:
 		{
 			SetTextValue(0,29,"X2");
-			SetTextValue(2,32,"X2");
+			SetTextValue(3,32,"X2");
 			Multiple_num=2;
 			break;
 		}
 		case 5:
 		{
 			SetTextValue(0,29,"X5");
-			SetTextValue(2,32,"X5");
+			SetTextValue(3,32,"X5");
 			Multiple_num=5;
 			Multiple_Change_Counter=0;
 			break;
@@ -1875,33 +2109,17 @@ void Multiple_Change_Process(void)
 void TFT_Show_coordanate_value(void)
 {
 		
-		Show_X_Coordinata();
-		Show_Y_Coordinata();
-		Show_Z_Coordinata();
-		Show_A_Coordinata();
-		Show_B_Coordinata();			
-
-//	sprintf((char *)buf1,"%09.2f",control_panel_pram.X_Mac_value); 
-//	SetTextValue(2,38,(uchar *)buf1);	                               //显示X轴机械坐标
-//	SetTextValue(0,34,(uchar *)buf1);
-
-//	
-//	sprintf((char *)buf1,"%09.2f",control_panel_pram.Y_Mac_value);
-//	SetTextValue(2,39,(uchar *)buf1);                                //显示Y轴机械坐标
-//	SetTextValue(0,35,(uchar *)buf1);
-//	
-//	sprintf((char *)buf1,"%09.2f",control_panel_pram.Z_Mac_value);
-//	SetTextValue(2,40,(uchar *)buf1);                                //显示Z轴机械坐标
-//	SetTextValue(0,36,(uchar *)buf1);
-//	
-//	sprintf((char *)buf1,"%09.2f",control_panel_pram.A_Mac_value);
-//	SetTextValue(2,41,(uchar *)buf1);                                //显示A轴机械坐标
-//	SetTextValue(0,37,(uchar *)buf1);
-//	
-//	sprintf((char *)buf1,"%09.2f",control_panel_pram.B_Mac_value);
-//	SetTextValue(2,42,(uchar *)buf1);                               //显示B轴机械坐标
-//	SetTextValue(0,38,(uchar *)buf1);
-
+	Show_X_Coordinata();
+	Show_Y_Coordinata();
+	Show_Z_Coordinata();
+	Show_A_Coordinata();
+	Show_B_Coordinata();
+	
+	Show_X_Machine_Coordinata();
+	Show_Y_Machine_Coordinata();
+  Show_Z_Machine_Coordinata();
+	Show_A_Machine_Coordinata();
+  Show_B_Machine_Coordinata();
 }
 
 //显示回工件零页面所有轴坐标值
@@ -1926,8 +2144,72 @@ void Show_coordinate_on_return_workpiece_zero_page(void)
 	SetTextValue(3,13,(uchar *)buf);	        //在手轮上显示B轴工件坐标
 }
 
+//显示X轴机械坐标
+void Show_X_Machine_Coordinata(void)
+{
+	char buf1[20];
+	if(control_panel_pram.X_last_Mac_value!=control_panel_pram.X_Mac_value)
+	 {
+			sprintf((char *)buf1,"%09.2f",control_panel_pram.X_Mac_value); 
+			SetTextValue(3,38,(uchar *)buf1);	                               
+			SetTextValue(0,34,(uchar *)buf1);
+			control_panel_pram.X_last_Mac_value=control_panel_pram.X_Mac_value;
+	 }
+}
 
-//显示X轴坐标
+//显示Y轴机械坐标
+void Show_Y_Machine_Coordinata(void)
+{
+	char buf1[20];
+	if(control_panel_pram.Y_last_Mac_value!=control_panel_pram.Y_Mac_value)
+	 {
+			sprintf((char *)buf1,"%09.2f",control_panel_pram.Y_Mac_value);
+			SetTextValue(3,39,(uchar *)buf1);                                
+			SetTextValue(0,35,(uchar *)buf1);
+			control_panel_pram.Y_last_Mac_value=control_panel_pram.Y_Mac_value;
+	 }
+}
+
+//显示Z轴机械坐标
+void Show_Z_Machine_Coordinata(void)
+{
+	char buf1[20];
+	if(control_panel_pram.Z_last_Mac_value!=control_panel_pram.Z_Mac_value)
+	 {
+			sprintf((char *)buf1,"%09.2f",control_panel_pram.Z_Mac_value);
+			SetTextValue(3,40,(uchar *)buf1);                                
+			SetTextValue(0,36,(uchar *)buf1);
+			control_panel_pram.Z_last_Mac_value=control_panel_pram.Z_Mac_value;
+	 }
+}
+	
+//显示A轴机械坐标
+void Show_A_Machine_Coordinata(void)
+{
+	char buf1[20];
+	if(control_panel_pram.A_last_Mac_value!=control_panel_pram.A_Mac_value)
+	 {
+			sprintf((char *)buf1,"%09.2f",control_panel_pram.A_Mac_value);
+			SetTextValue(3,41,(uchar *)buf1);                                
+			SetTextValue(0,37,(uchar *)buf1);
+			control_panel_pram.A_last_Mac_value=control_panel_pram.A_Mac_value;
+	 }
+}
+
+//显示B轴机械坐标
+void Show_B_Machine_Coordinata(void)
+{
+	char buf1[20];
+	if(control_panel_pram.B_last_Mac_value!=control_panel_pram.B_Mac_value)
+	 {
+			sprintf((char *)buf1,"%09.2f",control_panel_pram.B_Mac_value);
+			SetTextValue(3,42,(uchar *)buf1);                               
+			SetTextValue(0,38,(uchar *)buf1);
+			control_panel_pram.B_last_Mac_value=control_panel_pram.B_Mac_value;
+	 }
+}
+
+//显示X轴工件坐标
 void Show_X_Coordinata(void)
 {	
 	char buf1[20];
@@ -1935,13 +2217,13 @@ void Show_X_Coordinata(void)
 	{
 		sprintf((char *)buf1,"%09.2f",control_panel_pram.X_value);      //显示X轴工件坐标		
 		SetTextValue(0,16,(uchar *)buf1);
-		SetTextValue(2,17,(uchar *)buf1);
+		SetTextValue(3,17,(uchar *)buf1);
 		control_panel_pram.X_last_value=control_panel_pram.X_value;
 	}
 }
 
 
-//显示Y轴坐标
+//显示Y轴工件坐标
 void Show_Y_Coordinata(void)
 {
 	char buf1[20];
@@ -1949,12 +2231,12 @@ void Show_Y_Coordinata(void)
 	{
 		sprintf((char *)buf1,"%09.2f",control_panel_pram.Y_value);       //显示Y轴工件坐标
 		SetTextValue(0,17,(uchar *)buf1);
-		SetTextValue(2,18,(uchar *)buf1);
+		SetTextValue(3,18,(uchar *)buf1);
 		control_panel_pram.Y_last_value=control_panel_pram.Y_value;
 	}
 }
 
-//显示Z轴坐标
+//显示Z轴工件坐标
 void Show_Z_Coordinata(void)
 {
 	char buf1[20];
@@ -1962,12 +2244,12 @@ void Show_Z_Coordinata(void)
 	{
 		sprintf((char *)buf1,"%09.2f",control_panel_pram.Z_value);      //显示Z轴工件坐标
 		SetTextValue(0,18,(uchar *)buf1);
-		SetTextValue(2,19,(uchar *)buf1);
+		SetTextValue(3,19,(uchar *)buf1);
 		control_panel_pram.Z_last_value=control_panel_pram.Z_value;
 	}
 }
 
-//显示A轴坐标
+//显示A轴工件坐标
 void Show_A_Coordinata(void)
 {
 	char buf1[20];
@@ -1975,12 +2257,12 @@ void Show_A_Coordinata(void)
 	{
 		sprintf((char *)buf1,"%09.2f",control_panel_pram.A_value);       //显示A轴工件坐标
 		SetTextValue(0,19,(uchar *)buf1);
-		SetTextValue(2,20,(uchar *)buf1);
+		SetTextValue(3,20,(uchar *)buf1);
 		control_panel_pram.A_last_value=control_panel_pram.A_value;		
 	}
 }
 
-//显示B轴坐标
+//显示B轴工件坐标
 void Show_B_Coordinata(void)
 {
 	char buf1[20];
@@ -1988,7 +2270,7 @@ void Show_B_Coordinata(void)
 	{
 		sprintf((char *)buf1,"%09.2f",control_panel_pram.B_value);        //显示B轴工件坐标
 		SetTextValue(0,20,(uchar *)buf1);
-		SetTextValue(2,21,(uchar *)buf1);
+		SetTextValue(3,21,(uchar *)buf1);
 		control_panel_pram.B_last_value=control_panel_pram.B_value;
 	}
 }
@@ -2002,11 +2284,11 @@ void Show_X_Axis_State(void)
 	SetButtonValue(0,45,0);
 	SetButtonValue(0,46,0);
 	
-  SetButtonValue(2,22,1);
-	SetButtonValue(2,23,0);
-	SetButtonValue(2,24,0);
-	SetButtonValue(2,25,0);
-	SetButtonValue(2,26,0);
+  SetButtonValue(3,22,1);
+	SetButtonValue(3,23,0);
+	SetButtonValue(3,24,0);
+	SetButtonValue(3,25,0);
+	SetButtonValue(3,26,0);
 }
 
 //显示Y轴选中状态
@@ -2018,11 +2300,11 @@ void Show_Y_Axis_State(void)
 	SetButtonValue(0,45,0);
 	SetButtonValue(0,46,0);
 	
-  SetButtonValue(2,22,0);
-	SetButtonValue(2,23,1);
-	SetButtonValue(2,24,0);
-	SetButtonValue(2,25,0);
-	SetButtonValue(2,26,0);
+  SetButtonValue(3,22,0);
+	SetButtonValue(3,23,1);
+	SetButtonValue(3,24,0);
+	SetButtonValue(3,25,0);
+	SetButtonValue(3,26,0);
 }
 
 //显示Z轴选中状态
@@ -2034,11 +2316,11 @@ void Show_Z_Axis_State(void)
 	SetButtonValue(0,45,0);
 	SetButtonValue(0,46,0);
 	
-  SetButtonValue(2,22,0);
-	SetButtonValue(2,23,0);
-	SetButtonValue(2,24,1);
-	SetButtonValue(2,25,0);
-	SetButtonValue(2,26,0);
+  SetButtonValue(3,22,0);
+	SetButtonValue(3,23,0);
+	SetButtonValue(3,24,1);
+	SetButtonValue(3,25,0);
+	SetButtonValue(3,26,0);
 }
 
 //显示A轴选中状态
@@ -2050,11 +2332,11 @@ void Show_A_Axis_State(void)
 	SetButtonValue(0,45,1);
 	SetButtonValue(0,46,0);
 	
-  SetButtonValue(2,22,0);
-	SetButtonValue(2,23,0);
-	SetButtonValue(2,24,0);
-	SetButtonValue(2,25,1);
-	SetButtonValue(2,26,0);
+  SetButtonValue(3,22,0);
+	SetButtonValue(3,23,0);
+	SetButtonValue(3,24,0);
+	SetButtonValue(3,25,1);
+	SetButtonValue(3,26,0);
 }
 
 //显示B轴选中状态
@@ -2066,9 +2348,9 @@ void Show_B_Axis_State(void)
 	SetButtonValue(0,45,0);
 	SetButtonValue(0,46,1);
 	
-  SetButtonValue(2,22,0);
-	SetButtonValue(2,23,0);
-	SetButtonValue(2,24,0);
-	SetButtonValue(2,25,0);
-	SetButtonValue(2,26,1);
+  SetButtonValue(3,22,0);
+	SetButtonValue(3,23,0);
+	SetButtonValue(3,24,0);
+	SetButtonValue(3,25,0);
+	SetButtonValue(3,26,1);
 }

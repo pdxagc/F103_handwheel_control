@@ -23,11 +23,13 @@
 #define START_ADDR4 0x0800dc00
 
 
+//手轮按键命令表
 //workpage table
 #define	Working_Page  0                //加工页面
 #define	Setting_page  1                //设置页面
-#define	ControlPanel_Page  2           //控制面板页面
-#define	Return_WorkPiece_Zero_Page  3  //回工件零页面
+#define	Setting_Page_2 2              //设置页面2
+#define	ControlPanel_Page  3           //控制面板页面
+#define	Return_WorkPiece_Zero_Page  4  //回工件零页面
 #define	Jump_Work_Page  5              //跳行加工
 #define	File_Manage_Page 6            //文件管理页面
 #define	Same_file_Error_Page 7         //同名文件报错页面
@@ -36,12 +38,12 @@
 #define	Storage_View_Page 10           //内存空间预览页面
 #define	Net_Account_Manage_Page 11     //网络账户管理
 #define	Choose_WiFi_Page  12           //选择WIFi页面
-//#define	Disconnet_and_SignIn_Page  13   //断开连接与立即登录页面
-//#define	Disconnect_and_SignOut_Page 14 //断开连接与退出登录页面
+#define	BackLight_Adjust_Page  13      //背光亮度调整页面
+
 #define	Disconnect_Remind_Page 15      //断开网络提醒页面
 #define	SignOut_Remind_Page 16         //退出登录提醒页面
 #define Cancel_Download_Page 20        //取消下载页面
-#define	Save_Pram_Page 21              //保存参数设置提醒页面
+//#define	Save_Pram_Page 21              //保存参数设置提醒页面
 
 
 //Working_Page  button table
@@ -51,39 +53,72 @@
 #define Work_Speed_Add_Buttoub  6          //加工速度加按钮
 #define File_Manage_Button1 12             //文件管理按钮
 #define Net_Account_Manage_Button1  13     //网络账户管理按钮
-#define Setting_Button  14                 //设置按钮
 #define Control_Panel_Button 15            //控制面板按钮
 #define X_Press_Button1  42                //X轴按钮
 #define Y_Press_Button1  43                //Y轴按钮
 #define Z_Press_Button1  44                //Z轴按钮
 #define A_Press_Button1  45                //A轴按钮
 #define B_Press_Button1  46                //B轴按钮
+#define Setting_Button   47                //设置按钮
 
 //Setting_page  button table
 #define Safe_Z_Button1 1               //安全Z模式切换
-#define Auto_kinfe_Button1 2           //自动对刀模式切换
-#define Uint_Button 3                  //单位切换
-#define Sure_Button1  4                //确定按钮
-#define Cancel_button1 5               //取消按钮
-#define Voice_button 27                //声音控制按钮
+#define Uint_Button 2                  //单位切换
+#define Auto_kinfe_Button1 3           //自动对刀模式切换
+#define Voice_button 4                 //声音控制按钮
+#define BackLight_button 5             //背光按钮
+#define Softlimit_button 6             //软限位按钮
+#define Working_button  7              //加工页面按钮
+#define File_Manage_Button  8          //文件管理按钮
+#define Net_Account_Manage_Button5  9  //网络账户管理按钮
+#define Safe_Z_Setting 10              //设置安全Z高度
+#define knife_height_Setting 11        //对刀高度设置
+#define knife_Block_height_Setting 12  //对刀块高度设置
+#define knife_height_X1 13              //对刀块X轴设置
+#define knife_height_Y1 14              //对刀块Y轴设置
+#define knife_height_Z1 15              //对刀块Z轴设置
+
+//Setting_page_2  button table
+#define Safe_Z_Button3 1                //安全Z模式切换
+#define Uint_Button2 2                  //单位切换
+#define Auto_kinfe_Button3 3            //自动对刀模式切换
+#define Voice_button1 4                 //声音控制按钮
+#define BackLight_button2 5             //背光按钮
+#define Softlimit_button2 6             //对刀块设置按钮
+#define Working_button2  7              //加工页面按钮
+#define File_Manage_Button6  8          //文件管理按钮
+#define Net_Account_Manage_Button6  9   //网络账户管理按钮
+#define Safe_Z_Setting2 10              //设置安全Z高度
+#define knife_height_Setting2 11        //对刀高度设置
+#define knife_Block_height_Setting2 12  //对刀块高度设置
+#define Soft_Limit_X1 13
+#define Soft_Limit_X2 14
+#define Soft_Limit_Y1 15 
+#define Soft_Limit_Y2 16
+#define Soft_Limit_Z1 17
+#define Soft_Limit_Z2 18
+#define Soft_Limit_A1 19 
+#define Soft_Limit_A2 20
+#define Soft_Limit_B1 21
+#define Soft_Limit_B2 22
 
 
 //ControlPanel_Page  button table
-#define Clear_Botton 1                  //清零按钮
+#define Return_Workpiece_Zero_Button 1  //回工件零按钮
 #define Return_Machine_Zero_Button 2    //回机械零按钮
-#define Multiple_Button 3               //倍率切换按钮
-#define Spin_Button 4                   //主轴开关按钮
-#define All_Clear_Button 5              //全轴清零按钮
-#define Return_Workpiece_Zero_Button 6  //回工件零按钮
-#define Coordinate_Button  7            //坐标切换按钮
-#define Soft_Limit_button  8            //软限位开关按钮
-#define Safe_Z_Button2 9                //安全Z开关按钮
-#define Jump_Work_Button 10             //跳行加工按钮
-#define Auto_kinfe_Button2 11           //自动对刀按钮
-#define Divided_Button 12               //分中按钮
-#define Start_Button1 13                //开始按钮
-#define Stop_Button 14                  //停止按钮
-#define Reset_Button 15                 //复位按钮
+#define Divided_Button 3                //分中按钮
+#define Auto_kinfe_Button2 4           //自动对刀按钮
+#define Jump_Work_Button 5             //跳行加工按钮
+#define Safe_Z_Button2 6                //安全Z开关按钮
+#define Soft_Limit_button  7            //软限位开关按钮
+#define Coordinate_Button  8            //坐标切换按钮
+#define Multiple_Button 9               //倍率切换按钮
+#define Spin_Button 10                   //主轴开关按钮
+#define Clear_Botton 11                 //清零按钮
+#define All_Clear_Button 12              //全轴清零按钮
+#define Start_Button1 13               //开始按钮
+#define Reset_Button 14                //复位按钮
+#define Stop_Button 15                  //停止按钮
 #define Exit_Contronl_Panel_Button 16   //退出控制面板按钮
 #define X_Press_Button2  22             //X轴按钮
 #define Y_Press_Button2  23             //Y轴按钮
@@ -92,6 +127,7 @@
 #define B_Press_Button2  26             //B轴按钮
 #define File_Manage_Button2 33          //文件管理按钮
 #define Net_Account_Manage_Button2  34  //网络账户管理按钮
+#define Set_Button   48                 //设置按钮
 
 //Return_WorkPiece_Zero_Page  button table
 #define All_Spindle_Button 1         //全轴选中按钮
@@ -128,6 +164,7 @@
 #define SD_file_4 17                  //SD卡文件4
 #define Working_Page_button3 18       //文件管理按钮
 #define Net_Account_Manage_Button3 19     //网络账户管理按钮
+#define Set_Button2  39               //设置按钮
 
 //Delete_Page Button table
 #define Sure_Button4 1             //确定按钮
@@ -137,6 +174,7 @@
 #define Net_Account_Manage_Button4  1     //网络账户管理按钮
 #define Working_Page_button1 7            //加工页面按钮
 #define Return_File_Manage_Button 8       //返回文件管理
+#define Set_Button4 18                    //设置按钮
 
 
 //Net_Account_Manage_Page button table
@@ -147,6 +185,7 @@
 #define Sign_In_Button 5                  //登录账户
 #define Disconnect_WIFI_Button 18         //断开WiFi
 #define Sign_Out_Button 19                //退出登录
+#define Set_Button3  20                   //设置按钮
 
 //Choose_WiFi_Page button table
 #define WiFi_1_Button 1                  //WiFi1
@@ -156,10 +195,15 @@
 #define WiFi_Last_Page_Button 6          //上一页
 #define WiFi_Next_Page_Button 5          //下一页
 
+
+//BackLight_Page button table
+//#define 
+
 //Disconnect_Remind_Page button table
 #define Sure_Button5 1               //确定按钮
 #define Cancel_Button5 2             //取消按钮
- 
+
+
 //SignOut_Remind_Page button table
 #define Sure_Button6 1             //确定按钮
 #define Cancel_Button6 2           //取消按钮
@@ -205,11 +249,16 @@ typedef struct Pram_Status
 	float Auto_Knife_block_X;               //X轴对刀块位置
 	float Auto_Knife_block_Y;               //Y轴对刀块位置
 	float Auto_Knife_block_Z;               //Z轴对刀块位置
-	float Soft_limit_X;                     //X轴软限位值
-	float Soft_limit_Y;                     //Y轴软限位值
-	float Soft_limit_Z;                     //Z轴软限位值
-	float Soft_limit_A;                     //A轴软限位值
-	float Soft_limit_B;                     //B轴软限位值
+	float Soft_limit_X1;                     //X轴软限位值1
+	float Soft_limit_X2;                     //X轴软限位值2
+	float Soft_limit_Y1;                     //Y轴软限位值1
+	float Soft_limit_Y2;                     //Y轴软限位值1
+	float Soft_limit_Z1;                     //Z轴软限位值1
+	float Soft_limit_Z2;                     //Z轴软限位值1
+	float Soft_limit_A1;                     //A轴软限位值1
+	float Soft_limit_A2;                     //A轴软限位值1
+	float Soft_limit_B1;                     //B轴软限位值1
+	float Soft_limit_B2;                     //B轴软限位值1
 }Pram_Status;
 
 
@@ -246,10 +295,15 @@ typedef struct Control_Panel_Pram
 	float  B_value;                       //B轴工件坐标值
 	float  B_last_value;
 	float  X_Mac_value;                   //X轴机械坐标值
+	float  X_last_Mac_value;
 	float  Y_Mac_value;                   //Y轴机械坐标值
+	float  Y_last_Mac_value;
 	float  Z_Mac_value;                   //Z轴机械坐标值
+	float  Z_last_Mac_value;
 	float  A_Mac_value;                   //A轴机械坐标值
+	float  A_last_Mac_value;
 	float  B_Mac_value;                   //B轴机械坐标值
+	float  B_last_Mac_value;
 	float  Temp_save_Xvalue;              //临时保存X轴坐标值
 	float  Temp_save_Yvalue;              //临时保存X轴坐标值            
 	float  Temp_save_Zvalue;              //临时保存X轴坐标值
@@ -400,6 +454,20 @@ void Show_coordinate_on_return_workpiece_zero_page(void);
 ////向主机发送坐标
 //void Send_Coordinate_to_Host_Machine(void);
 
+//显示X轴机械坐标
+void Show_X_Machine_Coordinata(void);
+
+//显示Y轴机械坐标
+void Show_Y_Machine_Coordinata(void);
+
+//显示Z轴机械坐标
+void Show_Z_Machine_Coordinata(void);
+
+//显示A轴机械坐标
+void Show_A_Machine_Coordinata(void);
+
+//显示B轴机械坐标
+void Show_B_Machine_Coordinata(void);
 
 
 //显示X轴坐标

@@ -23,7 +23,28 @@
 #define A_mode 13
 #define B_mode 14
 
-//Button TABLE for communication between the CNC Cloud mainboard and the handwheel //////////
+
+//手轮与主机通讯命令表
+// COMMAND TABLE
+#define CMD_ASK_SLAVE 29                 //主机请求数据
+#define CMD_RPY_HC_MPG1	36               //手轮发送数据
+#define CMD_UPDATE_MACH3_NUMBER	41       //主机发送坐标数据
+#define CMD_Working_File_Name 50         //加工文件名
+#define CMD_Work_line 51                 //加工行数
+#define CMD_Working_Code 52              //加工代码
+#define CMD_SPin_Speed 53                //主轴速度
+#define CMD_Working_Speed 54             //加工速度
+#define CMD_Warn_Massage  55             //警报信息
+#define CMD_Clond_File_Name 56           //云空间文件名
+#define CMD_SD_Card_File_Name 57         //SD卡文件名
+#define CMD_Storage_Data  58             //内存数据
+#define CMD_Wifi_Name  59                //wifi名称
+#define CMD_Wifi_Password 60             //wif密码
+#define CMD_Account_Name  61             //用户账户
+#define CMD_Account_Password 62          //用户密码
+
+
+//手轮与主机通讯按键指令表
 //控制面板
 #define CMD_X_AXIS	0                  //X轴选中
 #define CMD_Y_AXIS	1                  //Y轴选中
@@ -72,22 +93,34 @@
 #define CMD_Storage_View 40             //内存预览
 #define CMD_Open_Loading 42             //打开加载
 #define CMD_File_Delete_Sure 43         //文件删除
-//#define CMD_Clode_Flie_next_page 44     //云空间文件下一页
-//#define CMD_SD_File_last_page   45      //SD卡文件下一页
+#define CMD_Clode_Flie_Last_Page 44     //云空间文件下一页
+#define CMD_Clode_Flie_Next_Page 45     //云空间文件下一页
+#define CMD_SD_File_Last_page   46      //SD卡文件下一页
+#define CMD_SD_File_Nest_page   47      //SD卡文件下一页
+#define CMD_Cloud_File_1 60               //云空间文件1
+#define CMD_Cloud_File_2 61               //云空间文件2
+#define CMD_Cloud_File_3 62               //云空间文件3
+#define CMD_Cloud_File_4 63               //云空间文件4
+#define CMD_SD_File_1 64                  //SD卡文件1
+#define CMD_SD_File_2 65                  //SD卡文件2
+#define CMD_SD_File_3 66                  //SD卡文件3
+#define CMD_SD_File_4 67                  //SD卡文件4
 
 
 //网络连接与账户登录
-//#define CMD_WiFi_page   46        //WiFi页码
-#define CMD_Connect_WIFI   47     //连接WiFi
-#define CMD_Sign_In       48     //登录账户
+#define CMD_WiFi_Choose_Page   68      //WiFi页码
+#define CMD_Connect_WIFI       69     //连接WiFi
+#define CMD_Disconnect_WiFi    70     //断开WiFi
+#define CMD_Sign_In            71     //登录账户
+#define CMD_SIgn_Out           72     //退出账户
+#define CMD_WiFi_1_Button  73                  //WiFi1
+#define CMD_WiFi_2_Button 74                  //WiFi2
+#define CMD_WiFi_3_Button 75                  //WiFi3
+#define CMD_WiFi_4_Button 76                  //WiFi4
+#define CMD_WiFi_Last_Page_Button 77          //上一页
+#define CMD_WiFi_Next_Page_Button 78          //下一页
 
 
-
-
-//*********** COMMAND TABLE
-#define CMD_ASK_SLAVE 29                 //主机请求数据
-#define CMD_RPY_HC_MPG1	36               //手轮发送数据
-#define CMD_UPDATE_MACH3_NUMBER	41       //主机发送坐标数据
 
 
 
@@ -133,11 +166,11 @@ unsigned char CheckXor (char data, unsigned char len);
 //地址校验
 uint8_t Check_Address (char data);
 
-//串口1中断，接收雕刻机数据  //place at ISR
+//串口中断，接收雕刻机数据  //place at ISR
 void Usart1_Recieve_Process (void);
 
-//串口2接收数据处理函数
-void Receive_Data_handle (void);
+//串口1接收数据处理函数
+void Communication_Data_handle (void);
 
 //给主机发送数据
 void Send_data_to_Master(void);
