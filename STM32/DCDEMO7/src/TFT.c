@@ -1858,14 +1858,14 @@ void Power_On_Set(void)
 	SetTextValue(0,25,(uchar *)buf);                             //加工速度文本框初始化：100%
 	   
 	
-	SetButtonValue(2,13,0);          //开始按钮是松开状态
-	SetButtonValue(2,14,1);          //停止按钮是按下状态
+	SetButtonValue(3,13,0);          //开始按钮是松开状态
+	SetButtonValue(3,15,1);          //停止按钮是按下状态
 	
 	Work_Page_Status=ControlPanel_Page;    //开机进入控制面板页面
 	
 	control_panel_pram.Axis_press = CMD_X_AXIS;
 	SetButtonValue(0,42,1);           //X轴选中状态
-	SetButtonValue(2,22,1);
+	SetButtonValue(3,22,1);
 	
 	
 	//SetPowerSaving(1,200,50,30);  // 自动调节背光亮度

@@ -156,7 +156,7 @@ void TIM2_IRQHandler(void)
 			Mark_20ms_Count=0;
 		  Mark_20ms = 1;
 			Mark_200ms_Count++;
-			if(Mark_200ms_Count==10)    //Mark_200msÖÃ1
+			if(Mark_200ms_Count==6)    //Mark_200msÖÃ1
 			{
 				Mark_200ms_Count=0;
 				Mark_200ms = 1;					

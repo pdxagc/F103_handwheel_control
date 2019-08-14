@@ -39,11 +39,11 @@ extern Control_Panel_Pram control_panel_pram;
 extern uint8  Press_button;          //记录哪个按钮触发(需要把按键发送给雕刻机)
 extern uint16 master_ask,master_send;
 
-
+uint8  Rec_Command; //接收的命令
 uint8  RX_Busy=0;
 uint8  HC_Address, rxcounter, remaincounter; //this unit is this unit address, if change to master become 0000 
 uint8  ready2send; // bit is 1 while there is command to send
-uint8  ready2read;
+uint8  Get_command;         //获取命令标记位
 uint16 last_time_Pulses_number=0;  //记录上一次脉冲
 uint8  last_time_Multiple=0;       //记录倍率变化
 uint8  last_time_button=0;         //记录按键变化
@@ -72,7 +72,7 @@ void Usart1_Init(uint32 BaudRate)
 
     //  /* Configure USART Rx as input floating */
     GPIO_InitStructure.GPIO_Pin = GPIO_Pin_10;                    //USART1_RX PA.10
-	  GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
+	  //GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
     GPIO_InitStructure.GPIO_Mode = GPIO_Mode_IN_FLOATING;         //浮空输入
     GPIO_Init(GPIOA, &GPIO_InitStructure);                        //初始化 GPIOA.10
 	  //串口参数初始化 /* USART configuration */
@@ -94,8 +94,8 @@ void Usart1_Init(uint32 BaudRate)
     USART_Init(USART1, &USART_InitStructure);                      //初始化串口    
 
     NVIC_InitStructure.NVIC_IRQChannel = USART1_IRQn;        //中断号；
-		NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 1;//抢占优先级1
-		NVIC_InitStructure.NVIC_IRQChannelSubPriority = 1;		   //响应优先级0
+		NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 0;//抢占优先级1
+		NVIC_InitStructure.NVIC_IRQChannelSubPriority = 0;		   //响应优先级0
 		NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;			     //开启中断
 		NVIC_Init(&NVIC_InitStructure);	
 		
@@ -146,7 +146,7 @@ void Usart2_Init(uint32 BaudRate)
     USART_Init(USART2, &USART_InitStructure);                      //初始化串口    
 
     NVIC_InitStructure.NVIC_IRQChannel = USART2_IRQn;        //中断号；
-		NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 1;//抢占优先级1
+		NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 0;//抢占优先级1
 		NVIC_InitStructure.NVIC_IRQChannelSubPriority = 1;		   //响应优先级0
 		NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;			     //开启中断
 		NVIC_Init(&NVIC_InitStructure);	
@@ -165,66 +165,69 @@ void Usart2_Init(uint32 BaudRate)
 * 输    出         : 无  
 *******************************************************************************/ 
 
-void Usart3_Init(uint32 BaudRate)
-	{
-		
-    GPIO_InitTypeDef GPIO_InitStructure;
-		USART_InitTypeDef USART_InitStructure;
-		NVIC_InitTypeDef NVIC_InitStructure;
- 
-		RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOB, ENABLE);
-    RCC_APB1PeriphClockCmd(RCC_APB1Periph_USART3, ENABLE); 
-		
-		//USART3_TX   PB10      //TX-485
-    GPIO_InitStructure.GPIO_Pin = GPIO_Pin_10; 
-    GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
-    GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AF_PP;	
-    GPIO_Init(GPIOB, &GPIO_InitStructure);
- 
-    //USART3_RX	  PB11      //RX-485  
-    GPIO_InitStructure.GPIO_Pin = GPIO_Pin_11;
-    GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;    
-    GPIO_InitStructure.GPIO_Mode = GPIO_Mode_IN_FLOATING;
-    GPIO_Init(GPIOB, &GPIO_InitStructure);
-		
-		
- 
-   //Usart3 NVIC 配置
-    NVIC_InitStructure.NVIC_IRQChannel = USART3_IRQn;        //中断号；
-		NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 1;//抢占优先级1
-		NVIC_InitStructure.NVIC_IRQChannelSubPriority = 0;		   //响应优先级0
-		NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;			     //开启中断
-		NVIC_Init(&NVIC_InitStructure);	                         //中断优先级初始化
+//void Usart3_Init(uint32 BaudRate)
+//	{
+//		
+//    GPIO_InitTypeDef GPIO_InitStructure;
+//		USART_InitTypeDef USART_InitStructure;
+//		NVIC_InitTypeDef NVIC_InitStructure;
+// 
+//		RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOB, ENABLE);
+//    RCC_APB1PeriphClockCmd(RCC_APB1Periph_USART3, ENABLE); 
+//		
+//		//USART3_TX   PB10      //TX-485
+//    GPIO_InitStructure.GPIO_Pin = GPIO_Pin_10; 
+//    GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
+//    GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AF_PP;	
+//    GPIO_Init(GPIOB, &GPIO_InitStructure);
+// 
+//    //USART3_RX	  PB11      //RX-485  
+//    GPIO_InitStructure.GPIO_Pin = GPIO_Pin_11;
+//    GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;    
+//    GPIO_InitStructure.GPIO_Mode = GPIO_Mode_IN_FLOATING;
+//    GPIO_Init(GPIOB, &GPIO_InitStructure);
+//		
+//		
+// 
+//   //Usart3 NVIC 配置
+//    NVIC_InitStructure.NVIC_IRQChannel = USART3_IRQn;        //中断号；
+//		NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 1;//抢占优先级1
+//		NVIC_InitStructure.NVIC_IRQChannelSubPriority = 0;		   //响应优先级0
+//		NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;			     //开启中断
+//		NVIC_Init(&NVIC_InitStructure);	                         //中断优先级初始化
 
- 
-		USART_InitStructure.USART_BaudRate =BaudRate;
-		USART_InitStructure.USART_WordLength = USART_WordLength_8b;            //字长为8位数据格式
-		USART_InitStructure.USART_StopBits = USART_StopBits_1;                 //一个停止位
-		USART_InitStructure.USART_Parity = USART_Parity_No;                    //无奇偶校验位
-		USART_InitStructure.USART_HardwareFlowControl = USART_HardwareFlowControl_None;   //无硬件流控
-		USART_InitStructure.USART_Mode = USART_Mode_Rx | USART_Mode_Tx;	       //收发模式
-    USART_Init(USART3, &USART_InitStructure);       
-		
+// 
+//		USART_InitStructure.USART_BaudRate =BaudRate;
+//		USART_InitStructure.USART_WordLength = USART_WordLength_8b;            //字长为8位数据格式
+//		USART_InitStructure.USART_StopBits = USART_StopBits_1;                 //一个停止位
+//		USART_InitStructure.USART_Parity = USART_Parity_No;                    //无奇偶校验位
+//		USART_InitStructure.USART_HardwareFlowControl = USART_HardwareFlowControl_None;   //无硬件流控
+//		USART_InitStructure.USART_Mode = USART_Mode_Rx | USART_Mode_Tx;	       //收发模式
+//    USART_Init(USART3, &USART_InitStructure);       
+//		
 
-    USART_ITConfig(USART3, USART_IT_RXNE, ENABLE);     //接收中断使能
-    USART_Cmd(USART3, ENABLE);    
-    
-    
-}
+//    USART_ITConfig(USART3, USART_IT_RXNE, ENABLE);     //接收中断使能
+//    USART_Cmd(USART3, ENABLE);    
+//    
+//    
+//}
 
 //串口1中断函数
 void USART1_IRQHandler(void)
 {
-	if(USART1->SR &1<<3)
-	{
-		uint8_t i;
-		i=USART1->SR;
-		i=USART1->DR;
-		return;
-	}
-	if (USART_GetITStatus(USART1, USART_IT_RXNE) != RESET)
+//	if(USART1->SR &1<<3)
+//	{
+//		uint8_t i;
+//		i=USART1->SR;
+//		i=USART1->DR;
+//		return;
+//	}
+	if (USART_GetITStatus(USART1, USART_IT_RXNE) != RESET)  //接收中断产生
   {
-	     Usart1_Recieve_Process();  //接收数据
+		 USART_ReceiveData(USART1);  //独处数据，用来清除标志位
+		 Usart1_Recieve_Process();  //接收数据
+		 
+			 	
   }
 }
 
@@ -344,9 +347,7 @@ uint8_t Check_Address (char data)
    
 // 串口1接收主机发送的数据 //place at ISR
 void Usart1_Recieve_Process (void)
-{ 	
-	 //uint16 master_ask=0,master_send=0;
-	 uint8 rec_command; 
+{ 
 	 char buf4[20];
 	 uchar RX_Buffer;
 	 short dat; //16 bit	 
@@ -380,25 +381,22 @@ void Usart1_Recieve_Process (void)
 	  		RX_Busy=0;
 	  		if(CheckXor(RX_Data[rxcounter-1],RX_Data[0]))
 	  		{
-	  			ready2read=1; //校验通过
-					rec_command=RX_Data[1];
-					if(rec_command==CMD_ASK_SLAVE)
+	  			Get_command=1; //校验通过，得到命令，标记位置1
+					Rec_Command=RX_Data[1];
+					if(Rec_Command==CMD_ASK_SLAVE)
 					{
 						master_ask++;
-						sprintf(buf4,"master_ask:%u",master_ask);	
-		        SetTextValue(3,29,(uchar *)buf4);	
 						
 					}
-//					else if(rec_command==CMD_UPDATE_MACH3_NUMBER)
-//					{
-//						master_send++;	
-//            sprintf(buf4,"master_send:%u",master_send);	
-//			  	  SetTextValue(3,49,(uchar *)buf4);
-//					}						
+					else if(Rec_Command==CMD_UPDATE_MACH3_NUMBER)
+					{
+							
+					}						
 
 	  		}
 	 	   }
 	  }
+	
 
 }
 /*
@@ -427,16 +425,18 @@ void Communication_Data_handle (void)
 
 	uint8 command;
 	uint16 Recdata1,Recdata2;
-	if(ready2read)                    //检验通过，收到了主机的数据
+	if(Get_command)                    //检验通过，收到了主机的数据
 	{
-		command=RX_Data[1];            //读取接收的命令
-		switch(command)
+		Get_command=0;                   //标记位清0
+		master_send++;
+		switch(Rec_Command)
 		{
 			case CMD_ASK_SLAVE:           //主机请求数据，手轮要给主机发送数据
 				Usart1_Send_Data(10);
 			break;			
 			case CMD_UPDATE_MACH3_NUMBER: //接收到工件坐标数据  
 			{
+				
 				Recdata1=RX_Data[2];
 				Recdata2=RX_Data[4];
 				control_panel_pram.X_value = (int16)(Recdata1<<8)+RX_Data[3]+((int16)((Recdata2<<8)+RX_Data[5]))*0.001;
@@ -492,7 +492,7 @@ void Communication_Data_handle (void)
 			}break;
 			
 		}
-		ready2read=0;
+		
 	}
 
 

@@ -55,7 +55,7 @@ int main()
 	char buf4[20];
   uint16 time_conuter=0;	
   char bufrec[20],buf1[20];
-//  uint16 Recdata1,Recdata2,RecPulses;	 
+  uint16 Recdata1,Recdata2,RecPulses;	 
 	uint8  check_time=0;      //Âö³åÍ¬²½¼ì²é´ÎÊı
 	 
 	Set_System();             //ÅäÖÃÊ±ÖÓ                                                                                                                                                                                                                                                              
@@ -82,25 +82,25 @@ int main()
 		//    1) Ò»°ãÇé¿öÏÂ£¬¿ØÖÆMCUÏò´®¿ÚÆÁ·¢ËÍÊı¾İµÄÖÜÆÚ´óÓÚ100ms£¬¾Í¿ÉÒÔ±ÜÃâÊı¾İ¶ªÊ§µÄÎÊÌâ£»
 		//    2) Èç¹ûÈÔÈ»ÓĞÊı¾İ¶ªÊ§µÄÎÊÌâ£¬ÇëÅĞ¶Ï´®¿ÚÆÁµÄBUSYÒı½Å£¬Îª¸ßÊ±²»ÄÜ·¢ËÍÊı¾İ¸ø´®¿ÚÆÁ¡£
 		
-//	while(Pulses_check)        //¿ª»úÍ¬²½Ö÷»úÂö³å
-//	{
-//		
-//		if(RX_Data[1] == CMD_UPDATE_MACH3_NUMBER)  //½ÓÊÕµ½×ø±êÊı¾İ
-//		{	
-//			Recdata1=RX_Data[18];
-//			Recdata2=RX_Data[19];			 
-//      RecPulses= (Recdata1<<8)+Recdata2;  //»ñÈ¡Âö³åÖµ
-//      if(TIM4->CNT==RecPulses)
-//				check_time++;
-//			else 
-//				TIM4->CNT=RecPulses;
-//      if(check_time>5)
-//        Pulses_check=0;
-//			
+	while(Pulses_check)        //¿ª»úÍ¬²½Ö÷»úÂö³å
+	{
+		
+		if(RX_Data[1] == CMD_UPDATE_MACH3_NUMBER)  //½ÓÊÕµ½×ø±êÊı¾İ
+		{	
+			Recdata1=RX_Data[18];
+			Recdata2=RX_Data[19];			 
+      RecPulses= (Recdata1<<8)+Recdata2;  //»ñÈ¡Âö³åÖµ
+      if(TIM4->CNT==RecPulses)
+				check_time++;
+			else 
+				TIM4->CNT=RecPulses;
+      if(check_time>5)
+        Pulses_check=0;
+			
 //      sprintf(bufrec,"%u",RecPulses);	
 //			SetTextValue(0,23,(uchar *)bufrec);     //ÏÔÊ¾Âö³åÖµ			
-//		}
-//	}
+		}
+	}
 
    
 
@@ -115,32 +115,39 @@ int main()
 		
 	while(1)                                                                        
 	{				
-		time_conuter++;	
+			
 		
 		Pulses_Count_Process();               //¼ÆËãÊÖÂÖÂö³å	 
 		TFT_Page_handle();                    //³ÌĞò½øÈë²»Í¬µÄ¹¤×÷Ò³Ãæ,´¦ÀíÏà¹ØÈÎÎñ	
+		Communication_Data_handle();          //´®¿Ú1£¨µñ¿Ì»úÊı¾İ£©Êı¾İ½ÓÊÕ´¦Àí
 		
 		if(Mark_10ms)
 		{	
-      Communication_Data_handle();          //´®¿Ú1£¨µñ¿Ì»úÊı¾İ£©Êı¾İ½ÓÊÕ´¦Àí			
-			Estop_button_process();               //½ô¼±°´Å¥´¥·¢´¦Àíº¯Êı
+      			
+			Estop_button_process();               //½ô¼±°´Å¥´¥·¢´¦Àíº¯Ê
+			TFT_command_analyse();               //·ÖÎöTFTÆÁµÄÃüÁî£¬´¥·¢ÁËÊ²Ã´°´Å¥ ı
 		  Mark_10ms=0;
+			sprintf(buf4,"master_ask:%u",master_ask);	
+			SetTextValue(3,29,(uchar *)buf4);
+			sprintf(buf4,"master_send:%u",master_send);	
+			SetTextValue(3,49,(uchar *)buf4);
 		}
 		if(Mark_20ms) 
 		{
 			Key_scan();                         //ÊÖÂÖÎïÀí°´¼üÉ¨Ãè
-			TFT_command_analyse();               //·ÖÎöTFTÆÁµÄÃüÁî£¬´¥·¢ÁËÊ²Ã´°´Å¥ 
-      		
+			
+      light_Control_Process();             //±³¹âÁÁ¶È¿ØÖÆ		
 			Mark_20ms=0;
 		}
 		if(Mark_200ms)                         //¶¨Ê±Âú200ms
 		{
-			light_Control_Process();             //±³¹âÁÁ¶È¿ØÖÆ
+			
 			TFT_Show_coordanate_value();         //ÏÔÊ¾¹¤¼ş×ø±êºÍ»úĞµ×ø±ê 
 			Work_state_control();                //µñ¿Ì»ú¹¤×÷×´Ì¬ÏÔÊ¾£¨Î´Ôö¼ÓÀ¶ÑÀ£¬WiFi×´Ì¬£©
 			Mark_200ms=0;
 			
-			
+			//time_conuter++;
+			     
 //			Usart1_Send_Data(10);
 //			if(Start_Download)
 //			{
@@ -152,8 +159,7 @@ int main()
 //				}
 //		  }
 		}	
-			sprintf(buf1,"%u",time_conuter);  
-			SetTextValue(3,49,(uchar *)buf1);     //ÏÔÊ¾¼Ó¹¤ĞĞÊı£¬ĞèÒªÏòÖ÷»úÑ¯ÎÊ
+
 				
 		
 	}
